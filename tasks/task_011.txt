@@ -1,6 +1,6 @@
 # Task ID: 11
 # Title: Accessibility Features Implementation
-# Status: pending
+# Status: deferred
 # Dependencies: 1, 2
 # Priority: medium
 # Description: Implement Text-to-Speech, Speech-to-Text, high-contrast UI mode, scalable text, and RTL support for accessibility.
