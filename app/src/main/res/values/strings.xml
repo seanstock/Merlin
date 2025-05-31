@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Merlin</string>
+    <string name="accessibility_service_description">Merlin requires accessibility permissions to provide its lock screen functionality and ensure app security.</string>
+</resources>

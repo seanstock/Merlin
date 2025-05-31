@@ -1,0 +1,81 @@
+# Task ID: 17
+# Title: Compliance and Privacy Implementation
+# Status: deferred
+# Dependencies: 3
+# Priority: high
+# Description: Implement COPPA and GDPR-K compliance features, data purging, and privacy policy display.
+# Details:
+1. Create data retention manager:
+```kotlin
+class DataRetentionManager(private val database: MerlinDatabase) {
+    suspend fun purgeOldData() {
+        val cutoffTime = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(365)
+        
+        database.taskHistoryDao().deleteOlderThan(cutoffTime)
+        database.gameHistoryDao().deleteOlderThan(cutoffTime)
+        database.chatHistoryDao().deleteOlderThan(cutoffTime)
+        database.memoryDao().deleteOlderThan(cutoffTime)
+        database.dailyUsageLogDao().deleteOlderThan(cutoffTime)
+    }
+    
+    suspend fun exportUserData(childId: Long): File {
+        // Export all user data in compliance with GDPR
+    }
+    
+    suspend fun deleteUserData(childId: Long) {
+        // Delete all data associated with a child
+    }
+}
+```
+
+2. Add privacy policy in assets/privacy_policy.html
+3. Implement WorkManager task for scheduled data purging
+4. Create parental consent flow for COPPA compliance
+5. Add data export functionality for GDPR compliance
+
+# Test Strategy:
+Test data purging with artificially aged data. Verify privacy policy is accessible and readable. Test data export to ensure all relevant data is included. Verify parental consent flow meets COPPA requirements.
+
+# Subtasks:
+## 1. Design and Implement Data Retention Manager [pending]
+### Dependencies: None
+### Description: Create a data retention manager responsible for tracking and enforcing data retention policies required by COPPA and GDPR-K. Update DAO methods to support purging of expired or unnecessary data in compliance with regulatory requirements.
+### Details:
+Define data retention periods for different data types, implement logic to identify and flag data for purging, and update DAO interfaces and implementations to support deletion operations.
+
+## 2. Integrate Scheduled Data Purging with WorkManager [pending]
+### Dependencies: 17.1
+### Description: Set up scheduled background tasks using WorkManager to periodically trigger data purging routines as defined by the data retention manager.
+### Details:
+Configure WorkManager to run purging jobs at appropriate intervals, ensure jobs are resilient to device restarts, and handle error cases gracefully.
+
+## 3. Create Privacy Policy UI and Add Policy File [pending]
+### Dependencies: None
+### Description: Develop a user interface for displaying the privacy policy and ensure the policy file is included and accessible within the app, as required by COPPA and GDPR-K.
+### Details:
+Design a clear and accessible privacy policy screen, add the latest policy document to the project, and provide navigation to the policy from relevant app sections.
+
+## 4. Develop Parental Consent Flow for COPPA [pending]
+### Dependencies: 17.3
+### Description: Implement a parental consent workflow to obtain verifiable parental consent before collecting personal information from children under 13, as mandated by COPPA.
+### Details:
+Design UI and backend logic for parental notification, consent collection, and consent verification. Store consent records securely and allow parents to review or revoke consent.
+
+## 5. Implement Data Export Functionality for GDPR [pending]
+### Dependencies: 17.1
+### Description: Enable users (or their guardians) to request and receive an export of their personal data, fulfilling GDPR data subject access rights.
+### Details:
+Develop backend and UI components to generate, package, and deliver user data exports in a standard, portable format upon request.
+
+## 6. Implement Data Deletion Functionality for GDPR [pending]
+### Dependencies: 17.1
+### Description: Allow users (or their guardians) to request deletion of their personal data, ensuring compliance with GDPR's right to erasure.
+### Details:
+Provide UI and backend logic to process deletion requests, securely remove user data, and confirm completion to the requester.
+
+## 7. Testing and Documentation of Compliance Features [pending]
+### Dependencies: 17.2, 17.3, 17.4, 17.5, 17.6
+### Description: Conduct thorough testing of all compliance features and document implementation details, user flows, and regulatory justifications.
+### Details:
+Write and execute test cases for each compliance feature, validate against COPPA and GDPR-K requirements, and produce comprehensive developer and user documentation.
+

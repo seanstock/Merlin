@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Match Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 95%;
+            position: relative;
+        }
+
+        .game-title {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            color: #6c5ce7;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .level-display {
+            color: #fd79a8;
+        }
+
+        .score-display {
+            color: #fdcb6e;
+        }
+
+        .timer-display {
+            color: #e84393;
+        }
+
+        .target-color-area {
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .target-label {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .target-color {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+            border-radius: 20px;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .target-color::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 20px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            z-index: -1;
+        }
+
+        .color-name {
+            font-size: 1.4em;
+            margin-top: 15px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .colors-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            padding: 10px;
+        }
+
+        .color-option {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .color-option::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            border-radius: 15px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.15);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .color-option:hover::before {
+            opacity: 1;
+        }
+
+        .color-option.correct {
+            border-color: #00b894;
+            animation: correctGlow 0.8s ease;
+            transform: scale(1.2);
+        }
+
+        .color-option.incorrect {
+            border-color: #e17055;
+            animation: incorrectPulse 0.6s ease;
+        }
+
+        @keyframes correctGlow {
+            0%, 100% { 
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                border-color: #00b894;
+            }
+            50% { 
+                box-shadow: 0 0 25px #00b894, 0 0 35px #00b894;
+                border-color: #00cec9;
+                transform: scale(1.25);
+            }
+        }
+
+        @keyframes incorrectPulse {
+            0%, 100% { 
+                border-color: #e17055;
+                transform: scale(1);
+            }
+            25% { 
+                border-color: #d63031;
+                transform: scale(0.9);
+            }
+            75% { 
+                border-color: #e17055;
+                transform: scale(1.1);
+            }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #fd79a8, #e84393);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .game-controls {
+            margin-top: 20px;
+        }
+
+        .game-button {
+            background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 20px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            font-family: inherit;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-message {
+            margin: 15px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 30px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .celebration {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            animation: celebrate 1.5s ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes celebrate {
+            0% { 
+                transform: translate(-50%, -50%) scale(0) rotate(0deg); 
+                opacity: 0; 
+            }
+            25% { 
+                transform: translate(-50%, -50%) scale(1.2) rotate(90deg); 
+                opacity: 1; 
+            }
+            75% { 
+                transform: translate(-50%, -50%) scale(1.1) rotate(270deg); 
+                opacity: 1; 
+            }
+            100% { 
+                transform: translate(-50%, -50%) scale(1) rotate(360deg); 
+                opacity: 0; 
+            }
+        }
+
+        .encouragement {
+            color: #fd79a8;
+            font-size: 1.1em;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .rainbow-text {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: rainbowShift 3s ease-in-out infinite;
+        }
+
+        @keyframes rainbowShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">🌈 Color Match</h1>
+        
+        <div class="game-info">
+            <div class="level-display">Level: <span id="levelDisplay">1</span></div>
+            <div class="score-display">Score: <span id="scoreDisplay">0</span></div>
+            <div class="timer-display">Time: <span id="timerDisplay">00:00</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+        </div>
+
+        <div id="targetColorArea" class="target-color-area">
+            <div class="target-label">Find this color:</div>
+            <div id="targetColor" class="target-color"></div>
+            <div id="colorName" class="color-name"></div>
+        </div>
+
+        <div id="colorsGrid" class="colors-grid"></div>
+
+        <div id="gameMessage" class="game-message"></div>
+
+        <div class="game-controls">
+            <button id="startButton" class="game-button">Start Matching!</button>
+            <button id="nextLevelButton" class="game-button hidden">Next Level</button>
+            <button id="restartButton" class="game-button hidden">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state management
+        const gameState = {
+            level: 1,
+            score: 0,
+            currentRound: 0,
+            totalRounds: 6,
+            targetColor: null,
+            colorOptions: [],
+            startTime: null,
+            timer: null,
+            isPlaying: false,
+            correctAnswers: 0
+        };
+
+        // Color definitions with names and hex values
+        const COLORS = [
+            { name: 'Red', hex: '#e74c3c', rgb: 'rgb(231, 76, 60)' },
+            { name: 'Blue', hex: '#3498db', rgb: 'rgb(52, 152, 219)' },
+            { name: 'Green', hex: '#2ecc71', rgb: 'rgb(46, 204, 113)' },
+            { name: 'Yellow', hex: '#f1c40f', rgb: 'rgb(241, 196, 15)' },
+            { name: 'Purple', hex: '#9b59b6', rgb: 'rgb(155, 89, 182)' },
+            { name: 'Orange', hex: '#e67e22', rgb: 'rgb(230, 126, 34)' },
+            { name: 'Pink', hex: '#e91e63', rgb: 'rgb(233, 30, 99)' },
+            { name: 'Cyan', hex: '#1abc9c', rgb: 'rgb(26, 188, 156)' },
+            { name: 'Lime', hex: '#8bc34a', rgb: 'rgb(139, 195, 74)' },
+            { name: 'Indigo', hex: '#673ab7', rgb: 'rgb(103, 58, 183)' },
+            { name: 'Teal', hex: '#009688', rgb: 'rgb(0, 150, 136)' },
+            { name: 'Brown', hex: '#795548', rgb: 'rgb(121, 85, 72)' },
+            { name: 'Gray', hex: '#607d8b', rgb: 'rgb(96, 125, 139)' },
+            { name: 'Coral', hex: '#ff7043', rgb: 'rgb(255, 112, 67)' },
+            { name: 'Violet', hex: '#7c4dff', rgb: 'rgb(124, 77, 255)' }
+        ];
+
+        // Encouraging messages
+        const ENCOURAGEMENT = [
+            "Brilliant! 🌟",
+            "Perfect match! 🎨",
+            "You're amazing! 🌈",
+            "Fantastic eye! 👁️",
+            "Color master! 🏆",
+            "Wonderful! ✨",
+            "Excellent! 🎯",
+            "Super job! 🚀"
+        ];
+
+        // DOM elements
+        const elements = {
+            levelDisplay: document.getElementById('levelDisplay'),
+            scoreDisplay: document.getElementById('scoreDisplay'),
+            timerDisplay: document.getElementById('timerDisplay'),
+            progressFill: document.getElementById('progressFill'),
+            targetColor: document.getElementById('targetColor'),
+            colorName: document.getElementById('colorName'),
+            colorsGrid: document.getElementById('colorsGrid'),
+            gameMessage: document.getElementById('gameMessage'),
+            startButton: document.getElementById('startButton'),
+            nextLevelButton: document.getElementById('nextLevelButton'),
+            restartButton: document.getElementById('restartButton')
+        };
+
+        // Get level from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const levelParam = parseInt(urlParams.get('level')) || 1;
+        gameState.level = levelParam;
+
+        // Initialize game
+        function initGame() {
+            elements.levelDisplay.textContent = gameState.level;
+            elements.scoreDisplay.textContent = gameState.score;
+            updateProgress(0);
+            
+            // Adjust difficulty based on level
+            gameState.totalRounds = Math.min(6 + gameState.level, 10);
+            
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.logDebug(`Color Match Game initialized at level ${gameState.level}`);
+            }
+        }
+
+        // Start game
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.startTime = Date.now();
+            gameState.currentRound = 0;
+            gameState.correctAnswers = 0;
+            
+            elements.startButton.classList.add('hidden');
+            elements.nextLevelButton.classList.add('hidden');
+            elements.restartButton.classList.add('hidden');
+            
+            startTimer();
+            nextRound();
+            
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.updateProgress(10);
+            }
+        }
+
+        // Start next round
+        function nextRound() {
+            if (gameState.currentRound >= gameState.totalRounds) {
+                completeGame();
+                return;
+            }
+            
+            gameState.currentRound++;
+            elements.gameMessage.textContent = `Round ${gameState.currentRound} of ${gameState.totalRounds}`;
+            
+            generateColors();
+            updateProgress((gameState.currentRound / gameState.totalRounds) * 80);
+        }
+
+        // Generate colors for current round
+        function generateColors() {
+            const difficulty = Math.min(gameState.level, 6);
+            const numColors = Math.min(4 + difficulty, 9);
+            
+            // Select target color
+            gameState.targetColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+            
+            // Generate color options (including target)
+            gameState.colorOptions = [gameState.targetColor];
+            
+            // Add random colors
+            while (gameState.colorOptions.length < numColors) {
+                const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+                if (!gameState.colorOptions.some(c => c.hex === randomColor.hex)) {
+                    gameState.colorOptions.push(randomColor);
+                }
+            }
+            
+            // Shuffle colors
+            gameState.colorOptions = shuffleArray(gameState.colorOptions);
+            
+            renderColors();
+        }
+
+        // Render colors on screen
+        function renderColors() {
+            // Display target color
+            elements.targetColor.style.backgroundColor = gameState.targetColor.hex;
+            elements.colorName.textContent = gameState.targetColor.name;
+            
+            // Display color options
+            elements.colorsGrid.innerHTML = '';
+            gameState.colorOptions.forEach((color, index) => {
+                const colorElement = document.createElement('div');
+                colorElement.className = 'color-option';
+                colorElement.style.backgroundColor = color.hex;
+                colorElement.addEventListener('click', () => handleColorClick(color, colorElement));
+                elements.colorsGrid.appendChild(colorElement);
+            });
+        }
+
+        // Handle color click
+        function handleColorClick(selectedColor, element) {
+            if (!gameState.isPlaying) return;
+            
+            const isCorrect = selectedColor.hex === gameState.targetColor.hex;
+            
+            if (isCorrect) {
+                element.classList.add('correct');
+                gameState.correctAnswers++;
+                gameState.score += 15 + (gameState.level * 5);
+                elements.scoreDisplay.textContent = gameState.score;
+                
+                const encouragement = ENCOURAGEMENT[Math.floor(Math.random() * ENCOURAGEMENT.length)];
+                elements.gameMessage.innerHTML = `<div class="encouragement rainbow-text">${encouragement}</div>`;
+                
+                showCelebration('🎨');
+                
+                setTimeout(() => {
+                    nextRound();
+                }, 1200);
+                
+            } else {
+                element.classList.add('incorrect');
+                elements.gameMessage.textContent = `Try again! Look for ${gameState.targetColor.name}`;
+                
+                // Show correct color briefly
+                setTimeout(() => {
+                    const correctElement = Array.from(elements.colorsGrid.children)
+                        .find(el => el.style.backgroundColor === gameState.targetColor.rgb);
+                    if (correctElement) {
+                        correctElement.style.borderColor = '#00b894';
+                        correctElement.style.transform = 'scale(1.15)';
+                        correctElement.style.boxShadow = '0 0 20px #00b894';
+                    }
+                }, 300);
+                
+                setTimeout(() => {
+                    nextRound();
+                }, 2000);
+            }
+            
+            // Update progress
+            if (typeof MerlinGameBridge !== 'undefined') {
+                const progress = Math.min(90, (gameState.currentRound / gameState.totalRounds) * 80 + 10);
+                MerlinGameBridge.updateProgress(Math.floor(progress));
+            }
+        }
+
+        // Complete game
+        function completeGame() {
+            const timeElapsed = Date.now() - gameState.startTime;
+            const accuracy = (gameState.correctAnswers / gameState.totalRounds) * 100;
+            const timeBonus = Math.max(0, 120000 - timeElapsed) / 1000 * 2; // Bonus for speed
+            const finalScore = gameState.score + Math.floor(timeBonus);
+            
+            gameState.score = finalScore;
+            elements.scoreDisplay.textContent = gameState.score;
+            
+            stopTimer();
+            updateProgress(100);
+            
+            const success = accuracy >= 60; // 60% accuracy required
+            
+            if (success) {
+                elements.gameMessage.innerHTML = `
+                    <div class="encouragement rainbow-text">Fantastic! 🌈</div>
+                    <div>You matched ${gameState.correctAnswers} out of ${gameState.totalRounds} colors!</div>
+                `;
+                elements.nextLevelButton.classList.remove('hidden');
+                showCelebration('🏆');
+            } else {
+                elements.gameMessage.innerHTML = `
+                    <div>Keep practicing! 🎨</div>
+                    <div>You matched ${gameState.correctAnswers} out of ${gameState.totalRounds} colors!</div>
+                `;
+            }
+            
+            elements.restartButton.classList.remove('hidden');
+            gameState.isPlaying = false;
+            
+            // Clear color area
+            elements.colorsGrid.innerHTML = '';
+            
+            // Report to native app
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.gameCompleted(success, timeElapsed, gameState.score);
+            }
+        }
+
+        // Show celebration animation
+        function showCelebration(emoji) {
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            celebration.textContent = emoji;
+            document.querySelector('.game-container').appendChild(celebration);
+            
+            setTimeout(() => {
+                celebration.remove();
+            }, 1500);
+        }
+
+        // Next level
+        function nextLevel() {
+            gameState.level++;
+            gameState.score = 0;
+            elements.levelDisplay.textContent = gameState.level;
+            elements.scoreDisplay.textContent = gameState.score;
+            startGame();
+        }
+
+        // Restart game
+        function restartGame() {
+            gameState.score = 0;
+            gameState.level = levelParam;
+            elements.scoreDisplay.textContent = gameState.score;
+            elements.levelDisplay.textContent = gameState.level;
+            elements.startButton.classList.remove('hidden');
+            elements.nextLevelButton.classList.add('hidden');
+            elements.restartButton.classList.add('hidden');
+            elements.gameMessage.textContent = '';
+            updateProgress(0);
+            elements.colorsGrid.innerHTML = '';
+            elements.targetColor.style.backgroundColor = '';
+            elements.colorName.textContent = '';
+        }
+
+        // Timer functions
+        function startTimer() {
+            gameState.timer = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+        }
+
+        function updateTimer() {
+            if (!gameState.startTime) return;
+            
+            const elapsed = Date.now() - gameState.startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            elements.timerDisplay.textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Update progress bar
+        function updateProgress(percent) {
+            elements.progressFill.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+        }
+
+        // Utility function to shuffle array
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Event listeners
+        elements.startButton.addEventListener('click', startGame);
+        elements.nextLevelButton.addEventListener('click', nextLevel);
+        elements.restartButton.addEventListener('click', restartGame);
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+
+        // Prevent context menu and text selection
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('selectstart', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && gameState.isPlaying) {
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    MerlinGameBridge.logDebug('Color Match Game paused - app in background');
+                }
+            }
+        });
+
+        // Error handling
+        window.addEventListener('error', (event) => {
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.reportError(`Color Match Error: ${event.message}`);
+            }
+        });
+
+        // Log game ready
+        if (typeof MerlinGameBridge !== 'undefined') {
+            MerlinGameBridge.logDebug('Color Match Game loaded successfully');
+        }
+    </script>
+</body>
+</html> 

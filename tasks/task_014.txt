@@ -1,0 +1,50 @@
+# Task ID: 14
+# Title: Telemetry and Analytics System
+# Status: pending
+# Dependencies: 3, 8, 9
+# Priority: low
+# Description: Implement the optional telemetry system to capture interaction metrics and generate weekly PDF reports for parents.
+# Details:
+1. Create telemetry manager:
+```kotlin
+class TelemetryManager(private val database: MerlinDatabase) {
+    suspend fun recordTaskLatency(childId: Long, taskId: String, latencyMs: Long) {
+        // Store task latency in database
+    }
+    
+    suspend fun recordUnlockSuccess(childId: Long, success: Boolean) {
+        // Store unlock attempt result
+    }
+    
+    suspend fun recordTaskAbandonment(childId: Long, taskId: String) {
+        // Record that a task was abandoned
+    }
+    
+    suspend fun generateWeeklyReport(childId: Long): File {
+        // Generate PDF report using Apache PDFBox
+        val reportFile = File(context.filesDir, "report_${childId}_${System.currentTimeMillis()}.pdf")
+        
+        PDDocument().use { document ->
+            val page = PDPage(PDRectangle.A4)
+            document.addPage(page)
+            
+            // Add report content
+            PDPageContentStream(document, page).use { contentStream ->
+                // Add text and charts to PDF
+            }
+            
+            document.save(reportFile)
+        }
+        
+        return reportFile
+    }
+}
+```
+
+2. Implement opt-in mechanism for telemetry collection
+3. Create WorkManager task for weekly report generation
+4. Implement ShareSheet integration for report sharing
+5. Add data visualization in PDF reports
+
+# Test Strategy:
+Test telemetry recording with sample interactions. Verify PDF generation with different data sets. Test opt-in/opt-out functionality. Verify WorkManager schedules reports correctly.

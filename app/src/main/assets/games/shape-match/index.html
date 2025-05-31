@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape Match Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 95%;
+            position: relative;
+        }
+
+        .game-title {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .level-display {
+            color: #4ecdc4;
+        }
+
+        .score-display {
+            color: #45b7d1;
+        }
+
+        .timer-display {
+            color: #f39c12;
+        }
+
+        .target-shape-area {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .target-label {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .target-shape {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .shapes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            padding: 10px;
+        }
+
+        .shape-option {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            margin: 0 auto;
+        }
+
+        .shape-option:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .shape-option.correct {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            border-color: #2E7D32;
+            animation: correctPulse 0.6s ease;
+        }
+
+        .shape-option.incorrect {
+            background: linear-gradient(135deg, #F44336, #E57373);
+            border-color: #C62828;
+            animation: incorrectShake 0.6s ease;
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 15px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .game-controls {
+            margin-top: 20px;
+        }
+
+        .game-button {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 20px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            font-family: inherit;
+        }
+
+        .game-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-message {
+            margin: 15px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-height: 25px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .celebration {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            animation: celebrate 1s ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes celebrate {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+
+        /* Shape colors */
+        .shape-red { background: linear-gradient(135deg, #ff6b6b, #ee5a52); }
+        .shape-blue { background: linear-gradient(135deg, #4ecdc4, #44a08d); }
+        .shape-green { background: linear-gradient(135deg, #95e1d3, #fce38a); }
+        .shape-purple { background: linear-gradient(135deg, #a8edea, #fed6e3); }
+        .shape-orange { background: linear-gradient(135deg, #ffecd2, #fcb69f); }
+        .shape-yellow { background: linear-gradient(135deg, #fff9c4, #f9e79f); }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">🔷 Shape Match</h1>
+        
+        <div class="game-info">
+            <div class="level-display">Level: <span id="levelDisplay">1</span></div>
+            <div class="score-display">Score: <span id="scoreDisplay">0</span></div>
+            <div class="timer-display">Time: <span id="timerDisplay">00:00</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+        </div>
+
+        <div id="targetShapeArea" class="target-shape-area">
+            <div class="target-label">Find this shape:</div>
+            <div id="targetShape" class="target-shape"></div>
+        </div>
+
+        <div id="shapesGrid" class="shapes-grid"></div>
+
+        <div id="gameMessage" class="game-message"></div>
+
+        <div class="game-controls">
+            <button id="startButton" class="game-button">Start Game</button>
+            <button id="nextLevelButton" class="game-button hidden">Next Level</button>
+            <button id="restartButton" class="game-button hidden">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state management (React-style)
+        const gameState = {
+            level: 1,
+            score: 0,
+            currentRound: 0,
+            totalRounds: 5,
+            targetShape: null,
+            shapes: [],
+            startTime: null,
+            timer: null,
+            isPlaying: false,
+            correctAnswers: 0
+        };
+
+        // Shape definitions with emojis and colors
+        const SHAPES = [
+            { emoji: '🔴', name: 'circle', color: 'shape-red' },
+            { emoji: '🔵', name: 'circle', color: 'shape-blue' },
+            { emoji: '🟢', name: 'circle', color: 'shape-green' },
+            { emoji: '🟡', name: 'circle', color: 'shape-yellow' },
+            { emoji: '🟠', name: 'circle', color: 'shape-orange' },
+            { emoji: '🟣', name: 'circle', color: 'shape-purple' },
+            { emoji: '🔺', name: 'triangle', color: 'shape-red' },
+            { emoji: '🔻', name: 'triangle', color: 'shape-blue' },
+            { emoji: '⬜', name: 'square', color: 'shape-blue' },
+            { emoji: '🟦', name: 'square', color: 'shape-blue' },
+            { emoji: '🟩', name: 'square', color: 'shape-green' },
+            { emoji: '🟨', name: 'square', color: 'shape-yellow' },
+            { emoji: '🟧', name: 'square', color: 'shape-orange' },
+            { emoji: '🟪', name: 'square', color: 'shape-purple' },
+            { emoji: '💎', name: 'diamond', color: 'shape-blue' },
+            { emoji: '⭐', name: 'star', color: 'shape-yellow' },
+            { emoji: '❤️', name: 'heart', color: 'shape-red' },
+            { emoji: '🌟', name: 'star', color: 'shape-yellow' }
+        ];
+
+        // DOM elements
+        const elements = {
+            levelDisplay: document.getElementById('levelDisplay'),
+            scoreDisplay: document.getElementById('scoreDisplay'),
+            timerDisplay: document.getElementById('timerDisplay'),
+            progressFill: document.getElementById('progressFill'),
+            targetShape: document.getElementById('targetShape'),
+            shapesGrid: document.getElementById('shapesGrid'),
+            gameMessage: document.getElementById('gameMessage'),
+            startButton: document.getElementById('startButton'),
+            nextLevelButton: document.getElementById('nextLevelButton'),
+            restartButton: document.getElementById('restartButton')
+        };
+
+        // Get level from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const levelParam = parseInt(urlParams.get('level')) || 1;
+        gameState.level = levelParam;
+
+        // Initialize game
+        function initGame() {
+            elements.levelDisplay.textContent = gameState.level;
+            elements.scoreDisplay.textContent = gameState.score;
+            updateProgress(0);
+            
+            // Adjust difficulty based on level
+            gameState.totalRounds = Math.min(5 + gameState.level, 10);
+            
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.logDebug(`Shape Match Game initialized at level ${gameState.level}`);
+            }
+        }
+
+        // Start game
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.startTime = Date.now();
+            gameState.currentRound = 0;
+            gameState.correctAnswers = 0;
+            
+            elements.startButton.classList.add('hidden');
+            elements.nextLevelButton.classList.add('hidden');
+            elements.restartButton.classList.add('hidden');
+            
+            startTimer();
+            nextRound();
+            
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.updateProgress(10);
+            }
+        }
+
+        // Start next round
+        function nextRound() {
+            if (gameState.currentRound >= gameState.totalRounds) {
+                completeGame();
+                return;
+            }
+            
+            gameState.currentRound++;
+            elements.gameMessage.textContent = `Round ${gameState.currentRound} of ${gameState.totalRounds}`;
+            
+            generateShapes();
+            updateProgress((gameState.currentRound / gameState.totalRounds) * 80);
+        }
+
+        // Generate shapes for current round
+        function generateShapes() {
+            const difficulty = Math.min(gameState.level, 6);
+            const numShapes = Math.min(3 + difficulty, 9);
+            
+            // Select target shape
+            gameState.targetShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+            
+            // Generate shape options (including target)
+            gameState.shapes = [gameState.targetShape];
+            
+            // Add random shapes
+            while (gameState.shapes.length < numShapes) {
+                const randomShape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+                if (!gameState.shapes.some(s => s.emoji === randomShape.emoji)) {
+                    gameState.shapes.push(randomShape);
+                }
+            }
+            
+            // Shuffle shapes
+            gameState.shapes = shuffleArray(gameState.shapes);
+            
+            renderShapes();
+        }
+
+        // Render shapes on screen
+        function renderShapes() {
+            // Display target shape
+            elements.targetShape.textContent = gameState.targetShape.emoji;
+            elements.targetShape.className = `target-shape ${gameState.targetShape.color}`;
+            
+            // Display shape options
+            elements.shapesGrid.innerHTML = '';
+            gameState.shapes.forEach((shape, index) => {
+                const shapeElement = document.createElement('div');
+                shapeElement.className = `shape-option ${shape.color}`;
+                shapeElement.textContent = shape.emoji;
+                shapeElement.addEventListener('click', () => handleShapeClick(shape, shapeElement));
+                elements.shapesGrid.appendChild(shapeElement);
+            });
+        }
+
+        // Handle shape click
+        function handleShapeClick(shape, element) {
+            if (!gameState.isPlaying) return;
+            
+            const isCorrect = shape.emoji === gameState.targetShape.emoji;
+            
+            if (isCorrect) {
+                element.classList.add('correct');
+                gameState.correctAnswers++;
+                gameState.score += 10 + (gameState.level * 5);
+                elements.scoreDisplay.textContent = gameState.score;
+                
+                showCelebration('🎉');
+                
+                setTimeout(() => {
+                    nextRound();
+                }, 800);
+                
+            } else {
+                element.classList.add('incorrect');
+                elements.gameMessage.textContent = 'Try again!';
+                
+                setTimeout(() => {
+                    element.classList.remove('incorrect');
+                    elements.gameMessage.textContent = `Round ${gameState.currentRound} of ${gameState.totalRounds}`;
+                }, 600);
+            }
+            
+            // Update progress
+            if (typeof MerlinGameBridge !== 'undefined') {
+                const progress = Math.min(90, (gameState.currentRound / gameState.totalRounds) * 80 + 10);
+                MerlinGameBridge.updateProgress(Math.floor(progress));
+            }
+        }
+
+        // Complete game
+        function completeGame() {
+            const timeElapsed = Date.now() - gameState.startTime;
+            const accuracy = (gameState.correctAnswers / gameState.totalRounds) * 100;
+            const timeBonus = Math.max(0, 60000 - timeElapsed) / 1000 * 5; // Bonus for speed
+            const finalScore = gameState.score + Math.floor(timeBonus);
+            
+            gameState.score = finalScore;
+            elements.scoreDisplay.textContent = gameState.score;
+            
+            stopTimer();
+            updateProgress(100);
+            
+            const success = accuracy >= 60; // 60% accuracy required
+            
+            if (success) {
+                elements.gameMessage.textContent = `Level Complete! Accuracy: ${accuracy.toFixed(0)}%`;
+                elements.nextLevelButton.classList.remove('hidden');
+                showCelebration('🏆');
+            } else {
+                elements.gameMessage.textContent = `Try again! Accuracy: ${accuracy.toFixed(0)}% (Need 60%)`;
+            }
+            
+            elements.restartButton.classList.remove('hidden');
+            gameState.isPlaying = false;
+            
+            // Report to native app
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.gameCompleted(success, timeElapsed, gameState.score);
+            }
+        }
+
+        // Show celebration animation
+        function showCelebration(emoji) {
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            celebration.textContent = emoji;
+            document.querySelector('.game-container').appendChild(celebration);
+            
+            setTimeout(() => {
+                celebration.remove();
+            }, 1000);
+        }
+
+        // Next level
+        function nextLevel() {
+            gameState.level++;
+            gameState.score = 0;
+            elements.levelDisplay.textContent = gameState.level;
+            elements.scoreDisplay.textContent = gameState.score;
+            startGame();
+        }
+
+        // Restart game
+        function restartGame() {
+            gameState.score = 0;
+            gameState.level = levelParam;
+            elements.scoreDisplay.textContent = gameState.score;
+            elements.levelDisplay.textContent = gameState.level;
+            elements.startButton.classList.remove('hidden');
+            elements.nextLevelButton.classList.add('hidden');
+            elements.restartButton.classList.add('hidden');
+            elements.gameMessage.textContent = '';
+            updateProgress(0);
+            elements.shapesGrid.innerHTML = '';
+            elements.targetShape.textContent = '';
+        }
+
+        // Timer functions
+        function startTimer() {
+            gameState.timer = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+        }
+
+        function updateTimer() {
+            if (!gameState.startTime) return;
+            
+            const elapsed = Date.now() - gameState.startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            elements.timerDisplay.textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Update progress bar
+        function updateProgress(percent) {
+            elements.progressFill.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+        }
+
+        // Utility function to shuffle array
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Event listeners
+        elements.startButton.addEventListener('click', startGame);
+        elements.nextLevelButton.addEventListener('click', nextLevel);
+        elements.restartButton.addEventListener('click', restartGame);
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+
+        // Prevent context menu and text selection
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('selectstart', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && gameState.isPlaying) {
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    MerlinGameBridge.logDebug('Shape Match Game paused - app in background');
+                }
+            }
+        });
+
+        // Error handling
+        window.addEventListener('error', (event) => {
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.reportError(`Shape Match Error: ${event.message}`);
+            }
+        });
+
+        // Log game ready
+        if (typeof MerlinGameBridge !== 'undefined') {
+            MerlinGameBridge.logDebug('Shape Match Game loaded successfully');
+        }
+    </script>
+</body>
+</html> 

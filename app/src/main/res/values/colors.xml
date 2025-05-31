@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 🌿 SOPHISTICATED COOL PALETTE 🌿 -->
+    
+    <!-- Legacy Material colors -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- 🌊 PRIMARY COOL COLORS 🌊 -->
+    <color name="deep_ocean">#FF1E3A8A</color>
+    <color name="wisdom_blue">#FF3B82F6</color>
+    <color name="forest_green">#FF065F46</color>
+    <color name="sage_green">#FF10B981</color>
+    <color name="royal_purple">#FF7C3AED</color>
+    <color name="lavender_mist">#FF8B5CF6</color>
+    
+    <!-- 🌿 NATURE-INSPIRED COLORS 🌿 -->
+    <color name="moonlight_silver">#FF64748B</color>
+    <color name="ivory_white">#FFFFFBEB</color>
+    <color name="stormy_gray">#FF475569</color>
+    <color name="midnight_navy">#FF1E293B</color>
+    
+    <!-- ✨ GENTLE ACCENT COLORS ✨ -->
+    <color name="amber_glow">#FFF59E0B</color>
+    <color name="warm_terracotta">#FFEA580C</color>
+    <color name="cloudy_sky">#FFE2E8F0</color>
+    
+    <!-- 🌫️ BACKGROUND GRADIENTS 🌫️ -->
+    <color name="misty_blue">#FFDDD6FE</color>
+    <color name="seafoam_mist">#FFD1FAE5</color>
+    <color name="ice_blue">#FFDBEAFE</color>
+    
+    <!-- Compatibility aliases -->
+    <color name="magical_blue">#FF3B82F6</color>
+    <color name="magical_purple">#FF7C3AED</color>
+    <color name="enchanted_indigo">#FF1E3A8A</color>
+</resources> 

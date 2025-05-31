@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merlin Sample Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+            user-select: none;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .game-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-info {
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 30px 0;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .game-tile {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .game-tile:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .game-tile.correct {
+            background: rgba(76, 175, 80, 0.8);
+            border-color: #4CAF50;
+        }
+
+        .game-tile.incorrect {
+            background: rgba(244, 67, 54, 0.8);
+            border-color: #F44336;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .game-button {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .game-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .score-display {
+            font-size: 1.5em;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .timer {
+            font-size: 1.3em;
+            margin: 15px 0;
+            color: #FFD700;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1 class="game-title">🧙‍♂️ Merlin's Memory</h1>
+        
+        <div id="gameInfo" class="game-info">
+            <div>Level: <span id="levelDisplay">1</span></div>
+            <div class="timer">Time: <span id="timerDisplay">00:00</span></div>
+            <div class="score-display">Score: <span id="scoreDisplay">0</span></div>
+        </div>
+
+        <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+        </div>
+
+        <div id="gameBoard" class="game-board"></div>
+
+        <div id="gameControls">
+            <button id="startButton" class="game-button">Start Game</button>
+            <button id="nextLevelButton" class="game-button hidden">Next Level</button>
+            <button id="restartButton" class="game-button hidden">Play Again</button>
+        </div>
+
+        <div id="gameMessage" class="game-info" style="margin-top: 20px; min-height: 30px;"></div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            level: 1,
+            score: 0,
+            sequence: [],
+            playerSequence: [],
+            currentStep: 0,
+            isPlaying: false,
+            isShowingSequence: false,
+            startTime: null,
+            timer: null
+        };
+
+        // Get level from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const levelParam = parseInt(urlParams.get('level')) || 1;
+        gameState.level = levelParam;
+
+        // DOM elements
+        const elements = {
+            levelDisplay: document.getElementById('levelDisplay'),
+            timerDisplay: document.getElementById('timerDisplay'),
+            scoreDisplay: document.getElementById('scoreDisplay'),
+            progressFill: document.getElementById('progressFill'),
+            gameBoard: document.getElementById('gameBoard'),
+            startButton: document.getElementById('startButton'),
+            nextLevelButton: document.getElementById('nextLevelButton'),
+            restartButton: document.getElementById('restartButton'),
+            gameMessage: document.getElementById('gameMessage')
+        };
+
+        // Initialize game
+        function initGame() {
+            elements.levelDisplay.textContent = gameState.level;
+            elements.scoreDisplay.textContent = gameState.score;
+            createGameBoard();
+            updateProgress(0);
+            
+            // Log to native app
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.logDebug(`Game initialized at level ${gameState.level}`);
+            }
+        }
+
+        // Create game board
+        function createGameBoard() {
+            elements.gameBoard.innerHTML = '';
+            const boardSize = Math.min(3 + Math.floor(gameState.level / 3), 6); // Increase complexity with level
+            elements.gameBoard.style.gridTemplateColumns = `repeat(${Math.min(boardSize, 4)}, 1fr)`;
+            
+            for (let i = 0; i < boardSize * boardSize; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'game-tile';
+                tile.dataset.index = i;
+                tile.addEventListener('click', () => handleTileClick(i));
+                elements.gameBoard.appendChild(tile);
+            }
+        }
+
+        // Start game
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.startTime = Date.now();
+            gameState.sequence = [];
+            gameState.playerSequence = [];
+            gameState.currentStep = 0;
+            
+            elements.startButton.classList.add('hidden');
+            elements.nextLevelButton.classList.add('hidden');
+            elements.restartButton.classList.add('hidden');
+            elements.gameMessage.textContent = 'Watch the sequence...';
+            
+            startTimer();
+            generateSequence();
+            showSequence();
+            
+            // Report progress to native app
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.updateProgress(10);
+            }
+        }
+
+        // Generate sequence based on level
+        function generateSequence() {
+            const sequenceLength = 3 + gameState.level;
+            const tiles = elements.gameBoard.children;
+            
+            for (let i = 0; i < sequenceLength; i++) {
+                gameState.sequence.push(Math.floor(Math.random() * tiles.length));
+            }
+        }
+
+        // Show sequence to player
+        async function showSequence() {
+            gameState.isShowingSequence = true;
+            const tiles = elements.gameBoard.children;
+            
+            for (let i = 0; i < gameState.sequence.length; i++) {
+                await new Promise(resolve => setTimeout(resolve, 600));
+                
+                const tileIndex = gameState.sequence[i];
+                const tile = tiles[tileIndex];
+                
+                tile.style.background = 'rgba(255, 255, 255, 0.8)';
+                tile.style.transform = 'scale(1.1)';
+                
+                await new Promise(resolve => setTimeout(resolve, 400));
+                
+                tile.style.background = '';
+                tile.style.transform = '';
+            }
+            
+            gameState.isShowingSequence = false;
+            elements.gameMessage.textContent = 'Now repeat the sequence!';
+            
+            // Update progress
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.updateProgress(30);
+            }
+        }
+
+        // Handle tile click
+        function handleTileClick(index) {
+            if (!gameState.isPlaying || gameState.isShowingSequence) return;
+            
+            const tile = elements.gameBoard.children[index];
+            gameState.playerSequence.push(index);
+            
+            // Check if correct
+            const isCorrect = index === gameState.sequence[gameState.currentStep];
+            
+            if (isCorrect) {
+                tile.classList.add('correct');
+                gameState.currentStep++;
+                
+                // Update progress
+                const progress = 30 + (gameState.currentStep / gameState.sequence.length) * 60;
+                updateProgress(progress);
+                
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    MerlinGameBridge.updateProgress(Math.floor(progress));
+                }
+                
+                // Check if sequence complete
+                if (gameState.currentStep >= gameState.sequence.length) {
+                    setTimeout(() => completeLevel(), 500);
+                }
+            } else {
+                tile.classList.add('incorrect');
+                setTimeout(() => gameOver(), 500);
+            }
+            
+            setTimeout(() => {
+                tile.classList.remove('correct', 'incorrect');
+            }, 300);
+        }
+
+        // Complete level
+        function completeLevel() {
+            const timeElapsed = Date.now() - gameState.startTime;
+            const timeBonus = Math.max(0, 30000 - timeElapsed) / 1000 * 10; // Bonus for speed
+            const levelScore = 100 + timeBonus + (gameState.level * 25);
+            
+            gameState.score += Math.floor(levelScore);
+            elements.scoreDisplay.textContent = gameState.score;
+            
+            stopTimer();
+            updateProgress(100);
+            
+            elements.gameMessage.textContent = `Level ${gameState.level} Complete! +${Math.floor(levelScore)} points`;
+            elements.nextLevelButton.classList.remove('hidden');
+            elements.restartButton.classList.remove('hidden');
+            
+            gameState.isPlaying = false;
+            
+            // Report completion to native app
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.gameCompleted(true, timeElapsed, gameState.score);
+            }
+        }
+
+        // Game over
+        function gameOver() {
+            const timeElapsed = Date.now() - gameState.startTime;
+            
+            stopTimer();
+            elements.gameMessage.textContent = 'Game Over! Try again.';
+            elements.restartButton.classList.remove('hidden');
+            
+            gameState.isPlaying = false;
+            
+            // Report failure to native app
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.gameCompleted(false, timeElapsed, gameState.score);
+            }
+        }
+
+        // Next level
+        function nextLevel() {
+            gameState.level++;
+            elements.levelDisplay.textContent = gameState.level;
+            createGameBoard();
+            startGame();
+        }
+
+        // Restart game
+        function restartGame() {
+            gameState.score = 0;
+            gameState.level = levelParam;
+            elements.scoreDisplay.textContent = gameState.score;
+            elements.levelDisplay.textContent = gameState.level;
+            createGameBoard();
+            elements.startButton.classList.remove('hidden');
+            elements.nextLevelButton.classList.add('hidden');
+            elements.restartButton.classList.add('hidden');
+            elements.gameMessage.textContent = '';
+            updateProgress(0);
+        }
+
+        // Timer functions
+        function startTimer() {
+            gameState.timer = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (gameState.timer) {
+                clearInterval(gameState.timer);
+                gameState.timer = null;
+            }
+        }
+
+        function updateTimer() {
+            if (!gameState.startTime) return;
+            
+            const elapsed = Date.now() - gameState.startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            elements.timerDisplay.textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Update progress bar
+        function updateProgress(percent) {
+            elements.progressFill.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+        }
+
+        // Event listeners
+        elements.startButton.addEventListener('click', startGame);
+        elements.nextLevelButton.addEventListener('click', nextLevel);
+        elements.restartButton.addEventListener('click', restartGame);
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+
+        // Prevent context menu and text selection
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('selectstart', e => e.preventDefault());
+        document.addEventListener('dragstart', e => e.preventDefault());
+
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && gameState.isPlaying) {
+                // Pause game when app goes to background
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    MerlinGameBridge.logDebug('Game paused - app in background');
+                }
+            }
+        });
+
+        // Error handling
+        window.addEventListener('error', (event) => {
+            if (typeof MerlinGameBridge !== 'undefined') {
+                MerlinGameBridge.reportError(`JavaScript Error: ${event.message}`);
+            }
+        });
+
+        // Log game ready
+        if (typeof MerlinGameBridge !== 'undefined') {
+            MerlinGameBridge.logDebug('Merlin Memory Game loaded successfully');
+        }
+    </script>
+</body>
+</html> 

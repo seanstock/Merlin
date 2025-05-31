@@ -1,0 +1,52 @@
+# Task ID: 18
+# Title: UI Design and Implementation
+# Status: pending
+# Dependencies: 1, 2, 6, 11
+# Priority: medium
+# Description: Design and implement the user interface for the lock screen, AI interaction, and game presentation using Jetpack Compose.
+# Details:
+1. Create lock screen UI:
+```kotlin
+@Composable
+fun LockScreen(viewModel: LockScreenViewModel) {
+    val state by viewModel.state.collectAsState()
+    
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background
+        Image(
+            painter = painterResource(id = R.drawable.lock_background),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+        
+        // Content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // AI interaction or game content
+            when (state.screenType) {
+                ScreenType.AI_CHAT -> AIChatScreen(state.chatState)
+                ScreenType.GAME -> GameContainer(state.gameState)
+                ScreenType.TASK -> TaskScreen(state.taskState)
+            }
+            
+            // Wallet display
+            WalletDisplay(state.screenTimeBalance)
+        }
+    }
+}
+```
+
+2. Implement AI chat interface
+3. Create game container UI
+4. Design task presentation screens
+5. Implement wallet and rewards display
+6. Add animations and transitions for engagement
+
+# Test Strategy:
+Test UI rendering on different screen sizes and orientations. Verify accessibility features work with UI components. Test animations for performance. Verify UI state transitions occur correctly.

@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "generatedAt": "2025-05-27T22:44:27.745Z",
+    "tasksAnalyzed": 1,
+    "totalTasks": 20,
+    "analysisCount": 4,
+    "thresholdScore": 5,
+    "projectName": "Taskmaster",
+    "usedResearch": true
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 2,
+      "taskTitle": "Implement Lock Screen Overlay Service",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down the implementation of a persistent lock screen overlay service into subtasks covering: AccessibilityService setup, SYSTEM_ALERT_WINDOW permission handling, overlay UI design and WindowManager integration, BroadcastReceiver for screen events, overlay persistence and bypass prevention, foreground service for reliability, and comprehensive multi-version/device testing.",
+      "reasoning": "This task involves advanced Android components (AccessibilityService, SYSTEM_ALERT_WINDOW overlays, foreground services), requires handling security-sensitive features, and must ensure robustness against bypass attempts. It also demands compatibility across multiple Android versions and device configurations, increasing complexity. Each major component (service, overlay, event handling, persistence, testing) warrants its own subtask for clarity and manageability."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Database Schema Implementation with Room and SQLCipher",
+      "complexityScore": 8,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down the Room and SQLCipher database implementation into detailed subtasks covering: 1) SQLCipher integration setup, 2) Entity class creation, 3) DAO implementation, 4) Encryption key management, 5) Repository layer implementation, 6) Migration strategy, and 7) Performance optimization considering indexed vs non-indexed queries",
+      "reasoning": "This task involves complex database architecture with encryption that requires specialized knowledge. The performance impact of SQLCipher (25% slower inserts, 5% slower indexed queries, up to 10x slower non-indexed queries) necessitates careful optimization. The task requires implementing multiple entities, DAOs, encryption with secure key storage, migration strategies, and repository patterns. The SQLCipher integration adds significant complexity, especially considering the performance considerations and proper key management needed for secure implementation."
+    },
+    {
+      "taskId": 17,
+      "taskTitle": "Compliance and Privacy Implementation",
+      "complexityScore": 9,
+      "recommendedSubtasks": 7,
+      "expansionPrompt": "Break down the implementation of COPPA and GDPR-K compliance features, data purging, and privacy policy display into detailed subtasks. Include subtasks for designing and implementing the data retention manager, integrating scheduled data purging with WorkManager, creating the privacy policy UI, developing the parental consent flow, implementing data export and deletion for GDPR, and ensuring thorough testing and documentation.",
+      "reasoning": "This task involves multiple regulatory frameworks (COPPA, GDPR-K), each with distinct requirements, and covers both backend (data retention, purging, export, deletion) and frontend (privacy policy display, consent flows) components. The need for secure, auditable, and user-friendly implementations, as well as comprehensive testing, increases complexity. Given the breadth and depth of compliance, privacy, and technical integration, the task is best managed by dividing it into at least seven subtasks to ensure clarity, maintainability, and regulatory adherence."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "OpenAI Integration and API Client",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the OpenAI Integration and API Client task into subtasks covering: 1) API client wrapper implementation with authentication, 2) function calling mechanism for game launching, 3) conversation context management with rolling window, 4) error handling and retry logic, and 5) response caching system. For each subtask, include implementation details, testing approach, and acceptance criteria.",
+      "reasoning": "This task involves complex API integration with OpenAI, requiring specialized knowledge of function calling, context management, error handling, and caching. The code snippets show Kotlin implementation needs with multiple components. The complexity comes from maintaining conversation context, implementing proper error handling for API failures, and optimizing with caching. The task has high priority and dependencies on other components, suggesting it's a critical part of the system architecture."
+    }
+  ]
+}
