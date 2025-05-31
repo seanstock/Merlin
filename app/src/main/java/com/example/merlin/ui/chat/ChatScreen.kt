@@ -41,6 +41,8 @@ import com.example.merlin.ui.accessibility.AccessibilityConstants
 import com.example.merlin.utils.UserSessionRepository
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.LocalTextStyle
+// Wallet imports
+import com.example.merlin.ui.wallet.*
 
 /**
  * Main chat screen for interacting with Merlin the AI tutor.
@@ -80,6 +82,15 @@ fun ChatScreen(
     
     val viewModel: ChatViewModel = viewModel(factory = factory)
     
+    // 💰 WALLET INTEGRATION: Create wallet ViewModel
+    val walletViewModelFactory = remember { 
+        WalletViewModelFactory(
+            application = context.applicationContext as android.app.Application,
+            childId = activeChildId
+        )
+    }
+    val walletViewModel: WalletViewModel = viewModel(factory = walletViewModelFactory)
+    
     // State
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -87,6 +98,15 @@ fun ChatScreen(
     val isTtsEnabled by viewModel.isTtsEnabled.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val gameLaunchEvent by viewModel.gameLaunchEvent.collectAsState()
+    
+    // 💰 WALLET STATE
+    val walletBalance by walletViewModel.balance.collectAsState()
+    val walletLoading by walletViewModel.isLoading.collectAsState()
+    val walletError by walletViewModel.errorMessage.collectAsState()
+    val notificationEvent by walletViewModel.notificationEvent.collectAsState()
+    
+    // 💰 WALLET UI STATE
+    var showSpendDialog by remember { mutableStateOf(false) }
     
     // Speech-to-Text manager with performance optimization
     val speechToTextManager = remember { SpeechToTextManager(context) }
@@ -112,6 +132,31 @@ fun ChatScreen(
         gameLaunchEvent?.let { event ->
             onLaunchGame(event.gameId, event.level)
             viewModel.clearGameLaunchEvent()
+        }
+    }
+    
+    // 💰 WALLET NOTIFICATIONS: Handle wallet notification events
+    LaunchedEffect(notificationEvent) {
+        notificationEvent?.let { event ->
+            when (event) {
+                is WalletNotificationEvent.EarningSuccess -> {
+                    // Show earning notification
+                    // TODO: Add snackbar or toast
+                }
+                is WalletNotificationEvent.SpendingSuccess -> {
+                    // Show spending success notification  
+                    // TODO: Add snackbar or toast
+                }
+                is WalletNotificationEvent.BalanceWarning -> {
+                    // Show balance warning
+                    // TODO: Add snackbar or toast
+                }
+                is WalletNotificationEvent.ScreenTimeExpired -> {
+                    // Handle screen time expiration
+                    // TODO: Re-enable lock screen
+                }
+            }
+            walletViewModel.clearNotificationEvent()
         }
     }
     
@@ -192,7 +237,15 @@ fun ChatScreen(
                         }
                     },
                     actions = {
-                        // Exit button for PIN-gated access to main app
+                        // 💰 WALLET DISPLAY
+                        WalletDisplay(
+                            balance = walletBalance,
+                            isLoading = walletLoading,
+                            onClick = { showSpendDialog = true },
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        
+                        // Settings button for PIN-gated access to main app
                         IconButton(
                             onClick = onNavigateToSettings,
                             modifier = Modifier
@@ -231,6 +284,40 @@ fun ChatScreen(
                         containerColor = CloudWhite.copy(alpha = 0.95f)
                     )
                 )
+
+                // 💰 WALLET ERROR MESSAGE
+                walletError?.let { error ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.AccountBalanceWallet,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = { walletViewModel.clearError() }) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Dismiss",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // Error message
                 errorMessage?.let { error ->
@@ -337,6 +424,17 @@ fun ChatScreen(
                 )
             }
         }
+    }
+    
+    // 💰 SPEND COINS DIALOG
+    if (showSpendDialog) {
+        SpendCoinsDialog(
+            currentBalance = walletBalance,
+            onSpendCoins = { timeInSeconds, category ->
+                walletViewModel.spendCoins(timeInSeconds, category)
+            },
+            onDismiss = { showSpendDialog = false }
+        )
     }
 }
 

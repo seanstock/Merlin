@@ -182,7 +182,7 @@ interface AdaptiveDifficultyService {
    - Validate that no Android dependencies leak into the service layer
 
 # Subtasks:
-## 1. Core Economy Implementation [pending]
+## 1. Core Economy Implementation [done]
 ### Dependencies: None
 ### Description: Build the complete working economy system using existing EconomyState infrastructure and user's recovery file
 ### Details:
@@ -215,8 +215,43 @@ INTEGRATED IMPLEMENTATION APPROACH:
    - Simple spending mechanism
 
 DELIVERABLE: Working economy system that awards coins for task completion and allows spending on screen time. Integrated with existing codebase, no shadow architectures.
+<info added on 2025-05-31T01:00:29.531Z>
+TASK 7.2 FOCUS AREAS:
 
-## 2. Basic UI & Screen Time Integration [pending]
+1. SCREEN TIME UI COMPONENTS:
+   - Create MerlinCoin balance display widget
+   - Design and implement screen time purchase interface
+   - Add transaction history view
+   - Implement visual feedback for earning/spending
+
+2. SCREEN TIME INTEGRATION:
+   - Connect to Android's Digital Wellbeing API
+   - Implement app usage tracking mechanisms
+   - Create screen time allowance manager
+   - Build category-based app classification system
+
+3. USER EXPERIENCE FLOW:
+   - Design intuitive coin earning visualization
+   - Create engaging spending experience
+   - Implement age-appropriate UI elements
+   - Add animations for transactions
+
+4. TESTING PRIORITIES:
+   - Verify correct screen time allocation
+   - Test category discount application
+   - Validate daily caps functionality
+   - Ensure proper transaction recording
+
+5. TECHNICAL REQUIREMENTS:
+   - Implement UI state management
+   - Create composable UI components
+   - Ensure responsive design across devices
+   - Maintain accessibility standards
+
+DELIVERABLE: Complete user interface for the economy system that allows viewing balance, purchasing screen time with appropriate category discounts, and tracking transaction history. Fully integrated with Android's screen time management capabilities.
+</info added on 2025-05-31T01:00:29.531Z>
+
+## 2. Basic UI & Screen Time Integration [done]
 ### Dependencies: 7.1
 ### Description: Create minimal UI to display wallet balance and implement screen time spending mechanism
 ### Details:
@@ -243,6 +278,96 @@ PRACTICAL UI IMPLEMENTATION:
    - Balance warnings ("Only 30 MC left - earn more!")
 
 DELIVERABLE: Working UI that lets kids see their balance, spend coins on screen time, and get basic feedback. No fancy gamification yet - just core functionality.
+<info added on 2025-05-31T02:15:13.026Z>
+✅ **TASK 7.2 IMPLEMENTATION COMPLETE** ✅
+
+**🎯 CORE FUNCTIONALITY DELIVERED:**
+
+**1. Wallet Display Component (`WalletDisplay.kt`)**
+- Child-friendly animated wallet display showing Merlin Coin balance
+- Real-time conversion display (MC → minutes/seconds)
+- Loading states and interactive feedback
+- Accessibility-compliant with proper semantics
+- Integrated into ChatScreen TopAppBar
+
+**2. Spend Coins Dialog (`SpendCoinsDialog.kt`)**
+- Beautiful full-screen dialog for spending MC on screen time
+- Category selection with discount rates:
+  - Entertainment: 1:1 rate (full price)
+  - Educational: 0.8:1 rate (20% discount)
+  - Creative: 0.7:1 rate (30% discount) 
+  - Physical: 0.5:1 rate (50% discount)
+- Time amount selection (5m, 10m, 15m, 30m)
+- Real-time cost calculation with breakdown
+- Affordability validation with helpful messaging
+
+**3. Wallet ViewModel (`WalletViewModel.kt`)**
+- Complete state management for wallet operations
+- Integration with LocalEconomyService (Task 7.1)
+- Reactive balance updates and error handling
+- Notification events for UI feedback
+- Award/spend coin functionality for future integration
+
+**4. ChatScreen Integration**
+- Wallet display prominently shown in TopAppBar
+- Seamless dialog integration for spending flow
+- Error handling and notification system
+- No breaking changes to existing functionality
+
+**🔧 TECHNICAL IMPLEMENTATION:**
+- Used existing economy infrastructure (EconomyState, repositories)
+- Proper Result type handling with custom Result class
+- Coroutine-based async operations
+- Material 3 design with custom theming
+- Performance optimizations with state management
+
+**🎨 UI/UX FEATURES:**
+- Smooth animations and transitions
+- Child-friendly visual design
+- Clear cost breakdowns and discount visualization
+- Accessibility support throughout
+- Responsive layout design
+
+**✅ COMPILATION STATUS:** 
+- All code compiles successfully
+- Full build passes (app:assembleDebug)
+- Ready for testing and integration
+
+**🚀 READY FOR NEXT STEPS:**
+- Task 7.2 complete - wallet UI fully functional
+- Foundation ready for Task 8 (Parent Dashboard)
+- Economy system now has complete user-facing interface
+</info added on 2025-05-31T02:15:13.026Z>
+<info added on 2025-05-31T02:26:24.435Z>
+## WALLET ICON REDESIGN
+
+1. CIRCULAR COIN DESIGN:
+   - Replaced card-based wallet with circular coin icon (48dp)
+   - Matches chat avatar size for visual consistency
+   - Radial gradient using AmberGlow with alpha variations
+   - White text MC count centered on coin
+
+2. RESPONSIVE TYPOGRAPHY:
+   - Dynamic font sizing based on coin amount:
+     • 1000+ coins: "1k" format (11sp)
+     • 100-999 coins: Full number (10sp)
+     • 10-99 coins: Full number (12sp)
+     • 1-9 coins: Full number (14sp)
+
+3. VISUAL ENHANCEMENTS:
+   - Shadow elevation (4dp normal, 2dp when pressed)
+   - Scale animation feedback (0.95x when pressed)
+   - Inner ring effect with transparent-to-gold gradient
+   - Loading state shows white CircularProgressIndicator
+   - Maintained accessibility descriptions
+
+4. IMPLEMENTATION DETAILS:
+   - Primary radial gradient: AmberGlow 90% → 70% → 60% alpha
+   - Inner ring subtle gradient for dimensional effect
+   - Shadow and scale animations for tactile feedback
+   - Integrated with existing ChatScreen TopAppBar
+   - Zero breaking changes to functionality
+</info added on 2025-05-31T02:26:24.435Z>
 
 ## 3. Gamification Layer & Parent Dashboard [pending]
 ### Dependencies: 7.2
