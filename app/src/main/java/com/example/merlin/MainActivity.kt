@@ -58,7 +58,7 @@ import com.example.merlin.ui.chat.PinExitDialog
 import com.example.merlin.utils.PinAuthenticationService
 import kotlin.system.exitProcess
 import com.example.merlin.utils.UserSessionRepository
-import com.example.merlin.screen.ScreenTimeTracker
+import com.example.merlin.config.ServiceLocator
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity(),
     private lateinit var userSessionRepository: UserSessionRepository
     
     // Screen time tracking
-    private val screenTimeTracker by lazy { ScreenTimeTracker(this) }
+    private val screenTimeService by lazy { ServiceLocator.getScreenTimeService(this) }
     
     // Flag to track if we need to enable immersive mode when window is ready
     private var shouldEnableImmersiveMode = false
@@ -273,7 +273,7 @@ class MainActivity : ComponentActivity(),
         super.onResume()
         
         // Start screen time tracking
-        screenTimeTracker.startSession()
+                        screenTimeService.startSession()
         
         // Don't do aggressive reinitialization if we're exiting properly
         if (isExitingProperly) {
@@ -360,7 +360,7 @@ class MainActivity : ComponentActivity(),
         lifecycleScope.launch {
             val childId = userSessionRepository.getActiveChildId()
             if (childId != null) {
-                screenTimeTracker.stopSession(childId)
+                screenTimeService.stopSession(childId)
             }
         }
         

@@ -1,6 +1,7 @@
 package com.example.merlin.ui.parent
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -45,6 +46,29 @@ fun ParentDashboardScreen(
 ) {
     val navController = rememberNavController()
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text(
+                        "Parent Dashboard",
+                        color = WisdomBlue,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Back to main",
+                            tint = WisdomBlue
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.White
+                )
+            )
+        },
         bottomBar = { ParentBottomNavBar(navController = navController) }
     ) { innerPadding ->
         NavHost(
@@ -53,7 +77,11 @@ fun ParentDashboardScreen(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(ParentScreen.Analytics.route) {
-                AnalyticsScreen()
+                AnalyticsScreen(
+                    onNavigateToSettings = {
+                        navController.navigate(ParentScreen.Settings.route)
+                    }
+                )
             }
             composable(ParentScreen.ScreenTime.route) {
                 ScreenTimeScreen()
@@ -62,8 +90,7 @@ fun ParentDashboardScreen(
                 ProfilesScreen()
             }
             composable(ParentScreen.Settings.route) {
-                // Placeholder for SettingsScreen
-                Text("Settings Screen (Not Implemented)")
+                ParentSettingsScreen()
             }
         }
     }
@@ -89,6 +116,158 @@ fun ParentBottomNavBar(navController: NavController) {
                     }
                 }
             )
+        }
+    }
+}
+
+@Composable
+fun ParentSettingsScreen(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = "Parent Settings",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = WisdomBlue
+        )
+        
+        // Placeholder settings cards
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Security,
+                        contentDescription = null,
+                        tint = WisdomBlue
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        "PIN & Security",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Change PIN, security settings, and access controls",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+        }
+        
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Schedule,
+                        contentDescription = null,
+                        tint = WisdomBlue
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        "Time Limits",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Set daily and weekly usage limits for your child",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+        }
+        
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Tune,
+                        contentDescription = null,
+                        tint = WisdomBlue
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        "Learning Preferences",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Adjust difficulty levels and subject preferences",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
+        }
+        
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = WisdomBlue
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        "Notifications",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Configure alerts and progress notifications",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            }
         }
     }
 } 

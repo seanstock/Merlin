@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.merlin.economy.service.LocalScreenTimeService
+import com.example.merlin.config.ServiceLocator
 import com.example.merlin.ui.accessibility.AccessibilityConstants
 import com.example.merlin.ui.theme.*
 import java.time.DayOfWeek
@@ -37,7 +37,10 @@ fun ScreenTimeScreen(
     modifier: Modifier = Modifier,
     childId: String = "demo_child" // Default for now
 ) {
-    val factory = ScreenTimeViewModelFactory(LocalScreenTimeService())
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val factory = remember {
+        ScreenTimeViewModelFactory(ServiceLocator.getScreenTimeService(context))
+    }
     val viewModel: ScreenTimeViewModel = viewModel(factory = factory)
     val state by viewModel.state.collectAsState()
 

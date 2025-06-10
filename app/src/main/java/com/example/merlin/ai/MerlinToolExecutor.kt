@@ -5,10 +5,8 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.example.merlin.economy.service.LocalEconomyService
-import com.example.merlin.data.repository.ChildProfileRepository
-import com.example.merlin.data.repository.EconomyStateRepository
-import com.example.merlin.data.database.DatabaseProvider
-import com.example.merlin.screen.ScreenTimeTracker
+
+import com.example.merlin.config.ServiceLocator
 
 /**
  * Executor for handling Merlin's AI function calls.
@@ -26,11 +24,8 @@ class MerlinToolExecutor(
     }
 
     // Lazy initialization of services
-    private val database by lazy { DatabaseProvider.getInstance(context) }
-    private val economyStateRepository by lazy { EconomyStateRepository(database.economyStateDao()) }
-    private val childProfileRepository by lazy { ChildProfileRepository(database.childProfileDao()) }
-    private val economyService by lazy { LocalEconomyService(economyStateRepository, childProfileRepository) }
-    private val screenTimeTracker by lazy { ScreenTimeTracker(context) }
+    private val economyService by lazy { ServiceLocator.getEconomyService(context) }
+    private val screenTimeService by lazy { ServiceLocator.getScreenTimeService(context) }
 
     /**
      * Execute a tool function called by the AI
@@ -216,12 +211,12 @@ class MerlinToolExecutor(
      */
     private suspend fun executeCheckScreenTime(arguments: Map<String, Any>): ToolExecutionResult = withContext(Dispatchers.IO) {
         try {
-            // Get actual screen time data using existing ScreenTimeTracker
-            val todayUsageSeconds = screenTimeTracker.getTodayTotalTime(childId)
-            val sessionUsageSeconds = screenTimeTracker.getCurrentSessionTime()
+            // Get actual screen time data using consolidated ScreenTimeService
+            val todayUsageSeconds = screenTimeService.getTodayTotalTime(childId)
+            val sessionUsageSeconds = screenTimeService.getCurrentSessionTime()
             
-            val todayFormatted = screenTimeTracker.formatTime(todayUsageSeconds)
-            val sessionFormatted = screenTimeTracker.formatTime(sessionUsageSeconds)
+            val todayFormatted = screenTimeService.formatTime(todayUsageSeconds)
+            val sessionFormatted = screenTimeService.formatTime(sessionUsageSeconds)
             
             val message = "📱 Screen Time Today: $todayFormatted\n" +
                     "⏱️ Current Session: $sessionFormatted\n" +

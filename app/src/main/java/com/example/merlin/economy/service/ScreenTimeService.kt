@@ -46,4 +46,31 @@ interface ScreenTimeService {
      * Update the screen time schedule for a specific day.
      */
     suspend fun updateScheduleForDay(childId: String, day: DayOfWeek, slot: TimeSlot): Result<Unit>
+
+    // === SESSION MANAGEMENT ===
+    
+    /**
+     * Start tracking screen time session
+     */
+    fun startSession()
+    
+    /**
+     * Stop tracking and save to database
+     */
+    suspend fun stopSession(childId: String)
+    
+    /**
+     * Get current session screen time in seconds
+     */
+    fun getCurrentSessionTime(): Int
+    
+    /**
+     * Get today's total screen time in seconds
+     */
+    suspend fun getTodayTotalTime(childId: String): Int
+    
+    /**
+     * Format seconds to human readable time
+     */
+    fun formatTime(seconds: Int): String
 } 

@@ -29,11 +29,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.merlin.data.database.DatabaseProvider
-import com.example.merlin.data.repository.ChildProfileRepository
-import com.example.merlin.data.repository.EconomyStateRepository
 import com.example.merlin.economy.model.*
-import com.example.merlin.economy.service.*
+import com.example.merlin.economy.service.LearningRecommendationDto
+import com.example.merlin.config.ServiceLocator
 import kotlinx.coroutines.launch
 import kotlin.math.*
 import androidx.compose.material.icons.filled.EmojiEvents
@@ -83,19 +81,16 @@ fun EmptyState(
 @Composable
 fun AnalyticsScreen(
     modifier: Modifier = Modifier,
-    childId: String = "demo_child" // Default for now, should be passed from parent
+    childId: String = "demo_child", // Default for now, should be passed from parent
+    onNavigateToSettings: () -> Unit = {} // Navigation callback for settings
 ) {
     val context = LocalContext.current
     val factory = remember(childId) {
-        val db = DatabaseProvider.getInstance(context)
-        val economyRepository = EconomyStateRepository(db.economyStateDao())
-        val childProfileRepository = ChildProfileRepository(db.childProfileDao())
-
         AnalyticsViewModelFactory(
-            adaptiveDifficultyService = LocalAdaptiveDifficultyService(),
-            economyService = LocalEconomyService(economyRepository, childProfileRepository),
-            badgeService = LocalBadgeService(),
-            experienceService = LocalExperienceService()
+            adaptiveDifficultyService = ServiceLocator.getAdaptiveDifficultyService(),
+            economyService = ServiceLocator.getEconomyService(context),
+            badgeService = ServiceLocator.getBadgeService(),
+            experienceService = ServiceLocator.getExperienceService()
         )
     }
 
@@ -105,6 +100,9 @@ fun AnalyticsScreen(
     LaunchedEffect(key1 = childId) {
         viewModel.loadAnalytics(childId)
     }
+    Shark Pet Cordless Stick Vacuum with XL Dust Cup, LED Headlights, Removable Handheld Vac, Crevice Tool, Portable Vacuum fo...
+    Shark
+    Pet Cordless Stick Vacuum with XL Dust Cup, LED Headlights, Removable Handheld Vac, Crevice Tool, Portable Vacuum for Household Pet Hair, Carpet and Hard Floors, 40min Runtime, Grey, IX141
 
     LazyColumn(
         modifier = modifier
