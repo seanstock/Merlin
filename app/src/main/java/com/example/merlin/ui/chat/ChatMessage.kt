@@ -22,7 +22,7 @@ data class ChatMessage(
 @Immutable
 data class FunctionCall(
     val name: String,
-    val arguments: Map<String, Any>
+    val arguments: Map<String, Any> = emptyMap()
 )
 
 /**
@@ -31,5 +31,14 @@ data class FunctionCall(
 @Immutable
 data class GameLaunchEvent(
     val gameId: String,
-    val level: Int = 1
+    val level: Int,
+    val reason: String
+)
+
+/**
+ * Navigation event from tools
+ */
+data class NavigationEvent(
+    val screen: String,
+    val message: String?
 ) 

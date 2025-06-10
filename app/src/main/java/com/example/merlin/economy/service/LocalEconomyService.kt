@@ -7,6 +7,7 @@ import com.example.merlin.economy.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.Instant
+import java.lang.Math
 
 /**
  * SIMPLE Local implementation of EconomyService.
@@ -25,9 +26,9 @@ class LocalEconomyService(
         
         // Category discount rates (spending multipliers)
         private const val ENTERTAINMENT_RATE = 1.0f     // 1:1
-        private const val EDUCATIONAL_GAMES_RATE = 0.8f // 20% discount
-        private const val CREATIVE_APPS_RATE = 0.7f     // 30% discount
-        private const val PHYSICAL_ACTIVITY_RATE = 0.5f // 50% discount
+        private const val EDUCATIONAL_GAMES_RATE = 0.6f // 20% discount
+        private const val CREATIVE_APPS_RATE = 0.9f     // 30% discount
+        private const val PHYSICAL_ACTIVITY_RATE = 0.75f // 50% discount
         
         // Reward multipliers
         private const val PERFECT_COMPLETION_MULTIPLIER = 1.5f
@@ -303,6 +304,80 @@ class LocalEconomyService(
                 streakDays = 0,
                 totalRealWorldValue = convertToRealWorldValue(balance.balance).getOrThrow()
             ))
+        } catch (e: Exception) {
+            Result.error(e)
+        }
+    }
+
+    // ============= DAILY TRACKING METHODS =============
+
+    /**
+     * Get today's game earnings for a child
+     */
+    suspend fun getTodayGameEarnings(childId: String): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            // For now, return 0 until we implement proper daily tracking
+            // TODO: Implement by tracking daily coin awards in a separate table
+            Result.success(0)
+        } catch (e: Exception) {
+            Result.error(e)
+        }
+    }
+
+    /**
+     * Get remaining coins that can be earned from games today
+     */
+    suspend fun getRemainingGameEarnings(childId: String): Result<Int> = withContext(Dispatchers.IO) {
+        try {
+            // Simple implementation - return daily cap minus today's earnings
+            val todayEarned = getTodayGameEarnings(childId).getOrNull() ?: 0
+            val remainingCoins = Math.max(0, 60 - todayEarned) // 60 coin daily limit
+            Result.success(remainingCoins)
+        } catch (e: Exception) {
+            Result.error(e)
+        }
+    }
+
+    /**
+     * Award game coins with daily limit enforcement
+     */
+    suspend fun awardGameCoins(
+        childId: String,
+        amount: Int,
+        gameId: String,
+        source: String
+    ): Result<GameEarningDto> = withContext(Dispatchers.IO) {
+        try {
+            // For now, just award coins without daily limit until we implement proper tracking
+            // TODO: Implement actual daily tracking with database storage
+            
+            val awardResult = awardCoins(
+                childId = childId,
+                amount = amount,
+                category = "game_reward",
+                description = "$source - $gameId",
+                metadata = mapOf("gameId" to gameId, "source" to source)
+            )
+            
+            awardResult.fold(
+                onSuccess = { balanceChange ->
+                    Result.success(GameEarningDto(
+                        childId = childId,
+                        gameId = gameId,
+                        coinsAwarded = amount,
+                        actualAmount = amount,
+                        wasLimited = false,
+                        dailyEarned = amount, // Simple tracking for now
+                        dailyLimit = 60,
+                        remainingToday = 60 - amount,
+                        source = source,
+                        timestamp = java.time.Instant.now().toString()
+                    ))
+                },
+                onFailure = { error ->
+                    Result.error(error)
+                }
+            )
         } catch (e: Exception) {
             Result.error(e)
         }

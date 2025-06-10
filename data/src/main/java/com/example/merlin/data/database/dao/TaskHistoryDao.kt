@@ -22,4 +22,7 @@ interface TaskHistoryDao {
 
     @Query("SELECT * FROM task_history ORDER BY ts DESC")
     fun getAll(): List<TaskHistory>
+
+    @Query("SELECT COUNT(*) FROM task_history WHERE child_id = :childId AND correct = 1")
+    suspend fun getCompletedTaskCount(childId: String): Int
 } 

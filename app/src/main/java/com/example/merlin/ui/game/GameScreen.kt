@@ -14,10 +14,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import android.util.Log
+import com.example.merlin.economy.service.LocalEconomyService
+import com.example.merlin.data.repository.EconomyStateRepository
+import com.example.merlin.data.repository.ChildProfileRepository
+import com.example.merlin.data.database.DatabaseProvider
+import com.example.merlin.utils.UserSessionRepository
 
 /**
  * Main game screen that provides game selection and gameplay interface.
- * Integrates WebView games with native Android UI components.
+ * Integrates WebView games with native Android UI components and coin earning system.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +34,13 @@ fun GameScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    
+    // Economy service setup for coin earning
+    val database = remember { DatabaseProvider.getInstance(context) }
+    val economyStateRepository = remember { EconomyStateRepository(database.economyStateDao()) }
+    val childProfileRepository = remember { ChildProfileRepository(database.childProfileDao()) }
+    val economyService = remember { LocalEconomyService(economyStateRepository, childProfileRepository) }
+    val userSessionRepository = remember { UserSessionRepository(context) }
     
     // Game manager and result handler
     val gameManager = remember { GameManager.getInstance(context, coroutineScope) }
@@ -38,12 +52,61 @@ fun GameScreen(
     var gameResult by remember { mutableStateOf<GameResult?>(null) }
     var showGameSelection by remember { mutableStateOf(true) }
     
+    // Coin earning state
+    var coinEarningMessage by remember { mutableStateOf<String?>(null) }
+    
     // Available games
     val availableGames by gameManager.availableGamesFlow.collectAsState()
     
     // Preload recommended games on first composition
     LaunchedEffect(Unit) {
         gameManager.preloadRecommendedGames()
+    }
+
+    // Show coin earning messages temporarily
+    LaunchedEffect(coinEarningMessage) {
+        if (coinEarningMessage != null) {
+            delay(3000) // Show for 3 seconds
+            coinEarningMessage = null
+        }
+    }
+
+    // Coin earning callback
+    val onCoinEarned: (Int, String, String) -> Unit = { amount, gameId, source ->
+        coroutineScope.launch {
+            try {
+                val childId = userSessionRepository.getActiveChildId()
+                if (childId != null) {
+                    Log.d("GameScreen", "Attempting to award $amount coins for $gameId - $source")
+                    
+                    val result = economyService.awardGameCoins(
+                        childId = childId,
+                        amount = amount,
+                        gameId = gameId,
+                        source = source
+                    )
+                    
+                    result.onSuccess { earningDto ->
+                        val message = if (earningDto.wasLimited) {
+                            "Daily limit reached! You can earn ${earningDto.remainingToday} more coins today."
+                        } else {
+                            "Earned ${earningDto.coinsAwarded} Merlin Coins! 🎉"
+                        }
+                        coinEarningMessage = message
+                        Log.d("GameScreen", "Coin earning success: $message")
+                    }.onError { error ->
+                        coinEarningMessage = "Error earning coins: ${error.message}"
+                        Log.e("GameScreen", "Coin earning failed", error)
+                    }
+                } else {
+                    Log.w("GameScreen", "No active child ID found for coin earning")
+                    coinEarningMessage = "Error: No active child profile"
+                }
+            } catch (e: Exception) {
+                Log.e("GameScreen", "Unexpected error in coin earning", e)
+                coinEarningMessage = "Unexpected error earning coins"
+            }
+        }
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -82,6 +145,25 @@ fun GameScreen(
             }
         )
 
+        // Coin earning message overlay
+        coinEarningMessage?.let { message ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Text(
+                    text = message,
+                    modifier = Modifier.padding(16.dp),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
         // Content
         if (showGameSelection) {
             GameSelectionContent(
@@ -110,6 +192,7 @@ fun GameScreen(
                             gameResult = result
                         }
                     },
+                    onCoinEarned = onCoinEarned,
                     onNextLevel = {
                         currentLevel++
                         gameResult = null
@@ -242,6 +325,7 @@ private fun GamePlayContent(
     level: Int,
     gameResult: GameResult?,
     onGameComplete: (Boolean, Long, Int) -> Unit,
+    onCoinEarned: (Int, String, String) -> Unit,
     onNextLevel: () -> Unit,
     onRestartGame: () -> Unit,
     modifier: Modifier = Modifier
@@ -310,6 +394,7 @@ private fun GamePlayContent(
                 gameId = game.id,
                 level = level,
                 onGameComplete = onGameComplete,
+                onCoinEarned = onCoinEarned,
                 onGameError = { error ->
                     // Handle game errors
                     // Could show error dialog or fallback UI

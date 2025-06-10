@@ -86,22 +86,6 @@ data class BadgeProgressDto(
 }
 
 /**
- * Available badge definitions (templates for earning)
- */
-data class BadgeDefinitionDto(
-    val id: String,
-    val name: String,
-    val description: String,
-    val category: String,
-    val rarity: String,
-    val imageUrl: String,
-    val requirements: Map<String, String>,  // Requirement type -> requirement value
-    val benefits: Map<String, String>,      // Benefits granted when earned
-    val isActive: Boolean = true,           // Whether this badge can currently be earned
-    val sortOrder: Int = 0                  // For display ordering
-)
-
-/**
  * Comprehensive badge statistics for a child
  */
 data class BadgeStatsDto(

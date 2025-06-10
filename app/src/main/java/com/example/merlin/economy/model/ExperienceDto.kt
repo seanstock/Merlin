@@ -1,20 +1,21 @@
 package com.example.merlin.economy.model
 
 /**
- * Data transfer object for child experience and level information.
+ * Data transfer object for experience/XP tracking.
  * Pure Kotlin data class with no Android dependencies, fully serializable for API transport.
  */
 data class ExperienceDto(
     val childId: String,
     val level: Int,
-    val currentXp: Int,
-    val nextLevelXp: Int,
-    val totalXpEarned: Int,
-    val lastUpdated: String     // ISO 8601 timestamp
+    val currentXp: Int,           // XP in current level
+    val nextLevelXp: Int,         // XP needed for next level
+    val totalXpEarned: Int        // Total XP earned across all time
 ) {
-    val progressToNextLevel: Float get() = currentXp.toFloat() / nextLevelXp
-    val progressPercentage: Float get() = progressToNextLevel * 100f
-    val xpNeededForNext: Int get() = nextLevelXp - currentXp
+    val progressToNextLevel: Float 
+        get() = if (nextLevelXp > 0) currentXp.toFloat() / nextLevelXp.toFloat() else 1f
+        
+    val progressPercentage: Float 
+        get() = progressToNextLevel * 100f
 }
 
 /**

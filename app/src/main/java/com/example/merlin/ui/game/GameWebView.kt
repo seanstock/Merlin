@@ -31,6 +31,7 @@ fun GameWebView(
     onGameComplete: (Boolean, Long, Int) -> Unit,
     onGameProgress: (Int) -> Unit = {},
     onGameError: (String) -> Unit = {},
+    onCoinEarned: ((Int, String, String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -47,6 +48,7 @@ fun GameWebView(
                         onGameComplete = onGameComplete,
                         onGameProgress = onGameProgress,
                         onGameError = onGameError,
+                        onCoinEarned = onCoinEarned,
                         onLoadingChanged = { loading -> isLoading = loading },
                         onError = { error -> loadError = error }
                     )
@@ -118,13 +120,15 @@ private fun WebView.configureSecureWebView(
     onGameComplete: (Boolean, Long, Int) -> Unit,
     onGameProgress: (Int) -> Unit,
     onGameError: (String) -> Unit,
+    onCoinEarned: ((Int, String, String) -> Unit)?,
     onLoadingChanged: (Boolean) -> Unit,
     onError: (String) -> Unit
 ) {
     val gameBridge = GameBridge(
         onGameComplete = onGameComplete,
         onGameProgress = onGameProgress,
-        onGameError = onGameError
+        onGameError = onGameError,
+        onCoinEarned = onCoinEarned
     )
 
     // Configure WebView settings with security focus

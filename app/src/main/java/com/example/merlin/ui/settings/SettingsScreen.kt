@@ -34,7 +34,8 @@ data class SettingsItem(
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
-    onExitApp: () -> Unit
+    onExitApp: () -> Unit,
+    onNavigateToParentDashboard: () -> Unit = {}
 ) {
     // Create settings items - all are now accessible since we verified PIN to enter
     val settingsItems = listOf(
@@ -54,7 +55,8 @@ fun SettingsScreen(
             title = "Child Performance",
             description = "View learning progress and achievements",
             icon = Icons.Default.School,
-            isWip = true
+            isWip = false,
+            onClick = onNavigateToParentDashboard
         ),
         SettingsItem(
             title = "Time Economy",

@@ -11,7 +11,8 @@ import android.util.Log
 class GameBridge(
     private val onGameComplete: (Boolean, Long, Int) -> Unit,
     private val onGameProgress: (Int) -> Unit = {},
-    private val onGameError: (String) -> Unit = {}
+    private val onGameError: (String) -> Unit = {},
+    private val onCoinEarned: ((Int, String, String) -> Unit)? = null
 ) {
     companion object {
         private const val TAG = "GameBridge"
@@ -46,6 +47,30 @@ class GameBridge(
             onGameProgress(clampedProgress)
         } catch (e: Exception) {
             Log.e(TAG, "Error handling progress update", e)
+        }
+    }
+
+    /**
+     * Called by JavaScript when a player earns coins during gameplay.
+     * @param amount Number of coins to award
+     * @param gameId ID of the game awarding coins (e.g., "color-match")
+     * @param source Description of earning source (e.g., "correct color match")
+     * @return JSON string with earning result including daily limit info
+     */
+    @JavascriptInterface
+    fun earnCoins(amount: Int, gameId: String, source: String): String {
+        Log.d(TAG, "Coins earned: amount=$amount, game=$gameId, source=$source")
+        try {
+            if (onCoinEarned != null) {
+                onCoinEarned.invoke(amount, gameId, source)
+                return """{"success": true, "message": "Coins awarded"}"""
+            } else {
+                Log.w(TAG, "No coin earning handler configured")
+                return """{"success": false, "message": "Coin earning not available"}"""
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error handling coin earning", e)
+            return """{"success": false, "message": "Error awarding coins"}"""
         }
     }
 

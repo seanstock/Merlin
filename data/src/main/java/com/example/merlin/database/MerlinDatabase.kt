@@ -29,9 +29,12 @@ data class PlaceholderEntity(
         SubjectMastery::class,
         EconomyState::class,
         DailyUsageLog::class,
-        DeviceState::class
+        DeviceState::class,
+        Badge::class,
+        Experience::class,
+        XpTransaction::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true // Changed to true to export schema
 )
 // SQLCipher Performance Note:
@@ -49,6 +52,9 @@ abstract class MerlinDatabase : RoomDatabase() {
     abstract fun economyStateDao(): EconomyStateDao
     abstract fun dailyUsageLogDao(): DailyUsageLogDao
     abstract fun deviceStateDao(): DeviceStateDao
+    abstract fun badgeDao(): BadgeDao
+    abstract fun experienceDao(): ExperienceDao
+    abstract fun xpTransactionDao(): XpTransactionDao
 
     // DAOs will be defined here in Subtask 3.3 (DAO Interface Implementation)
     // abstract fun placeholderDao(): PlaceholderDao // Example placeholder DAO

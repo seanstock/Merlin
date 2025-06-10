@@ -12,6 +12,8 @@ import com.example.merlin.data.remote.OpenAIClientWrapper
 import com.example.merlin.data.repository.MemoryRepository
 import com.example.merlin.data.database.DatabaseProvider
 import com.example.merlin.ui.safety.ContentFilter
+import com.example.merlin.ai.MerlinTools
+import com.example.merlin.ai.MerlinToolExecutor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +21,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 /**
- * ViewModel for managing chat state and AI interactions.
+ * ViewModel for managing chat state and AI interactions with tool calling support.
  */
 class ChatViewModel(application: Application, private val childId: String) : AndroidViewModel(application) {
     
@@ -39,6 +41,21 @@ class ChatViewModel(application: Application, private val childId: String) : And
         database = database,
         memoryRepository = memoryRepository,
         fallbackTaskProvider = fallbackTaskProvider
+    )
+
+    // Tool executor for handling Merlin's function calls
+    private val toolExecutor = MerlinToolExecutor(
+        context = application,
+        childId = childId,
+        onNavigateToScreen = { screen, message ->
+            _navigationEvent.value = NavigationEvent(screen, message)
+        },
+        onShowMessage = { message ->
+            _toolMessage.value = message
+        },
+        onLaunchGame = { gameId, level, reason ->
+            _gameLaunchEvent.value = GameLaunchEvent(gameId, level, reason)
+        }
     )
 
     // Text-to-Speech
@@ -65,10 +82,18 @@ class ChatViewModel(application: Application, private val childId: String) : And
     private val _gameLaunchEvent = MutableStateFlow<GameLaunchEvent?>(null)
     val gameLaunchEvent: StateFlow<GameLaunchEvent?> = _gameLaunchEvent.asStateFlow()
 
+    // Navigation events from tools
+    private val _navigationEvent = MutableStateFlow<NavigationEvent?>(null)
+    val navigationEvent: StateFlow<NavigationEvent?> = _navigationEvent.asStateFlow()
+
+    // Tool messages
+    private val _toolMessage = MutableStateFlow<String?>(null)
+    val toolMessage: StateFlow<String?> = _toolMessage.asStateFlow()
+
     init {
         initializeTextToSpeech()
         addWelcomeMessage()
-        Log.d(TAG, "ChatViewModel initialized for childId: $childId")
+        Log.d(TAG, "ChatViewModel initialized for childId: $childId with tool support")
     }
 
     /**
@@ -77,11 +102,11 @@ class ChatViewModel(application: Application, private val childId: String) : And
     private fun initializeTextToSpeech() {
         textToSpeech = TextToSpeech(getApplication()) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.language = Locale.getDefault()
-                isTtsInitialized = true
-                Log.d(TAG, "Text-to-Speech initialized successfully")
+                val result = textToSpeech?.setLanguage(Locale.US)
+                isTtsInitialized = result != TextToSpeech.LANG_MISSING_DATA && result != TextToSpeech.LANG_NOT_SUPPORTED
+                Log.d(TAG, "TTS initialized: $isTtsInitialized")
             } else {
-                Log.e(TAG, "Text-to-Speech initialization failed")
+                Log.e(TAG, "TTS initialization failed")
             }
         }
     }
@@ -90,15 +115,15 @@ class ChatViewModel(application: Application, private val childId: String) : And
      * Add welcome message from Merlin.
      */
     private fun addWelcomeMessage() {
-        val welcomeMessageContent = "Hi there! I'm Merlin, your friendly AI tutor! I'm here to help you learn and have fun. What would you like to explore today?"
         val welcomeMessage = ChatMessage(
             id = UUID.randomUUID().toString(),
-            content = welcomeMessageContent,
+            content = "Hi there! I'm Merlin, your AI learning companion! 🧙‍♂️✨ I can help you learn, start games, check your coin balance, and much more. What would you like to do today?",
             isFromUser = false,
             timestamp = System.currentTimeMillis()
         )
         _messages.value = listOf(welcomeMessage)
         
+        // Speak welcome message
         if (_isTtsEnabled.value) {
             speakMessage(welcomeMessage.content)
         }
@@ -154,72 +179,98 @@ class ChatViewModel(application: Application, private val childId: String) : And
         _isLoading.value = true
         _errorMessage.value = null
 
-        // Process AI response
+        // Process AI response with tool support
         viewModelScope.launch {
             try {
+                // Use AI interaction manager to get response
                 val aiResponse = aiInteractionManager.processInteraction(
                     childId = this@ChatViewModel.childId,
                     userMessage = message
                 )
 
-                val responseContent = aiResponse.content ?: "I'm having trouble responding right now. Let's try something else!"
-                
-                // 🛡️ CONTENT FILTERING - Filter AI response
-                val aiFilterResult = contentFilter.filterAIResponse(responseContent)
-                
-                val finalContent = if (aiFilterResult.isAppropriate) {
-                    // Enhance educational content if appropriate
-                    contentFilter.enhanceEducationalContent(responseContent)
+                // Check if AI made a function call
+                val functionCallName = aiResponse.functionCallName
+                if (functionCallName != null) {
+                    Log.d(TAG, "AI made function call: $functionCallName")
+                    
+                    // Parse function arguments
+                    val arguments = parseJsonArguments(aiResponse.functionCallArguments)
+                    
+                    // Execute the tool
+                    val toolResult = toolExecutor.executeTool(functionCallName, arguments)
+                    
+                    // Create response message with tool result
+                    val responseContent = if (toolResult.success) {
+                        toolResult.message
+                    } else {
+                        "I had trouble with that request: ${toolResult.message}"
+                    }
+                    
+                    // 🛡️ CONTENT FILTERING - Filter tool result
+                    val toolFilterResult = contentFilter.filterAIResponse(responseContent)
+                    
+                    val finalContent = if (toolFilterResult.isAppropriate) {
+                        contentFilter.enhanceEducationalContent(responseContent)
+                    } else {
+                        Log.w(TAG, "Tool result filtered: ${toolFilterResult.reason}")
+                        toolFilterResult.suggestedResponse ?: "I need to think of a better way to help you with that."
+                    }
+                    
+                    // Add tool result message
+                    val assistantMessage = ChatMessage(
+                        id = UUID.randomUUID().toString(),
+                        content = finalContent,
+                        isFromUser = false,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    _messages.value = _messages.value + assistantMessage
+                    
+                    // Speak the result
+                    if (_isTtsEnabled.value) {
+                        speakMessage(finalContent)
+                    }
+                    
                 } else {
-                    Log.w(TAG, "AI response filtered: ${aiFilterResult.reason}")
-                    aiFilterResult.suggestedResponse ?: "I need to think of a better way to help you with that. Let's try something educational and fun instead!"
-                }
+                    // Regular text response
+                    val responseContent = aiResponse.content ?: "I'm having trouble responding right now. Let's try something else!"
+                    
+                    // 🛡️ CONTENT FILTERING - Filter AI response
+                    val aiFilterResult = contentFilter.filterAIResponse(responseContent)
+                    
+                    val finalContent = if (aiFilterResult.isAppropriate) {
+                        // Enhance educational content if appropriate
+                        contentFilter.enhanceEducationalContent(responseContent)
+                    } else {
+                        Log.w(TAG, "AI response filtered: ${aiFilterResult.reason}")
+                        aiFilterResult.suggestedResponse ?: "I need to think of a better way to help you with that. Let's try something educational and fun instead!"
+                    }
 
-                val functionCallName = if (aiFilterResult.isAppropriate) aiResponse.functionCallName else null
-                val assistantMessage = ChatMessage(
-                    id = UUID.randomUUID().toString(),
-                    content = finalContent,
-                    isFromUser = false,
-                    timestamp = System.currentTimeMillis(),
-                    functionCall = if (functionCallName != null) {
-                        FunctionCall(
-                            name = functionCallName,
-                            arguments = parseJsonArguments(aiResponse.functionCallArguments)
-                        )
-                    } else null
-                )
-
-                _messages.value = _messages.value + assistantMessage
-                
-                // Speak AI response
-                if (_isTtsEnabled.value && assistantMessage.content.isNotBlank()) {
-                    speakMessage(assistantMessage.content)
-                }
-
-                // Handle function calls (only if content passed filtering)
-                if (aiFilterResult.isAppropriate) {
-                    assistantMessage.functionCall?.let { functionCall ->
-                        handleFunctionCall(functionCall)
+                    // Regular response
+                    val assistantMessage = ChatMessage(
+                        id = UUID.randomUUID().toString(),
+                        content = finalContent,
+                        isFromUser = false,
+                        timestamp = System.currentTimeMillis()
+                    )
+                    _messages.value = _messages.value + assistantMessage
+                    
+                    // Speak AI response
+                    if (_isTtsEnabled.value) {
+                        speakMessage(finalContent)
                     }
                 }
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error processing AI interaction", e)
+                Log.e(TAG, "Error in AI interaction", e)
+                _errorMessage.value = "I'm having trouble connecting right now. Please try again!"
                 
                 val errorMessage = ChatMessage(
                     id = UUID.randomUUID().toString(),
-                    content = "I'm having some technical difficulties right now. Let's try again in a moment!",
+                    content = "Sorry, I'm having trouble connecting right now. Please try again in a moment! 🔄",
                     isFromUser = false,
-                    timestamp = System.currentTimeMillis(),
-                    hasError = true
+                    timestamp = System.currentTimeMillis()
                 )
-                
                 _messages.value = _messages.value + errorMessage
-                _errorMessage.value = "Failed to get AI response. Please try again."
-                
-                if (_isTtsEnabled.value) {
-                    speakMessage(errorMessage.content)
-                }
             } finally {
                 _isLoading.value = false
             }
@@ -252,29 +303,7 @@ class ChatViewModel(application: Application, private val childId: String) : And
         }
     }
 
-    /**
-     * Handle function calls from the AI (e.g., launching games).
-     */
-    private fun handleFunctionCall(functionCall: FunctionCall) {
-        when (functionCall.name) {
-            "launch_game" -> {
-                val gameId = functionCall.arguments["game_id"] as? String
-                val level = (functionCall.arguments["level"] as? Number)?.toInt() ?: 1
-                
-                Log.d(TAG, "AI requested to launch game: $gameId at level $level")
-                
-                if (gameId != null) {
-                    // Emit game launch event for the UI to handle
-                    _gameLaunchEvent.value = GameLaunchEvent(gameId, level)
-                } else {
-                    Log.w(TAG, "Game launch requested but no game_id provided")
-                }
-            }
-            else -> {
-                Log.w(TAG, "Unknown function call: ${functionCall.name}")
-            }
-        }
-    }
+
 
     /**
      * Parse JSON arguments from function call response.
@@ -329,6 +358,17 @@ class ChatViewModel(application: Application, private val childId: String) : And
         aiInteractionManager.clearConversationContext(this.childId)
         addWelcomeMessage()
     }
+
+    // Clear events
+    fun clearNavigationEvent() {
+        _navigationEvent.value = null
+    }
+
+    fun clearToolMessage() {
+        _toolMessage.value = null
+    }
+
+
 
     override fun onCleared() {
         super.onCleared()

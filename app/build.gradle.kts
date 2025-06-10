@@ -108,10 +108,16 @@ dependencies {
     // Compose Lifecycle for lifecycle integration
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     
+    // Navigation Compose for screen navigation
+    implementation("androidx.navigation:navigation-compose:2.7.6")
+    
     // Room dependencies for database access
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
+    
+    // Gson for JSON serialization in gamification services
+    implementation("com.google.code.gson:gson:2.10.1")
     
     implementation(project(":core"))
     implementation(project(":data"))

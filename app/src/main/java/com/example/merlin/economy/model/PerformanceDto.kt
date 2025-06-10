@@ -120,18 +120,19 @@ data class PerformanceTrendDto(
 )
 
 /**
- * Subject mastery level tracking
+ * DTO for subject-specific mastery level
  */
 data class SubjectMasteryDto(
     val childId: String,
     val subject: String,
-    val masteryLevel: String,             // beginner, intermediate, advanced, expert
-    val masteryScore: Float,              // 0.0 to 1.0
+    val gradeLevel: Int,
+    val masteryScore: Float,    // Progress within the current grade level (0.0 to 1.0)
+    val masteryLevel: String,   // "Beginner", "Intermediate", "Advanced" - descriptive label
     val topicsCompleted: List<String>,
     val topicsInProgress: List<String>,
     val topicsNotStarted: List<String>,
-    val estimatedTimeToNextLevel: Int,    // Estimated hours to next mastery level
-    val lastUpdated: String               // ISO 8601 string
+    val estimatedTimeToNextLevel: Int, // In hours
+    val lastUpdated: String
 )
 
 /**

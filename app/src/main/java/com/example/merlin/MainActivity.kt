@@ -58,6 +58,12 @@ import com.example.merlin.ui.chat.PinExitDialog
 import com.example.merlin.utils.PinAuthenticationService
 import kotlin.system.exitProcess
 import com.example.merlin.utils.UserSessionRepository
+import com.example.merlin.screen.ScreenTimeTracker
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import androidx.lifecycle.lifecycleScope
+import com.example.merlin.ui.parent.ParentDashboardScreen
 
 class MainActivity : ComponentActivity(), 
     SecurityResponseManager.SecurityLockoutCallback,
@@ -75,6 +81,9 @@ class MainActivity : ComponentActivity(),
     private lateinit var runtimeSecurityMonitor: RuntimeSecurityMonitor
     private lateinit var securityEventInterceptor: SecurityEventInterceptor
     private lateinit var userSessionRepository: UserSessionRepository
+    
+    // Screen time tracking
+    private val screenTimeTracker by lazy { ScreenTimeTracker(this) }
     
     // Flag to track if we need to enable immersive mode when window is ready
     private var shouldEnableImmersiveMode = false
@@ -263,6 +272,9 @@ class MainActivity : ComponentActivity(),
     override fun onResume() {
         super.onResume()
         
+        // Start screen time tracking
+        screenTimeTracker.startSession()
+        
         // Don't do aggressive reinitialization if we're exiting properly
         if (isExitingProperly) {
             Log.d(TAG, "In proper exit sequence - skipping aggressive resume actions")
@@ -343,6 +355,14 @@ class MainActivity : ComponentActivity(),
 
     override fun onPause() {
         super.onPause()
+        
+        // Stop screen time tracking and save session
+        lifecycleScope.launch {
+            val childId = userSessionRepository.getActiveChildId()
+            if (childId != null) {
+                screenTimeTracker.stopSession(childId)
+            }
+        }
         
         // Stop security monitoring when app is paused (but keep basic monitoring)
         stopSecurityMonitoring()
@@ -725,7 +745,14 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
                         // Use proper exit method instead of direct exitProcess
                         (context as? MainActivity)?.exitAppProperly()
                             ?: exitProcess(0) // Fallback if context is not MainActivity
-                    }
+                    },
+                    onNavigateToParentDashboard = { currentScreen = "parent_dashboard" }
+                )
+            }
+            "parent_dashboard" -> {
+                ParentDashboardScreen(
+                    onNavigateBack = { currentScreen = "settings" },
+                    modifier = modifier
                 )
             }
         }

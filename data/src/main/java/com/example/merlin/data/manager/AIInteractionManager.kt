@@ -1,22 +1,26 @@
 package com.example.merlin.data.manager
 
 import android.util.Log
-import com.aallam.openai.api.chat.ChatMessage
-import com.aallam.openai.api.chat.ChatRole
-import com.aallam.openai.api.chat.FunctionTool
 import com.example.merlin.data.database.entities.ChildProfile
 import com.example.merlin.data.database.entities.ChatHistory
 import com.example.merlin.data.database.entities.Memory
 import com.example.merlin.data.database.entities.MemoryType
 import com.example.merlin.data.model.openaidl.MerlinAIResponse
-import com.example.merlin.data.remote.OpenAIClientWrapper
 import com.example.merlin.data.repository.MemoryRepository
 import com.example.merlin.database.MerlinDatabase
+import com.aallam.openai.api.chat.TextContent
+import com.aallam.openai.api.chat.ChatMessage
+import com.aallam.openai.api.chat.FunctionTool
+import com.aallam.openai.api.core.Parameters
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.buildJsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.put
 
 /**
  * Manages AI interactions with memory storage and fallback capabilities.
@@ -31,19 +35,33 @@ class AIInteractionManager(
     companion object {
         private const val TAG = "AIInteractionManager"
         private const val MAX_CHAT_HISTORY = 20
-        private const val SYSTEM_PROMPT_TEMPLATE = """You are Merlin, a friendly AI tutor for a %d-year-old %s child named %s, located in %s, speaking %s. 
+        private const val SYSTEM_PROMPT_TEMPLATE = """
+        
+            You are Merlin, a friendly AI tutor for a %d-year-old %s child named %s, located in %s, speaking %s. 
 
-Your role is to:
-- Offer engaging educational tasks or launch games
-- Provide supportive feedback and encouragement
-- Adjust task difficulty dynamically to achieve ~80%% success rate
-- Remember personal details and preferences from previous conversations
-- Be patient, kind, and age-appropriate in all interactions
+            Your role is to:
+            - Offer engaging educational tasks or launch games
+            - Grant Merlin Coins for good behavior, effort, creativity, and kindness (1-10 coins per call)
+            - Check coin balances and answer questions about the economy system
+            - Track and report screen time usage
+            - Provide supportive feedback and encouragement
+            - Adjust task difficulty dynamically to achieve ~80%% success rate
+            - Remember personal details and preferences from previous conversations
+            - Be patient, kind, and age-appropriate in all interactions
 
-Available functions:
-- launch_game: Use this to start educational games for the child
+            Additional Instructions
+            - For young children under 6, try to keep responses very short (< 25 words)
+            - Don't use tools unless it logivally aligns with the request of the child. You can suggest a game, but don't launch it until the child confirms. 
 
-Always be encouraging and make learning fun!"""
+            Available functions:
+            - launch_game: Start educational games for the child
+            - grant_coins: Award 1-10 Merlin Coins for positive behavior at your discretion
+            - check_coins: Check current coin balance and daily earning progress
+            - check_screen_time: Check today's screen time and current session duration
+            - award_bonus_coins: Award bonus coins for exceptional performance
+
+            Always be encouraging and make learning fun!
+        """
     }
 
     // Thread-safe cache for conversation contexts per child
@@ -206,10 +224,17 @@ Always be encouraging and make learning fun!"""
     ): MerlinAIResponse? {
         return try {
             val chatHistory = contextManager.getFormattedHistory()
-            val functionTools = listOf(OpenAIClientWrapper.createLaunchGameFunctionTool())
+            
+            // Create all function tools that Merlin needs
+            val functionTools = getAllAvailableFunctionTools()
             
             // Retrieve relevant memories for personalization
-            val conversationHistory = chatHistory.mapNotNull { it.messageContent?.toString() }
+            val conversationHistory = chatHistory.mapNotNull { 
+                when (val content = it.messageContent) {
+                    is com.aallam.openai.api.chat.TextContent -> content.content
+                    else -> content?.toString()
+                }
+            }
             val relevantMemories = memoryRetriever.getRelevantMemories(
                 childId = childId,
                 currentMessage = currentMessage,
@@ -658,6 +683,119 @@ Always be encouraging and make learning fun!"""
      */
     suspend fun triggerMemorySummarization(childId: String): MemorySummarizer.SummarizationResult? {
         return memorySummarizer.summarizeOldMemories(childId)
+    }
+
+    /**
+     * Get all available function tools for Merlin.
+     */
+    private fun getAllAvailableFunctionTools(): List<FunctionTool> {
+        return listOf(
+            createStartGameTool(),
+            createCheckCoinsTool(),
+            createGrantCoinsTool(),
+            createCheckScreenTimeTool()
+        )
+    }
+    
+    /**
+     * Create the start_game function tool
+     */
+    private fun createStartGameTool(): FunctionTool {
+        val parametersJson = buildJsonObject {
+            put("type", "object")
+            put("properties", buildJsonObject {
+                put("game_id", buildJsonObject {
+                    put("type", "string")
+                    put("description", "The ID of the game to launch")
+                })
+                put("level", buildJsonObject {
+                    put("type", "integer")
+                    put("description", "The difficulty level (1-5)")
+                    put("minimum", 1)
+                    put("maximum", 5)
+                })
+                put("reason", buildJsonObject {
+                    put("type", "string")
+                    put("description", "Encouraging reason for playing this game")
+                })
+            })
+            put("required", kotlinx.serialization.json.buildJsonArray {
+                add(JsonPrimitive("game_id"))
+            })
+        }
+        return FunctionTool(
+            name = "start_game",
+            description = "Launch a specific educational game for the child",
+            parameters = Parameters(parametersJson)
+        )
+    }
+    
+    /**
+     * Create the check_coins function tool
+     */
+    private fun createCheckCoinsTool(): FunctionTool {
+        val parametersJson = buildJsonObject {
+            put("type", "object")
+            put("properties", buildJsonObject {
+                put("include_details", buildJsonObject {
+                    put("type", "boolean")
+                    put("description", "Whether to include detailed breakdown of earnings and limits")
+                    put("default", false)
+                })
+            })
+            put("required", kotlinx.serialization.json.buildJsonArray {})
+        }
+        return FunctionTool(
+            name = "check_coins",
+            description = "Check the child's current Merlin Coin balance and earning status",
+            parameters = Parameters(parametersJson)
+        )
+    }
+    
+    /**
+     * Create the grant_coins function tool
+     */
+    private fun createGrantCoinsTool(): FunctionTool {
+        val parametersJson = buildJsonObject {
+            put("type", "object")
+            put("properties", buildJsonObject {
+                put("amount", buildJsonObject {
+                    put("type", "integer")
+                    put("description", "Number of coins to grant (1-10)")
+                    put("minimum", 1)
+                    put("maximum", 10)
+                })
+                put("reason", buildJsonObject {
+                    put("type", "string")
+                    put("description", "Specific reason for granting coins (be encouraging and specific)")
+                })
+            })
+            put("required", kotlinx.serialization.json.buildJsonArray {
+                add(JsonPrimitive("amount"))
+                add(JsonPrimitive("reason"))
+            })
+        }
+        return FunctionTool(
+            name = "grant_coins", 
+            description = "Grant bonus Merlin Coins to the child for good behavior, effort, or achievements (1-10 coins). Use this at your discretion to reward positive interactions, creativity, kindness, effort, or learning milestones.",
+            parameters = Parameters(parametersJson)
+        )
+    }
+    
+    /**
+     * Create the check_screen_time function tool
+     */
+    private fun createCheckScreenTimeTool(): FunctionTool {
+        val parametersJson = buildJsonObject {
+            put("type", "object")
+            put("properties", buildJsonObject {})
+            put("required", kotlinx.serialization.json.buildJsonArray {})
+        }
+        return FunctionTool(
+            name = "check_screen_time",
+            description = "Check the child's screen time usage for today and current session",
+            parameters = Parameters(parametersJson)
+        )
     }
 }
 

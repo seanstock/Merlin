@@ -156,23 +156,69 @@ class OpenAIClientWrapper {
         val enhancedMessages = if (memoryContext != null && chatMessages.isNotEmpty()) {
             val systemMessage = chatMessages.firstOrNull { it.role == ChatRole.System }
             if (systemMessage != null) {
+                // Extract content safely from system message
+                val existingSystemContent = when (val content = systemMessage.messageContent) {
+                    is com.aallam.openai.api.chat.TextContent -> content.content
+                    else -> content?.toString() ?: ""
+                }
+                
                 // Append memory context to existing system message
-                val enhancedSystemContent = "${systemMessage.messageContent}\n\n$memoryContext"
+                val enhancedSystemContent = "$existingSystemContent\n\n$memoryContext"
                 val enhancedSystemMessage = ChatMessage(
                     role = ChatRole.System,
                     messageContent = com.aallam.openai.api.chat.TextContent(enhancedSystemContent)
                 )
-                listOf(enhancedSystemMessage) + chatMessages.drop(1)
+                // Replace the original system message with enhanced one, ensure all other messages have valid content
+                listOf(enhancedSystemMessage) + chatMessages.drop(1).map { message ->
+                    when (val content = message.messageContent) {
+                        null -> ChatMessage(
+                            role = message.role,
+                            messageContent = com.aallam.openai.api.chat.TextContent("")
+                        )
+                        is com.aallam.openai.api.chat.TextContent -> message
+                        else -> ChatMessage(
+                            role = message.role,
+                            messageContent = com.aallam.openai.api.chat.TextContent(content.toString())
+                        )
+                    }
+                }
             } else {
                 // Add memory context as a new system message at the beginning
                 val memorySystemMessage = ChatMessage(
                     role = ChatRole.System,
                     messageContent = com.aallam.openai.api.chat.TextContent(memoryContext)
                 )
-                listOf(memorySystemMessage) + chatMessages
+                // Ensure all existing messages have valid content
+                val validatedMessages = chatMessages.map { message ->
+                    when (val content = message.messageContent) {
+                        null -> ChatMessage(
+                            role = message.role,
+                            messageContent = com.aallam.openai.api.chat.TextContent("")
+                        )
+                        is com.aallam.openai.api.chat.TextContent -> message
+                        else -> ChatMessage(
+                            role = message.role,
+                            messageContent = com.aallam.openai.api.chat.TextContent(content.toString())
+                        )
+                    }
+                }
+                listOf(memorySystemMessage) + validatedMessages
             }
         } else {
-            chatMessages
+            // Ensure all messages have valid content even without memory context
+            chatMessages.map { message ->
+                when (val content = message.messageContent) {
+                    null -> ChatMessage(
+                        role = message.role,
+                        messageContent = com.aallam.openai.api.chat.TextContent("")
+                    )
+                    is com.aallam.openai.api.chat.TextContent -> message
+                    else -> ChatMessage(
+                        role = message.role,
+                        messageContent = com.aallam.openai.api.chat.TextContent(content.toString())
+                    )
+                }
+            }
         }
 
         val cacheKey = generateCacheKey(enhancedMessages, functionTools, memoryContext)

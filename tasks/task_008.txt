@@ -1,6 +1,6 @@
 # Task ID: 8
 # Title: Parent Dashboard UI with Jetpack Compose
-# Status: pending
+# Status: in-progress
 # Dependencies: 1, 3, 7
 # Priority: medium
 # Description: Create the PIN-protected parent dashboard with child progress analytics, usage tracking, profile management, and educational settings customization.
@@ -129,13 +129,13 @@ fun ProgressReportsScreen(reportsState: ReportsState) {
 Test PIN authentication with various inputs. Verify dashboard UI renders correctly across different screen sizes. Test analytics visualization with sample data. Verify settings changes are correctly persisted. Test child progress visualization with various mastery levels and subjects. Verify screen-time management features correctly track and limit usage. Test profile management with multiple child profiles. Validate weekly/monthly reports display accurate progress information. Test badge and XP progression visualization with sample data.
 
 # Subtasks:
-## 8.1. Implement child progress analytics visualization [pending]
+## 8.1. Implement child progress analytics visualization [done]
 ### Dependencies: None
 ### Description: Create UI components for displaying mastery levels, subject progress, and learning achievements
 ### Details:
 
 
-## 8.2. Add screen-time management features [pending]
+## 8.2. Add screen-time management features [done]
 ### Dependencies: None
 ### Description: Implement usage tracking, time restrictions, and daily/weekly limits with parental controls
 ### Details:

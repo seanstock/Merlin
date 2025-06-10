@@ -65,9 +65,12 @@ class ConversationContextManager(private val maxSize: Int = 20) {
      * Convenience method to add an assistant's response, potentially including tool calls.
      */
     fun addAssistantMessage(content: String?, toolCalls: List<ToolCall>? = null) {
+        // OpenAI API requires content to be a string, not null
+        // If content is null (e.g., when making function calls), use empty string
+        val safeContent = content ?: ""
         addMessage(ChatMessage(
             role = ChatRole.Assistant, 
-            messageContent = content?.let { TextContent(it) },
+            messageContent = TextContent(safeContent),
             toolCalls = toolCalls
         ))
     }
