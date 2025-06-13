@@ -61,14 +61,14 @@ fun EmptyState(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = AppleGray,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(56.dp)
             )
             Spacer(modifier = Modifier.height(AppleSpacing.medium))
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyLarge,
-                color = AppleSecondaryLabel,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
         }
@@ -105,7 +105,7 @@ fun AnalyticsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(AppleSecondarySystemBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Apple-style large title header
         AppleSectionHeader(
@@ -142,7 +142,7 @@ fun AnalyticsContent(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(AppleSecondarySystemBackground)
+            .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = AppleSpacing.medium),
         verticalArrangement = Arrangement.spacedBy(AppleSpacing.medium),
         contentPadding = PaddingValues(vertical = AppleSpacing.medium)
@@ -922,7 +922,7 @@ fun ErrorDisplay(
         ) {
             Text(
                 text = "Try Again",
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 fontWeight = FontWeight.Medium
             )
         }
@@ -979,7 +979,7 @@ fun SubjectMasteryCard(masteryLevels: List<SubjectMasteryDto>) {
         Text(
             text = "Subject Mastery",
             style = AppleNavigationTitle,
-            color = ApplePrimaryLabel
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(AppleSpacing.medium))
         
@@ -1009,7 +1009,7 @@ fun ExperiencePointsCard(experience: ExperienceDto?) {
         Text(
             text = "Experience Points",
             style = AppleNavigationTitle,
-            color = ApplePrimaryLabel
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(AppleSpacing.medium))
         
@@ -1025,7 +1025,7 @@ fun ExperiencePointsCard(experience: ExperienceDto?) {
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
-                    color = ApplePrimaryLabel
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.width(AppleSpacing.medium))
                 LinearProgressIndicator(
@@ -1034,15 +1034,15 @@ fun ExperiencePointsCard(experience: ExperienceDto?) {
                         .fillMaxWidth()
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
-                    color = AppleBlue,
-                    trackColor = AppleGray5
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             }
             Spacer(modifier = Modifier.height(AppleSpacing.small))
             Text(
                 text = "${experience.totalXpEarned} / ${experience.nextLevelXp} XP",
                 style = MaterialTheme.typography.bodyMedium,
-                color = AppleSecondaryLabel,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.End)
             )
         }
@@ -1059,7 +1059,7 @@ fun BadgeCard(badges: List<BadgeDto>) {
         Text(
             text = "Earned Badges",
             style = AppleNavigationTitle,
-            color = ApplePrimaryLabel
+            color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(AppleSpacing.medium))
         

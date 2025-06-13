@@ -22,10 +22,21 @@ class MerlinAccessibilityService : AccessibilityService() {
 
     companion object {
         const val ACTION_BRING_APP_TO_FOREGROUND = "com.example.merlin.ACTION_BRING_APP_TO_FOREGROUND"
+        const val ACTION_DISABLE_AGGRESSIVE_MODE = "DISABLE_AGGRESSIVE_MODE"
+        const val ACTION_ENABLE_AGGRESSIVE_MODE = "ENABLE_AGGRESSIVE_MODE"
         private const val TAG = "MerlinAccessibilityService"
         private const val FG_NOTIFICATION_CHANNEL_ID = "MERLIN_ACCESSIBILITY_SERVICE_CHANNEL"
         private const val FG_NOTIFICATION_CHANNEL_NAME = "Merlin Service"
         private const val ONGOING_NOTIFICATION_ID = 1001
+        private const val PREF_PROPER_EXIT = "proper_exit"
+    }
+
+    /**
+     * Check if the app was properly exited and should not be aggressively brought to foreground
+     */
+    private fun wasProperlyExited(): Boolean {
+        val prefs = getSharedPreferences("merlin_state", Context.MODE_PRIVATE)
+        return prefs.getBoolean(PREF_PROPER_EXIT, false)
     }
 
     override fun onCreate() {
@@ -85,6 +96,12 @@ class MerlinAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        // Don't be aggressive if app was properly exited
+        if (wasProperlyExited()) {
+            Log.d("MerlinAccessibilityService", "App was properly exited - not enforcing foreground")
+            return
+        }
+
         val eventType = event?.eventType
         val eventPackageName = event?.packageName?.toString() ?: "Unknown"
         val eventClassName = event?.className?.toString() ?: "Unknown"
@@ -120,10 +137,12 @@ class MerlinAccessibilityService : AccessibilityService() {
             // Monitor for recent apps/task switcher events
             AccessibilityEvent.TYPE_WINDOWS_CHANGED -> {
                 val activeChildId = userSessionRepository.getActiveChildId()
-                if (activeChildId != null) {
+                if (activeChildId != null && !wasProperlyExited()) {
                     // Aggressively bring app back to foreground on any window change
                     Log.d("MerlinAccessibilityService", "Window change detected - ensuring Merlin is foreground")
                     bringMerlinToForeground()
+                } else if (wasProperlyExited()) {
+                    Log.d("MerlinAccessibilityService", "App was properly exited - ignoring window change")
                 }
             }
             
@@ -131,9 +150,11 @@ class MerlinAccessibilityService : AccessibilityService() {
             AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED -> {
                 if (eventPackageName.startsWith("com.android.systemui")) {
                     val activeChildId = userSessionRepository.getActiveChildId()
-                    if (activeChildId != null) {
+                    if (activeChildId != null && !wasProperlyExited()) {
                         Log.d("MerlinAccessibilityService", "System UI interaction detected - bringing Merlin to foreground")
                         bringMerlinToForeground()
+                    } else if (wasProperlyExited()) {
+                        Log.d("MerlinAccessibilityService", "App was properly exited - ignoring system UI interaction")
                     }
                 }
             }
@@ -183,8 +204,24 @@ class MerlinAccessibilityService : AccessibilityService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_BRING_APP_TO_FOREGROUND) {
-            bringMerlinToForeground()
+        when (intent?.action) {
+            ACTION_BRING_APP_TO_FOREGROUND -> {
+                if (!wasProperlyExited()) {
+                    bringMerlinToForeground()
+                } else {
+                    Log.d("MerlinAccessibilityService", "App was properly exited - ignoring bring to foreground request")
+                }
+            }
+            ACTION_DISABLE_AGGRESSIVE_MODE -> {
+                Log.d("MerlinAccessibilityService", "Received disable aggressive mode signal")
+                // The proper exit flag is already set by MainActivity, so this is just for logging
+            }
+            ACTION_ENABLE_AGGRESSIVE_MODE -> {
+                Log.d("MerlinAccessibilityService", "Received enable aggressive mode signal")
+                // Clear the proper exit flag to re-enable aggressive behavior
+                val prefs = getSharedPreferences("merlin_state", Context.MODE_PRIVATE)
+                prefs.edit().putBoolean(PREF_PROPER_EXIT, false).apply()
+            }
         }
         return START_STICKY
     }

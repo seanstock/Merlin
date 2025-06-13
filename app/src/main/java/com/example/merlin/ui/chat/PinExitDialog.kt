@@ -96,7 +96,7 @@ fun PinExitDialog(
                         text = "Parent Authentication",
                         style = MaterialTheme.typography.headlineSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            color = DeepOcean
+                            color = ApplePrimaryLabel
                         ),
                         textAlign = TextAlign.Center
                     )
@@ -104,7 +104,7 @@ fun PinExitDialog(
                     Text(
                         text = "Enter your parent PIN to access settings",
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = StormyGray
+                            color = AppleSecondaryLabel
                         ),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 8.dp)
@@ -125,7 +125,7 @@ fun PinExitDialog(
                         label = { 
                             Text(
                                 "Parent PIN (4 digits)",
-                                color = StormyGray
+                                color = AppleSecondaryLabel
                             ) 
                         },
                         singleLine = true,
@@ -148,16 +148,18 @@ fun PinExitDialog(
                                         Icons.Filled.VisibilityOff
                                     },
                                     contentDescription = if (showPin) "Hide PIN" else "Show PIN",
-                                    tint = StormyGray
+                                    tint = AppleSecondaryLabel
                                 )
                             }
                         },
                         isError = showError,
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = SageGreen,
-                            unfocusedBorderColor = SeafoamMist,
-                            focusedLabelColor = SageGreen,
-                            cursorColor = SageGreen
+                            focusedBorderColor = AppleBlue,
+                            unfocusedBorderColor = AppleGray3,
+                            focusedLabelColor = AppleBlue,
+                            cursorColor = AppleBlue,
+                            focusedTextColor = ApplePrimaryLabel,
+                            unfocusedTextColor = ApplePrimaryLabel
                         ),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -193,7 +195,7 @@ fun PinExitDialog(
                             enabled = !isVerifying,
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = StormyGray
+                                contentColor = AppleSecondaryLabel
                             ),
                             border = ButtonDefaults.outlinedButtonBorder.copy(
                                 width = 1.dp
@@ -243,10 +245,10 @@ fun PinExitDialog(
                             enabled = !isVerifying && pinInput.length == 4,
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = SageGreen,
-                                contentColor = IvoryWhite,
-                                disabledContainerColor = SeafoamMist.copy(alpha = 0.6f),
-                                disabledContentColor = StormyGray.copy(alpha = 0.6f)
+                                containerColor = AppleBlue,
+                                contentColor = AppleSystemBackground,
+                                disabledContainerColor = AppleGray4,
+                                disabledContentColor = AppleGray
                             )
                         ) {
                             if (isVerifying) {
@@ -257,7 +259,7 @@ fun PinExitDialog(
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
                                         strokeWidth = 2.dp,
-                                        color = IvoryWhite
+                                        color = AppleSystemBackground
                                     )
                                     Text("Verifying...")
                                 }
@@ -271,7 +273,7 @@ fun PinExitDialog(
                     Text(
                         text = "This PIN was set during initial setup",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = StormyGray.copy(alpha = 0.7f)
+                            color = AppleSecondaryLabel.copy(alpha = 0.7f)
                         ),
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 8.dp)

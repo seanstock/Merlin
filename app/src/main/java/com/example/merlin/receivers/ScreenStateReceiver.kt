@@ -8,8 +8,21 @@ import com.example.merlin.services.MerlinAccessibilityService
 
 class ScreenStateReceiver : BroadcastReceiver() {
 
+    companion object {
+        private const val PREF_PROPER_EXIT = "proper_exit"
+    }
+
     override fun onReceive(context: Context, intent: Intent) {
         Log.d("ScreenStateReceiver", "Received action: ${intent.action}")
+
+        // Check if app was properly exited - if so, don't auto-launch
+        val prefs = context.getSharedPreferences("merlin_state", Context.MODE_PRIVATE)
+        val wasProperExit = prefs.getBoolean(PREF_PROPER_EXIT, false)
+        
+        if (wasProperExit) {
+            Log.d("ScreenStateReceiver", "App was properly exited - not auto-launching")
+            return
+        }
 
         val serviceIntent = Intent(context, MerlinAccessibilityService::class.java)
 
@@ -27,6 +40,12 @@ class ScreenStateReceiver : BroadcastReceiver() {
             Intent.ACTION_USER_PRESENT -> {
                 Log.d("ScreenStateReceiver", "USER_PRESENT received. Device unlocked.")
                 // Bring app to foreground when device is unlocked
+                serviceIntent.action = MerlinAccessibilityService.ACTION_BRING_APP_TO_FOREGROUND
+                context.startService(serviceIntent)
+            }
+            Intent.ACTION_BOOT_COMPLETED -> {
+                Log.d("ScreenStateReceiver", "BOOT_COMPLETED received. Device rebooted.")
+                // Only auto-start after boot if app wasn't properly exited
                 serviceIntent.action = MerlinAccessibilityService.ACTION_BRING_APP_TO_FOREGROUND
                 context.startService(serviceIntent)
             }

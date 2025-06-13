@@ -126,40 +126,40 @@ data class AppTheme(
 )
 
 object AppThemes {
-    val UNDER_THE_SEA = AppTheme(
+    private val UNDER_THE_SEA = AppTheme(
         id = "under_the_sea",
         name = "Under the Sea",
-        tutorName = "Olivia",
-        tutorDescription = "A friendly octopus who loves exploring the ocean depths",
-        backgroundImage = R.drawable.underthesea,
-        tutorAvatar = R.drawable.underthesea
+        backgroundImage = R.drawable.underthesea_bg,
+        tutorAvatar = R.drawable.ic_launcher_foreground,
+        tutorName = "Oliva",
+        tutorDescription = "A friendly octopus who loves exploring the ocean depths"
     )
     
-    val OUTER_SPACE = AppTheme(
+    private val OUTER_SPACE = AppTheme(
         id = "outer_space",
         name = "Outer Space",
-        tutorName = "Spoko",
-        tutorDescription = "A curious alien who knows all about the stars and planets",
         backgroundImage = R.drawable.outerspace_bg,
-        tutorAvatar = R.drawable.underthesea
+        tutorAvatar = R.drawable.ic_launcher_foreground,
+        tutorName = "Spoko",
+        tutorDescription = "A curious alien who knows all about the stars and planets"
     )
     
-    val LOST_WORLD = AppTheme(
+    private val LOST_WORLD = AppTheme(
         id = "lost_world",
         name = "Lost World",
+        backgroundImage = R.drawable.lostworld_bg,
+        tutorAvatar = R.drawable.ic_launcher_foreground,
         tutorName = "Wizbit",
-        tutorDescription = "A wise owl who guides adventures through ancient lands",
-        backgroundImage = R.drawable.underthesea,
-        tutorAvatar = R.drawable.underthesea
+        tutorDescription = "A wise owl who guides adventures through ancient lands"
     )
     
-    val FANTASY = AppTheme(
+    private val FANTASY = AppTheme(
         id = "fantasy",
         name = "Fantasy",
+        backgroundImage = R.drawable.fantasy_bg,
+        tutorAvatar = R.drawable.ic_launcher_foreground,
         tutorName = "Prince",
-        tutorDescription = "A brave mouse prince from a magical kingdom",
-        backgroundImage = R.drawable.underthesea,
-        tutorAvatar = R.drawable.underthesea
+        tutorDescription = "A brave mouse prince from a magical kingdom"
     )
     
     val ALL_THEMES = listOf(UNDER_THE_SEA, OUTER_SPACE, LOST_WORLD, FANTASY)

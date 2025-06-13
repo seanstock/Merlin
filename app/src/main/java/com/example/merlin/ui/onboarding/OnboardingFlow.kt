@@ -163,7 +163,7 @@ fun OnboardingFlow(
                 contentAlignment = Alignment.Center
             ) {
                 AppleCard(
-                    backgroundColor = AppleSystemBackground.copy(alpha = 0.95f),
+                    backgroundColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Column(
@@ -178,7 +178,7 @@ fun OnboardingFlow(
                         Text(
                             text = "Setting up your profile...",
                             style = AppleBody,
-                            color = ApplePrimaryLabel
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -244,7 +244,7 @@ private fun ChildInfoScreen(
         Text(
             text = "Tell us about your child",
             style = AppleNavigationTitle,
-            color = ApplePrimaryLabel,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
         
@@ -272,7 +272,7 @@ private fun ChildInfoScreen(
                     Text(
                         text = "Age: $age",
                         style = AppleSubheadline.copy(fontWeight = FontWeight.SemiBold),
-                        color = ApplePrimaryLabel
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(AppleSpacing.small))
                     Slider(
@@ -323,7 +323,7 @@ private fun ChildInfoScreen(
                     Text(
                         text = "Interests (optional)",
                         style = AppleSubheadline.copy(fontWeight = FontWeight.SemiBold),
-                        color = ApplePrimaryLabel
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(AppleSpacing.small))
                     FlowRow(
@@ -340,8 +340,8 @@ private fun ChildInfoScreen(
                                 },
                                 label = { Text(interest) },
                                 colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = AppleBlue,
-                                    selectedLabelColor = AppleSystemBackground
+                                    selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    selectedLabelColor = MaterialTheme.colorScheme.onPrimary
                                 )
                             )
                         }
@@ -442,13 +442,13 @@ private fun ParentPinScreen(
         Text(
             text = "Set a Parent PIN",
             style = AppleNavigationTitle,
-            color = ApplePrimaryLabel,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
         Text(
             text = "This PIN will be used to access parent settings. Choose something secure and memorable.",
             style = AppleBody,
-            color = AppleSecondaryLabel,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = AppleSpacing.medium)
         )
@@ -505,14 +505,14 @@ private fun ParentPinScreen(
                     Text(
                         text = "PINs do not match",
                         style = AppleFootnote,
-                        color = AppleRed
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
                 if (pin.isNotEmpty() && pin.length < pinLength) {
                     Text(
                         text = "PIN must be $pinLength digits",
                         style = AppleFootnote,
-                        color = AppleSecondaryLabel
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -566,7 +566,7 @@ private fun TutorialScreen(
         Text(
             text = "Quick Tutorial",
             style = AppleNavigationTitle,
-            color = ApplePrimaryLabel,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
         
@@ -583,7 +583,7 @@ private fun TutorialScreen(
                 Text(
                     text = "You're almost ready!",
                     style = AppleHeadline,
-                    color = ApplePrimaryLabel,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
                 
@@ -592,7 +592,7 @@ private fun TutorialScreen(
                 Text(
                     text = "Merlin is now set up and ready to provide a safe, educational experience for your child. You can access parent controls anytime using your PIN.",
                     style = AppleBody,
-                    color = AppleSecondaryLabel,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             }
@@ -644,7 +644,7 @@ private fun AIIntroductionScreen(
         Text(
             text = "Hello, ${childName.ifBlank { "Friend" }}!",
             style = AppleNavigationTitle,
-            color = ApplePrimaryLabel,
+            color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )
         
@@ -661,7 +661,7 @@ private fun AIIntroductionScreen(
                 Text(
                     text = "I'm Merlin, your learning companion!",
                     style = AppleHeadline,
-                    color = ApplePrimaryLabel,
+                    color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center
                 )
                 
@@ -670,7 +670,7 @@ private fun AIIntroductionScreen(
                 Text(
                     text = "I'm here to help you learn, explore, and discover amazing things together. Ask me questions, play learning games, or just chat about anything that interests you!",
                     style = AppleBody,
-                    color = AppleSecondaryLabel,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             }

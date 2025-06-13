@@ -1,131 +1,299 @@
 package com.example.merlin.ui.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.merlin.ui.accessibility.AccessibilityConstants
 import com.example.merlin.ui.theme.*
+import com.example.merlin.ui.parent.AnalyticsScreen
+import com.example.merlin.ui.parent.ScreenTimeScreen
 
+/**
+ * Settings navigation destinations
+ */
+sealed class SettingsScreen(val route: String, val label: String, val icon: ImageVector) {
+    object Profile : SettingsScreen("profile", "Profile", Icons.Default.Face)
+    object Analytics : SettingsScreen("analytics", "Analytics", Icons.Default.Analytics)
+    object ScreenTime : SettingsScreen("screentime", "Screen Time", Icons.Default.Schedule)
+    object Security : SettingsScreen("security", "Security", Icons.Default.Security)
+    object Exit : SettingsScreen("exit", "Exit", Icons.Default.ExitToApp)
+}
+
+val settingsScreens = listOf(
+    SettingsScreen.Profile,
+    SettingsScreen.Analytics,
+    SettingsScreen.ScreenTime,
+    SettingsScreen.Security,
+    SettingsScreen.Exit
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onExitApp: () -> Unit,
-    onNavigateToParentDashboard: () -> Unit,
-    onNavigateToChildProfile: () -> Unit
+    onNavigateToParentDashboard: () -> Unit = {}, // Deprecated - no longer used
+    onNavigateToChildProfile: () -> Unit = {} // Deprecated - no longer used
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppleSystemBackground)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(AppleSpacing.large)
-        ) {
-            // Header
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = AppleSpacing.large),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = AccessibilityConstants.ContentDescriptions.BACK_BUTTON,
-                        tint = AppleBlue
+    val navController = rememberNavController()
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text(
+                        "Settings",
+                        style = AppleLargeTitle,
+                        color = ApplePrimaryLabel
                     )
-                }
-                Text(
-                    text = "Settings",
-                    style = AppleLargeTitle,
-                    color = ApplePrimaryLabel,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = AccessibilityConstants.ContentDescriptions.BACK_BUTTON,
+                            tint = AppleBlue
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = AppleSystemBackground
                 )
-                Spacer(Modifier.width(48.dp)) // To balance the back button
+            )
+        },
+        bottomBar = { 
+            SettingsBottomNavBar(
+                navController = navController,
+                onExitApp = onExitApp
+            )
+        },
+        containerColor = AppleSystemBackground
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = SettingsScreen.Profile.route,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(SettingsScreen.Profile.route) {
+                ProfileTabScreen()
             }
+            composable(SettingsScreen.Analytics.route) {
+                AnalyticsScreen()
+            }
+            composable(SettingsScreen.ScreenTime.route) {
+                ScreenTimeScreen()
+            }
+            composable(SettingsScreen.Security.route) {
+                SecurityScreen()
+            }
+            composable(SettingsScreen.Exit.route) {
+                ExitConfirmationScreen(
+                    onConfirmExit = onExitApp,
+                    onCancel = { navController.navigate(SettingsScreen.Profile.route) }
+                )
+            }
+        }
+    }
+}
 
-            // Settings Items
-            SettingsItem(
-                title = "Child Profile",
-                description = "Edit name, age, and theme",
-                icon = Icons.Default.Face,
-                onClick = onNavigateToChildProfile
-            )
-            SettingsItem(
-                title = "Parent Dashboard",
-                description = "View progress and manage settings",
-                icon = Icons.Default.School,
-                onClick = onNavigateToParentDashboard
-            )
-            SettingsItem(
-                title = "Exit Merlin",
-                description = "Sign out and exit the application",
-                icon = Icons.Default.ExitToApp,
-                onClick = onExitApp
+@Composable
+fun SettingsBottomNavBar(
+    navController: NavController,
+    onExitApp: () -> Unit
+) {
+    NavigationBar(
+        containerColor = AppleSystemBackground,
+        contentColor = AppleBlue
+    ) {
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+        
+        settingsScreens.forEach { screen ->
+            NavigationBarItem(
+                icon = { 
+                    Icon(
+                        screen.icon, 
+                        contentDescription = screen.label,
+                        tint = if (currentRoute == screen.route) AppleBlue else AppleSecondaryLabel
+                    )
+                },
+                label = { 
+                    Text(
+                        screen.label,
+                        color = if (currentRoute == screen.route) AppleBlue else AppleSecondaryLabel
+                    )
+                },
+                selected = currentRoute == screen.route,
+                onClick = {
+                    if (screen.route == SettingsScreen.Exit.route) {
+                        // Navigate to exit confirmation
+                        navController.navigate(screen.route)
+                    } else {
+                        navController.navigate(screen.route) {
+                            popUpTo(navController.graph.startDestinationId) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = AppleBlue,
+                    selectedTextColor = AppleBlue,
+                    unselectedIconColor = AppleSecondaryLabel,
+                    unselectedTextColor = AppleSecondaryLabel,
+                    indicatorColor = AppleBlue.copy(alpha = 0.1f)
+                )
             )
         }
     }
 }
 
 @Composable
-fun SettingsItem(
-    title: String,
-    description: String,
-    icon: ImageVector,
-    onClick: () -> Unit
+fun SecurityScreen(
+    modifier: Modifier = Modifier
 ) {
-    AppleCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = AppleSpacing.medium)
-            .clickable { onClick() },
-        elevation = 1,
-        cornerRadius = 16
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AppleSystemBackground)
+            .padding(AppleSpacing.large),
+        contentAlignment = Alignment.Center
     ) {
-        AppleListItem(
-            title = title,
-            subtitle = description,
-            leading = {
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(
-                            color = AppleGray5,
-                            shape = CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.Security,
+                contentDescription = null,
+                tint = AppleSecondaryLabel,
+                modifier = Modifier.size(80.dp)
+            )
+            Spacer(modifier = Modifier.height(AppleSpacing.large))
+            Text(
+                text = "PIN & Security",
+                style = AppleHeadline,
+                color = ApplePrimaryLabel
+            )
+            Spacer(modifier = Modifier.height(AppleSpacing.small))
+            Text(
+                text = "Change PIN and manage security settings",
+                style = AppleBody,
+                color = AppleSecondaryLabel,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun ExitConfirmationScreen(
+    onConfirmExit: () -> Unit,
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AppleSystemBackground)
+            .padding(AppleSpacing.large),
+        contentAlignment = Alignment.Center
+    ) {
+        AppleCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(AppleSpacing.large),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "🚪",
+                    style = AppleLargeTitle.copy(fontSize = 64.sp)
+                )
+                Spacer(modifier = Modifier.height(AppleSpacing.medium))
+                Text(
+                    text = "Exit Merlin?",
+                    style = AppleHeadline,
+                    color = ApplePrimaryLabel
+                )
+                Spacer(modifier = Modifier.height(AppleSpacing.small))
+                Text(
+                    text = "Are you sure you want to close Merlin and return to your device?",
+                    style = AppleBody,
+                    color = AppleSecondaryLabel,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(AppleSpacing.large))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(AppleSpacing.medium)
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = AppleBlue,
-                        modifier = Modifier.size(22.dp)
+                    AppleButton(
+                        text = "Cancel",
+                        onClick = onCancel,
+                        style = AppleButtonStyle.Secondary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    AppleButton(
+                        text = "Exit",
+                        onClick = onConfirmExit,
+                        style = AppleButtonStyle.Primary,
+                        modifier = Modifier.weight(1f)
                     )
                 }
-            },
-            trailing = {
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = null,
-                    tint = AppleGray,
-                    modifier = Modifier.size(20.dp)
-                )
             }
-        )
+        }
+    }
+}
+
+@Composable
+fun ProfileTabScreen(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(AppleSystemBackground)
+            .padding(AppleSpacing.large),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.Face,
+                contentDescription = null,
+                tint = AppleSecondaryLabel,
+                modifier = Modifier.size(80.dp)
+            )
+            Spacer(modifier = Modifier.height(AppleSpacing.large))
+            Text(
+                text = "Child Profile",
+                style = AppleHeadline,
+                color = ApplePrimaryLabel
+            )
+            Spacer(modifier = Modifier.height(AppleSpacing.small))
+            Text(
+                text = "Edit name, age, theme, and learning preferences",
+                style = AppleBody,
+                color = AppleSecondaryLabel,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 } 

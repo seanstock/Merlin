@@ -46,6 +46,15 @@ object GameRegistry {
             estimatedLoadTime = 1400L,
             requiresNetwork = false,
             supportedFeatures = listOf("touch", "timer", "scoring", "numbers")
+        ),
+        GameMetadata(
+            id = "shape-drop",
+            name = "Shape Drop Adventure",
+            description = "Drag and drop shapes into matching holes - perfect for toddlers!",
+            maxLevel = 10,
+            estimatedLoadTime = 800L,
+            requiresNetwork = false,
+            supportedFeatures = listOf("touch", "drag-drop", "shapes", "toddler-friendly", "haptic")
         )
     )
     

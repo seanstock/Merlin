@@ -116,7 +116,8 @@ class MainActivity : ComponentActivity(),
                 MerlinTheme {
                     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                         MerlinApp(
-                            modifier = Modifier.padding(innerPadding)
+                            modifier = Modifier.padding(innerPadding),
+                            showReEnableProtection = true
                         )
                     }
                 }
@@ -141,7 +142,8 @@ class MainActivity : ComponentActivity(),
             MerlinTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     MerlinApp(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(innerPadding),
+                        showReEnableProtection = false
                     )
                 }
             }
@@ -642,6 +644,16 @@ class MainActivity : ComponentActivity(),
             }
         }
         
+        // Signal accessibility service to stop aggressive behavior
+        try {
+            val serviceIntent = Intent(this, com.example.merlin.services.MerlinAccessibilityService::class.java)
+            serviceIntent.action = "DISABLE_AGGRESSIVE_MODE"
+            startService(serviceIntent)
+            Log.d(TAG, "Signaled accessibility service to disable aggressive mode")
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to signal accessibility service: ${e.message}")
+        }
+        
         // Clean up security components
         try {
             cleanupSecurity()
@@ -653,13 +665,49 @@ class MainActivity : ComponentActivity(),
         finishAndRemoveTask()
         exitProcess(0)
     }
+
+    /**
+     * Re-enable sticky behavior after proper exit (for parents who want to use the app again)
+     */
+    fun reEnableStickyBehavior() {
+        Log.d(TAG, "Re-enabling sticky behavior at parent request")
+        
+        // Clear the proper exit flag
+        val prefs = getSharedPreferences("merlin_state", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean(PREF_PROPER_EXIT, false).apply()
+        
+        // Signal accessibility service to re-enable aggressive mode
+        try {
+            val serviceIntent = Intent(this, com.example.merlin.services.MerlinAccessibilityService::class.java)
+            serviceIntent.action = "ENABLE_AGGRESSIVE_MODE"
+            startService(serviceIntent)
+            Log.d(TAG, "Signaled accessibility service to enable aggressive mode")
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to signal accessibility service: ${e.message}")
+        }
+        
+        // Set up sticky window behavior
+        setupStickyWindow()
+        
+        // Initialize security components
+        initializeSecurity()
+        
+        // Start security monitoring
+        startSecurityMonitoring()
+        
+        // Enable lock task if needed
+        attemptLockTaskIfNeeded()
+        
+        Log.d(TAG, "Sticky behavior re-enabled successfully")
+    }
 }
 
 @Composable
-fun MerlinApp(modifier: Modifier = Modifier) {
+fun MerlinApp(modifier: Modifier = Modifier, showReEnableProtection: Boolean = false) {
     val context = LocalContext.current
     val onboardingViewModel: OnboardingViewModel = viewModel()
     var showOnboarding by remember { mutableStateOf(true) }
+    var showReEnableDialog by remember { mutableStateOf(showReEnableProtection) }
 
     // Setup Repositories for OnboardingViewModel
     LaunchedEffect(onboardingViewModel) {
@@ -681,6 +729,19 @@ fun MerlinApp(modifier: Modifier = Modifier) {
         )
     } else {
         MerlinMainScreen(modifier = modifier)
+    }
+    
+    // Show re-enable protection dialog if needed
+    if (showReEnableDialog) {
+        ReEnableProtectionDialog(
+            onReEnable = {
+                showReEnableDialog = false
+                (context as? MainActivity)?.reEnableStickyBehavior()
+            },
+            onDismiss = {
+                showReEnableDialog = false
+            }
+        )
     }
 }
 
@@ -734,8 +795,8 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
             is UiVariantState.Success -> {
                 val uiVariant = state.variant
                 // The existing when block for showing the correct screen
-                when (currentScreen) {
-                    "main" -> {
+        when (currentScreen) {
+            "main" -> {
                         when (uiVariant) {
                             UIVariant.SIMPLE -> {
                                 SimpleMainMenuScreen(
@@ -752,56 +813,43 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
                             }
                             UIVariant.ADVANCED -> {
                                 AdvancedMainMenuScreen(
-                                    onNavigateToChat = { currentScreen = "chat" },
-                                    onNavigateToGames = { currentScreen = "games" },
-                                    onNavigateToSettings = handleSettingsRequest,
-                                    modifier = modifier
-                                )
+                    onNavigateToChat = { currentScreen = "chat" },
+                    onNavigateToGames = { currentScreen = "games" },
+                    onNavigateToSettings = handleSettingsRequest,
+                    modifier = modifier
+                )
                             }
                         }
-                    }
-                    "chat" -> {
-                        ChatScreen(
-                            onNavigateBack = { currentScreen = "main" },
-                            onNavigateToSettings = handleSettingsRequest,
-                            onLaunchGame = { gameId, level ->
-                                selectedGameId = gameId
-                                selectedGameLevel = level
-                                currentScreen = "games"
-                            },
-                            modifier = modifier
-                        )
-                    }
-                    "games" -> {
-                        GameScreen(
-                            onNavigateBack = { currentScreen = "main" },
+            }
+            "chat" -> {
+                ChatScreen(
+                    onNavigateBack = { currentScreen = "main" },
+                    onNavigateToSettings = handleSettingsRequest,
+                    onLaunchGame = { gameId, level ->
+                        selectedGameId = gameId
+                        selectedGameLevel = level
+                        currentScreen = "games"
+                    },
+                    modifier = modifier
+                )
+            }
+            "games" -> {
+                GameScreen(
+                    onNavigateBack = { currentScreen = "main" },
                             modifier = modifier,
                             gameId = selectedGameId
-                        )
+                )
+            }
+            "settings" -> {
+                SettingsScreen(
+                    onNavigateBack = { currentScreen = "main" },
+                    onExitApp = {
+                        // Use proper exit method instead of direct exitProcess
+                        (context as? MainActivity)?.exitAppProperly()
+                            ?: exitProcess(0) // Fallback if context is not MainActivity
                     }
-                    "settings" -> {
-                        SettingsScreen(
-                            onNavigateBack = { currentScreen = "main" },
-                            onExitApp = {
-                                // Use proper exit method instead of direct exitProcess
-                                (context as? MainActivity)?.exitAppProperly()
-                                    ?: exitProcess(0) // Fallback if context is not MainActivity
-                            },
-                            onNavigateToParentDashboard = { currentScreen = "parent_dashboard" },
-                            onNavigateToChildProfile = { currentScreen = "child_profile" }
-                        )
-                    }
-                    "parent_dashboard" -> {
-                        ParentDashboardScreen(
-                            onNavigateBack = { currentScreen = "settings" },
-                            modifier = modifier
-                        )
-                    }
-                    "child_profile" -> {
-                        ChildProfileScreen(
-                            onNavigateBack = { currentScreen = "settings" }
-                        )
-                    }
+                )
+            }
                 }
             }
         }
@@ -819,6 +867,54 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+@Composable
+fun ReEnableProtectionDialog(
+    onReEnable: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "🔒 Re-enable Protection?",
+                style = AppleHeadline,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "Merlin was safely exited. Would you like to re-enable child protection mode?",
+                    style = AppleBody,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(AppleSpacing.medium))
+                Text(
+                    text = "• App will become sticky again\n• Screen protection will be active\n• Child-safe environment will be enforced",
+                    style = AppleFootnote,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        confirmButton = {
+            AppleButton(
+                text = "Enable Protection",
+                onClick = onReEnable,
+                style = AppleButtonStyle.Primary
+            )
+        },
+        dismissButton = {
+            AppleButton(
+                text = "Stay Normal",
+                onClick = onDismiss,
+                style = AppleButtonStyle.Secondary
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        tonalElevation = 8.dp
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

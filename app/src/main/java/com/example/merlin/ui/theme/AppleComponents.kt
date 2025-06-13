@@ -80,7 +80,7 @@ val AppleSystemGray6 = Color(0xFFF2F2F7)
 @Composable
 fun AppleCard(
     modifier: Modifier = Modifier,
-    backgroundColor: Color = AppleCardBackground,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     elevation: Int = 1, // 1 = light, 2 = medium, 3 = strong
     cornerRadius: Int = 12, // Apple's standard corner radius
     content: @Composable ColumnScope.() -> Unit
@@ -103,7 +103,7 @@ fun AppleCard(
         shape = RoundedCornerShape(cornerRadius.dp),
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor,
-            contentColor = ApplePrimaryLabel
+            contentColor = MaterialTheme.colorScheme.onSurface
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 0.dp // We handle elevation with shadow
@@ -129,22 +129,22 @@ fun AppleButton(
 ) {
     val colors = when (style) {
         AppleButtonStyle.Primary -> ButtonDefaults.buttonColors(
-            containerColor = AppleBlue,
-            contentColor = AppleSystemBackground,
-            disabledContainerColor = AppleGray4,
-            disabledContentColor = AppleGray
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
         AppleButtonStyle.Secondary -> ButtonDefaults.buttonColors(
-            containerColor = AppleGray5,
-            contentColor = AppleBlue,
-            disabledContainerColor = AppleGray6,
-            disabledContentColor = AppleGray
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
         AppleButtonStyle.Destructive -> ButtonDefaults.buttonColors(
-            containerColor = AppleRed,
-            contentColor = AppleSystemBackground,
-            disabledContainerColor = AppleGray4,
-            disabledContentColor = AppleGray
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
     
@@ -339,7 +339,7 @@ fun AppleTextField(
             Text(
                 text = placeholder,
                 style = MaterialTheme.typography.bodyLarge,
-                color = AppleTertiaryLabel
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }} else null,
         enabled = enabled,
@@ -350,15 +350,17 @@ fun AppleTextField(
         trailingIcon = trailingIcon,
         isError = isError,
         textStyle = MaterialTheme.typography.bodyLarge.copy(
-            color = ApplePrimaryLabel
+            color = MaterialTheme.colorScheme.onSurface
         ),
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = AppleBlue,
-            unfocusedBorderColor = AppleGray3,
-            disabledBorderColor = AppleGray4,
-            focusedContainerColor = AppleSystemBackground,
-            unfocusedContainerColor = AppleSystemBackground,
-            disabledContainerColor = AppleGray6
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            disabledBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surface,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
         ),
         shape = RoundedCornerShape(10.dp)
     )
