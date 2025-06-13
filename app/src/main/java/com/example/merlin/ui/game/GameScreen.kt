@@ -30,7 +30,8 @@ import com.example.merlin.utils.UserSessionRepository
 @Composable
 fun GameScreen(
     onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    gameId: String? = null // Optional game ID to launch directly
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -40,9 +41,9 @@ fun GameScreen(
     val economyStateRepository = remember { EconomyStateRepository(database.economyStateDao()) }
     val childProfileRepository = remember { ChildProfileRepository(database.childProfileDao()) }
     val economyService = remember { LocalEconomyService(economyStateRepository, childProfileRepository) }
-    val userSessionRepository = remember { UserSessionRepository(context) }
+    val userSessionRepository = remember { UserSessionRepository.getInstance(context) }
     
-    // Game manager and result handler
+    // Game manager (pre-initialized at application startup) and result handler
     val gameManager = remember { GameManager.getInstance(context, coroutineScope) }
     val gameResultHandler = remember { GameResultHandler(coroutineScope) }
     
@@ -50,17 +51,24 @@ fun GameScreen(
     var selectedGame by remember { mutableStateOf<GameMetadata?>(null) }
     var currentLevel by remember { mutableIntStateOf(1) }
     var gameResult by remember { mutableStateOf<GameResult?>(null) }
-    var showGameSelection by remember { mutableStateOf(true) }
+    var showGameSelection by remember { mutableStateOf(gameId == null) }
     
     // Coin earning state
     var coinEarningMessage by remember { mutableStateOf<String?>(null) }
     
-    // Available games
+    // Available games (loaded instantly from static registry)
     val availableGames by gameManager.availableGamesFlow.collectAsState()
     
-    // Preload recommended games on first composition
-    LaunchedEffect(Unit) {
-        gameManager.preloadRecommendedGames()
+    // If a gameId is passed, find and set it as the selected game
+    LaunchedEffect(gameId, availableGames) {
+        if (gameId != null && availableGames.isNotEmpty()) {
+            val gameToLaunch = availableGames.find { it.id == gameId }
+            if (gameToLaunch != null) {
+                selectedGame = gameToLaunch
+                showGameSelection = false
+                gameManager.preloadGame(gameToLaunch.id, 1)
+            }
+        }
     }
 
     // Show coin earning messages temporarily
@@ -94,7 +102,7 @@ fun GameScreen(
                         }
                         coinEarningMessage = message
                         Log.d("GameScreen", "Coin earning success: $message")
-                    }.onError { error ->
+                    }.onFailure { error ->
                         coinEarningMessage = "Error earning coins: ${error.message}"
                         Log.e("GameScreen", "Coin earning failed", error)
                     }

@@ -46,28 +46,29 @@ fun EmptyState(
     icon: ImageVector,
     modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+    AppleCard(
+        modifier = modifier.fillMaxWidth(),
+        elevation = 1,
+        cornerRadius = 16
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppleSpacing.xl)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                modifier = Modifier.size(48.dp)
+                tint = AppleGray,
+                modifier = Modifier.size(56.dp)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(AppleSpacing.medium))
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                color = AppleSecondaryLabel,
                 textAlign = TextAlign.Center
             )
         }
@@ -100,34 +101,35 @@ fun AnalyticsScreen(
     LaunchedEffect(key1 = childId) {
         viewModel.loadAnalytics(childId)
     }
-    Shark Pet Cordless Stick Vacuum with XL Dust Cup, LED Headlights, Removable Handheld Vac, Crevice Tool, Portable Vacuum fo...
-    Shark
-    Pet Cordless Stick Vacuum with XL Dust Cup, LED Headlights, Removable Handheld Vac, Crevice Tool, Portable Vacuum for Household Pet Hair, Carpet and Hard Floors, 40min Runtime, Grey, IX141
 
-    LazyColumn(
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+            .background(AppleSecondarySystemBackground)
     ) {
-        item {
-            Text(
-                "Child's Progress",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = WisdomBlue
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            SubjectMasteryCard(masteryLevels = state.subjectMastery)
-        }
-        item {
-            BadgeCard(badges = state.earnedBadges)
-        }
-        item {
-            ExperiencePointsCard(experience = state.experience)
+        // Apple-style large title header
+        AppleSectionHeader(
+            title = "Analytics",
+            subtitle = "Track your child's learning progress",
+            modifier = Modifier.padding(top = AppleSpacing.medium)
+        )
+        
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = AppleSpacing.medium),
+            verticalArrangement = Arrangement.spacedBy(AppleSpacing.medium),
+            contentPadding = PaddingValues(vertical = AppleSpacing.medium)
+        ) {
+            item {
+                SubjectMasteryCard(masteryLevels = state.subjectMastery)
+            }
+            item {
+                BadgeCard(badges = state.earnedBadges)
+            }
+            item {
+                ExperiencePointsCard(experience = state.experience)
+            }
         }
     }
 }
@@ -138,8 +140,12 @@ fun AnalyticsContent(
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        modifier = modifier
+            .fillMaxSize()
+            .background(AppleSecondarySystemBackground)
+            .padding(horizontal = AppleSpacing.medium),
+        verticalArrangement = Arrangement.spacedBy(AppleSpacing.medium),
+        contentPadding = PaddingValues(vertical = AppleSpacing.medium)
     ) {
         // Overall performance summary
         item {
@@ -965,15 +971,28 @@ fun DrawScope.drawPerformanceChart(trends: List<PerformanceTrendDto>) {
 
 @Composable
 fun SubjectMasteryCard(masteryLevels: List<SubjectMasteryDto>) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
-        Column(Modifier.padding(20.dp)) {
-            Text("Subject Mastery", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(16.dp))
-            if (masteryLevels.isEmpty()) {
-                EmptyState(message = "No mastery data available yet.", icon = Icons.Default.School)
-            } else {
-                masteryLevels.forEach { mastery ->
-                    SubjectMasteryItem(mastery = mastery)
+    AppleCard(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = 1,
+        cornerRadius = 16
+    ) {
+        Text(
+            text = "Subject Mastery",
+            style = AppleNavigationTitle,
+            color = ApplePrimaryLabel
+        )
+        Spacer(modifier = Modifier.height(AppleSpacing.medium))
+        
+        if (masteryLevels.isEmpty()) {
+            EmptyState(
+                message = "No mastery data available yet.",
+                icon = Icons.Default.School
+            )
+        } else {
+            masteryLevels.forEach { mastery ->
+                SubjectMasteryItem(mastery = mastery)
+                if (mastery != masteryLevels.last()) {
+                    Spacer(modifier = Modifier.height(AppleSpacing.small))
                 }
             }
         }
@@ -982,55 +1001,95 @@ fun SubjectMasteryCard(masteryLevels: List<SubjectMasteryDto>) {
 
 @Composable
 fun ExperiencePointsCard(experience: ExperienceDto?) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
-        Column(Modifier.padding(20.dp)) {
-            Text("Experience Points", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(16.dp))
-            if (experience == null) {
-                EmptyState(message = "No experience data available.", icon = Icons.Default.TrendingUp)
-            } else {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Level ${experience.level}", style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.width(16.dp))
-                    LinearProgressIndicator(
-                        progress = experience.progressToNextLevel,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(10.dp)
-                            .clip(CircleShape)
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
+    AppleCard(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = 1,
+        cornerRadius = 16
+    ) {
+        Text(
+            text = "Experience Points",
+            style = AppleNavigationTitle,
+            color = ApplePrimaryLabel
+        )
+        Spacer(modifier = Modifier.height(AppleSpacing.medium))
+        
+        if (experience == null) {
+            EmptyState(
+                message = "No experience data available.",
+                icon = Icons.Default.TrendingUp
+            )
+        } else {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "${experience.totalXpEarned} / ${experience.nextLevelXp} XP",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.align(Alignment.End)
+                    text = "Level ${experience.level}",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = ApplePrimaryLabel
+                )
+                Spacer(modifier = Modifier.width(AppleSpacing.medium))
+                LinearProgressIndicator(
+                    progress = experience.progressToNextLevel,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = AppleBlue,
+                    trackColor = AppleGray5
                 )
             }
+            Spacer(modifier = Modifier.height(AppleSpacing.small))
+            Text(
+                text = "${experience.totalXpEarned} / ${experience.nextLevelXp} XP",
+                style = MaterialTheme.typography.bodyMedium,
+                color = AppleSecondaryLabel,
+                modifier = Modifier.align(Alignment.End)
+            )
         }
     }
 }
 
 @Composable
 fun BadgeCard(badges: List<BadgeDto>) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
-        Column(Modifier.padding(20.dp)) {
-            Text("Earned Badges", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(16.dp))
-            if (badges.isEmpty()) {
-                EmptyState(message = "No badges earned yet. Keep learning!", icon = Icons.Default.EmojiEvents)
-            } else {
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(4.dp)
-                ) {
-                    items(badges.size) { index ->
-                        val badge = badges[index]
+    AppleCard(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = 1,
+        cornerRadius = 16
+    ) {
+        Text(
+            text = "Earned Badges",
+            style = AppleNavigationTitle,
+            color = ApplePrimaryLabel
+        )
+        Spacer(modifier = Modifier.height(AppleSpacing.medium))
+        
+        if (badges.isEmpty()) {
+            EmptyState(
+                message = "No badges earned yet. Keep learning!",
+                icon = Icons.Default.EmojiEvents
+            )
+        } else {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(AppleSpacing.small),
+                contentPadding = PaddingValues(AppleSpacing.xs)
+            ) {
+                items(badges.size) { index ->
+                    val badge = badges[index]
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(
+                                color = AppleYellow.copy(alpha = 0.1f),
+                                shape = RoundedCornerShape(AppleCornerRadius.medium)
+                            )
+                            .padding(AppleSpacing.small),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = badge.name,
-                            tint = AmberGlow,
-                            modifier = Modifier.size(64.dp).padding(8.dp)
+                            tint = AppleYellow,
+                            modifier = Modifier.size(32.dp)
                         )
                     }
                 }

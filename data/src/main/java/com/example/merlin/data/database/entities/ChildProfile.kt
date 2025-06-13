@@ -20,5 +20,8 @@ data class ChildProfile(
     @ColumnInfo(name = "preferred_language")
     val preferredLanguage: String?,
 
-    val location: String?
+    val location: String?,
+
+    @ColumnInfo(name = "selected_theme")
+    val selectedTheme: String? = "under_the_sea" // Default theme
 ) 

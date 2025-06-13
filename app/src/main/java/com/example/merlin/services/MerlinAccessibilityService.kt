@@ -19,30 +19,23 @@ import com.example.merlin.utils.UserSessionRepository
 class MerlinAccessibilityService : AccessibilityService() {
 
     private lateinit var userSessionRepository: UserSessionRepository
-    private var foregroundCheckHandler: Handler? = null
-    private var foregroundCheckRunnable: Runnable? = null
 
     companion object {
         const val ACTION_BRING_APP_TO_FOREGROUND = "com.example.merlin.ACTION_BRING_APP_TO_FOREGROUND"
-
+        private const val TAG = "MerlinAccessibilityService"
         private const val FG_NOTIFICATION_CHANNEL_ID = "MERLIN_ACCESSIBILITY_SERVICE_CHANNEL"
         private const val FG_NOTIFICATION_CHANNEL_NAME = "Merlin Service"
         private const val ONGOING_NOTIFICATION_ID = 1001
-        private const val FOREGROUND_CHECK_INTERVAL = 2000L // Check every 2 seconds
     }
 
-    override fun onServiceConnected() {
-        super.onServiceConnected()
+    override fun onCreate() {
+        super.onCreate()
+        userSessionRepository = UserSessionRepository.getInstance(this)
 
-        // Initialize UserSessionRepository
-        userSessionRepository = UserSessionRepository(applicationContext)
-
+        // Create notification channel for foreground service
         createNotificationChannelIfNeeded()
         startForeground(ONGOING_NOTIFICATION_ID, buildOngoingNotification())
         Log.d("MerlinAccessibilityService", "Service connected and running in foreground.")
-        
-        // Start periodic foreground checking
-        startForegroundChecking()
         
         Log.d("MerlinAccessibilityService", "Service ready to monitor app switches and maintain Merlin app foreground.")
     }
@@ -186,49 +179,13 @@ class MerlinAccessibilityService : AccessibilityService() {
         super.onDestroy()
         Log.d("MerlinAccessibilityService", "onDestroy called. Stopping foreground service.")
         
-        stopForeground(true) // Remove the notification
-        stopForegroundChecking()
+        stopForeground(STOP_FOREGROUND_REMOVE) // Use the new constant for clarity
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("MerlinAccessibilityService", "onStartCommand received action: ${intent?.action}")
-        when (intent?.action) {
-            ACTION_BRING_APP_TO_FOREGROUND -> bringMerlinToForeground()
+        if (intent?.action == ACTION_BRING_APP_TO_FOREGROUND) {
+            bringMerlinToForeground()
         }
         return START_STICKY
-    }
-
-    /**
-     * Start periodic checking to ensure Merlin stays in foreground
-     */
-    private fun startForegroundChecking() {
-        foregroundCheckHandler = Handler(Looper.getMainLooper())
-        foregroundCheckRunnable = object : Runnable {
-            override fun run() {
-                val activeChildId = userSessionRepository.getActiveChildId()
-                if (activeChildId != null) {
-                    // Only check if onboarding is complete
-                    bringMerlinToForeground()
-                }
-                // Schedule next check
-                foregroundCheckHandler?.postDelayed(this, FOREGROUND_CHECK_INTERVAL)
-            }
-        }
-        
-        // Start the periodic check
-        foregroundCheckHandler?.postDelayed(foregroundCheckRunnable!!, FOREGROUND_CHECK_INTERVAL)
-        Log.d("MerlinAccessibilityService", "Started periodic foreground checking every ${FOREGROUND_CHECK_INTERVAL}ms")
-    }
-    
-    /**
-     * Stop periodic foreground checking
-     */
-    private fun stopForegroundChecking() {
-        foregroundCheckRunnable?.let { runnable ->
-            foregroundCheckHandler?.removeCallbacks(runnable)
-        }
-        foregroundCheckHandler = null
-        foregroundCheckRunnable = null
-        Log.d("MerlinAccessibilityService", "Stopped periodic foreground checking")
     }
 } 

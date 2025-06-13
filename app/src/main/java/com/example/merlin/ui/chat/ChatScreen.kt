@@ -72,7 +72,7 @@ fun ChatScreen(
     PerformanceAwareDisposableEffect()
     
     // Get the active child ID and create the ViewModel
-    val userSessionRepository = remember { UserSessionRepository(context) }
+    val userSessionRepository = remember { UserSessionRepository.getInstance(context) }
     val activeChildId = userSessionRepository.getActiveChildId() ?: "unknown_child"
     
     val factory = chatViewModelFactory ?: ChatViewModelFactory(

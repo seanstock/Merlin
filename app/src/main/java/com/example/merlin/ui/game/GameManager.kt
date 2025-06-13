@@ -53,13 +53,14 @@ class GameManager private constructor(
     }
 
     /**
-     * Initialize the game manager and discover available games.
+     * Initialize the game manager using static game registry.
+     * This is now instant since we use pre-defined games instead of asset discovery.
      */
     private fun initializeGameManager() {
         coroutineScope.launch {
             try {
-                discoverAvailableGames()
-                initializeWebViewPool()
+                loadGamesFromRegistry()
+                initializeWebViewPoolLazy() // Defer WebView creation
                 Log.d(TAG, "GameManager initialized successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to initialize GameManager", e)
@@ -68,38 +69,32 @@ class GameManager private constructor(
     }
 
     /**
-     * Discover and catalog available games in the assets directory.
+     * Load games from static registry - instant loading, no asset discovery needed.
      */
-    private suspend fun discoverAvailableGames() = withContext(Dispatchers.IO) {
+    private fun loadGamesFromRegistry() {
         try {
-            val assetManager = context.assets
-            val gameDirectories = assetManager.list("games") ?: emptyArray()
+            // Load all games from static registry
+            val games = GameRegistry.getAllGames()
             
-            for (gameDir in gameDirectories) {
-                try {
-                    val gameFiles = assetManager.list("games/$gameDir") ?: continue
-                    if (gameFiles.contains("index.html")) {
-                        val metadata = createGameMetadata(gameDir)
-                        gameMetadata[gameDir] = metadata
-                        Log.d(TAG, "Discovered game: $gameDir")
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Error processing game directory: $gameDir", e)
-                }
+            // Populate metadata cache
+            games.forEach { game ->
+                gameMetadata[game.id] = game
             }
             
-            // Emit the updated games list
-            _availableGames.value = gameMetadata.values.toList()
+            // Emit games list immediately
+            _availableGames.value = games
             
-            Log.d(TAG, "Discovered ${gameMetadata.size} games")
+            Log.d(TAG, "Loaded ${games.size} games from static registry")
         } catch (e: Exception) {
-            Log.e(TAG, "Error discovering games", e)
+            Log.e(TAG, "Error loading games from registry", e)
         }
     }
 
     /**
-     * Create metadata for a discovered game.
+     * Create metadata for a discovered game (DEPRECATED - now using static registry).
+     * Kept for backward compatibility but should not be used.
      */
+    @Deprecated("Use GameRegistry instead", ReplaceWith("GameRegistry.getGameById(gameId)"))
     private fun createGameMetadata(gameId: String): GameMetadata {
         return GameMetadata(
             id = gameId,
@@ -114,8 +109,19 @@ class GameManager private constructor(
     }
 
     /**
-     * Initialize WebView pool for better performance.
+     * Initialize WebView pool lazily - don't block startup.
+     * WebViews are created when first needed instead of at initialization.
      */
+    private fun initializeWebViewPoolLazy() {
+        // Mark pool as ready for lazy creation - actual WebViews created on demand
+        Log.d(TAG, "WebView pool configured for lazy initialization")
+    }
+    
+    /**
+     * Initialize WebView pool for better performance (DEPRECATED - using lazy loading).
+     * Kept for backward compatibility.
+     */
+    @Deprecated("Use lazy WebView creation instead")
     private suspend fun initializeWebViewPool() = withContext(Dispatchers.Main) {
         try {
             synchronized(poolLock) {
@@ -140,14 +146,25 @@ class GameManager private constructor(
 
     /**
      * Get a WebView from the pool or create a new one.
+     * Now creates WebViews lazily on demand for better startup performance.
      */
     fun getWebView(): WebView {
         synchronized(poolLock) {
             return if (webViewPool.isNotEmpty()) {
-                webViewPool.removeAt(0)
+                webViewPool.removeAt(0).also {
+                    Log.d(TAG, "WebView retrieved from pool")
+                }
             } else {
-                Log.d(TAG, "WebView pool empty, creating new instance")
-                WebView(context)
+                Log.d(TAG, "Creating new WebView on demand")
+                WebView(context).apply {
+                    // Pre-configure WebView settings
+                    settings.apply {
+                        javaScriptEnabled = true
+                        domStorageEnabled = true
+                        allowFileAccess = false
+                        allowContentAccess = false
+                    }
+                }
             }
         }
     }

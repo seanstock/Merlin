@@ -17,6 +17,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.PlayArrow
@@ -31,6 +32,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.merlin.ui.UIVariant
+import com.example.merlin.ui.UiVariantState
+import com.example.merlin.ui.SimpleMainMenuScreen
+import com.example.merlin.ui.MainViewModel
 import com.example.merlin.security.SecurityManager
 import com.example.merlin.security.SecurityResponseManager
 import com.example.merlin.security.SecurityThreat
@@ -64,6 +69,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import androidx.lifecycle.lifecycleScope
 import com.example.merlin.ui.parent.ParentDashboardScreen
+import com.example.merlin.ui.settings.ChildProfileScreen
 
 class MainActivity : ComponentActivity(), 
     SecurityResponseManager.SecurityLockoutCallback,
@@ -83,6 +89,7 @@ class MainActivity : ComponentActivity(),
     private lateinit var userSessionRepository: UserSessionRepository
     
     // Screen time tracking
+    
     private val screenTimeService by lazy { ServiceLocator.getScreenTimeService(this) }
     
     // Flag to track if we need to enable immersive mode when window is ready
@@ -290,11 +297,6 @@ class MainActivity : ComponentActivity(),
         // Start comprehensive security monitoring
         startSecurityMonitoring()
         
-        // Only attempt lock task if not in exit sequence
-        if (!isExitingProperly) {
-            attemptLockTaskIfNeeded()
-        }
-        
         // Enable immersive mode if we haven't done so yet, or re-enable it
         if (shouldEnableImmersiveMode && !isExitingProperly) {
             enableImmersiveMode()
@@ -389,7 +391,7 @@ class MainActivity : ComponentActivity(),
         securityResponseManager = SecurityResponseManager(this)
         runtimeSecurityMonitor = RuntimeSecurityMonitor(this)
         securityEventInterceptor = SecurityEventInterceptor(this, runtimeSecurityMonitor)
-        userSessionRepository = UserSessionRepository(applicationContext)
+        userSessionRepository = UserSessionRepository.getInstance(applicationContext)
         
         // Register callbacks
         securityResponseManager.registerLockoutCallback("MainActivity", this)
@@ -688,6 +690,11 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
     var currentScreen by remember { mutableStateOf("main") }
     var selectedGameId by remember { mutableStateOf<String?>(null) }
     var selectedGameLevel by remember { mutableIntStateOf(1) }
+
+    // UI variant via MainViewModel
+    val mainViewModel: MainViewModel = viewModel()
+    // Observe the new state holder
+    val uiVariantState by mainViewModel.uiVariantState.collectAsState()
     
     // PIN authentication state for settings access
     var showSettingsPinDialog by remember { mutableStateOf(false) }
@@ -711,49 +718,91 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        when (currentScreen) {
-            "main" -> {
-                MainMenuScreen(
-                    onNavigateToChat = { currentScreen = "chat" },
-                    onNavigateToGames = { currentScreen = "games" },
-                    onNavigateToSettings = handleSettingsRequest,
-                    modifier = modifier
-                )
+        when (val state = uiVariantState) {
+            is UiVariantState.Loading -> {
+                // Show a full-screen loading indicator
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-            "chat" -> {
-                ChatScreen(
-                    onNavigateBack = { currentScreen = "main" },
-                    onNavigateToSettings = handleSettingsRequest,
-                    onLaunchGame = { gameId, level ->
-                        selectedGameId = gameId
-                        selectedGameLevel = level
-                        currentScreen = "games"
-                    },
-                    modifier = modifier
-                )
+            is UiVariantState.Error -> {
+                // Show an error message
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Error: ${state.message}")
+                }
             }
-            "games" -> {
-                GameScreen(
-                    onNavigateBack = { currentScreen = "main" },
-                    modifier = modifier
-                )
-            }
-            "settings" -> {
-                SettingsScreen(
-                    onNavigateBack = { currentScreen = "main" },
-                    onExitApp = {
-                        // Use proper exit method instead of direct exitProcess
-                        (context as? MainActivity)?.exitAppProperly()
-                            ?: exitProcess(0) // Fallback if context is not MainActivity
-                    },
-                    onNavigateToParentDashboard = { currentScreen = "parent_dashboard" }
-                )
-            }
-            "parent_dashboard" -> {
-                ParentDashboardScreen(
-                    onNavigateBack = { currentScreen = "settings" },
-                    modifier = modifier
-                )
+            is UiVariantState.Success -> {
+                val uiVariant = state.variant
+                // The existing when block for showing the correct screen
+                when (currentScreen) {
+                    "main" -> {
+                        when (uiVariant) {
+                            UIVariant.SIMPLE -> {
+                                SimpleMainMenuScreen(
+                                    onNavigateToGames = { gameId -> 
+                                        selectedGameId = gameId
+                                        selectedGameLevel = 1
+                                        currentScreen = "games" 
+                                    },
+                                    onNavigateToChat = { currentScreen = "chat" },
+                                    onSpendCoins = { /* TODO: Handle spend coins */ },
+                                    onNavigateToSettings = handleSettingsRequest,
+                                    modifier = modifier
+                                )
+                            }
+                            UIVariant.ADVANCED -> {
+                                AdvancedMainMenuScreen(
+                                    onNavigateToChat = { currentScreen = "chat" },
+                                    onNavigateToGames = { currentScreen = "games" },
+                                    onNavigateToSettings = handleSettingsRequest,
+                                    modifier = modifier
+                                )
+                            }
+                        }
+                    }
+                    "chat" -> {
+                        ChatScreen(
+                            onNavigateBack = { currentScreen = "main" },
+                            onNavigateToSettings = handleSettingsRequest,
+                            onLaunchGame = { gameId, level ->
+                                selectedGameId = gameId
+                                selectedGameLevel = level
+                                currentScreen = "games"
+                            },
+                            modifier = modifier
+                        )
+                    }
+                    "games" -> {
+                        GameScreen(
+                            onNavigateBack = { currentScreen = "main" },
+                            modifier = modifier,
+                            gameId = selectedGameId
+                        )
+                    }
+                    "settings" -> {
+                        SettingsScreen(
+                            onNavigateBack = { currentScreen = "main" },
+                            onExitApp = {
+                                // Use proper exit method instead of direct exitProcess
+                                (context as? MainActivity)?.exitAppProperly()
+                                    ?: exitProcess(0) // Fallback if context is not MainActivity
+                            },
+                            onNavigateToParentDashboard = { currentScreen = "parent_dashboard" },
+                            onNavigateToChildProfile = { currentScreen = "child_profile" }
+                        )
+                    }
+                    "parent_dashboard" -> {
+                        ParentDashboardScreen(
+                            onNavigateBack = { currentScreen = "settings" },
+                            modifier = modifier
+                        )
+                    }
+                    "child_profile" -> {
+                        ChildProfileScreen(
+                            onNavigateBack = { currentScreen = "settings" }
+                        )
+                    }
+                }
             }
         }
         
@@ -774,7 +823,7 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainMenuScreen(
+fun AdvancedMainMenuScreen(
     onNavigateToChat: () -> Unit,
     onNavigateToGames: () -> Unit,
     onNavigateToSettings: () -> Unit,
@@ -808,222 +857,145 @@ fun MainMenuScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.radialGradient(
-                    colors = listOf(
-                        MistyBlue.copy(alpha = 0.3f),
-                        SeafoamMist.copy(alpha = 0.2f),
-                        IceBlue.copy(alpha = 0.1f),
-                        CloudWhite
-                    ),
-                    radius = 1000f
-                )
-            )
+            .background(AppleSystemBackground)
     ) {
-        // Small gear icon in top right corner
+        // Apple-style settings icon in top right
         IconButton(
             onClick = onNavigateToSettings,
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(16.dp)
-                .size(32.dp)
+                .padding(AppleSpacing.medium)
+                .size(44.dp) // Apple's recommended touch target
                 .background(
-                    color = CloudWhite.copy(alpha = 0.3f),
+                    color = AppleGray5,
                     shape = CircleShape
                 )
         ) {
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = AccessibilityConstants.ContentDescriptions.SETTINGS,
-                tint = WisdomBlue.copy(alpha = 0.7f),
-                modifier = Modifier.size(18.dp)
+                tint = AppleBlue,
+                modifier = Modifier.size(20.dp)
             )
         }
         
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .padding(AppleSpacing.large),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(32.dp)
+            verticalArrangement = Arrangement.spacedBy(AppleSpacing.large)
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(AppleSpacing.xxl))
             
-            // 🌟 ELEGANT TITLE CARD 🌟
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .offset(y = gentleFloat.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = WisdomBlue.copy(alpha = 0.95f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+            // Apple-style welcome section
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(AppleSpacing.medium)
             ) {
-                Column(
-                    modifier = Modifier.padding(40.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // Static wizard emoji - elegant and calm
-                    Text(
-                        text = "🧙‍♂️",
-                        fontSize = 64.sp,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    Text(
-                        text = "Welcome to",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = CloudWhite.copy(alpha = 0.9f),
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = 1.sp
-                    )
-                    Text(
-                        text = "Merlin AI",
-                        style = MaterialTheme.typography.displayLarge,
-                        color = CloudWhite,
-                        fontWeight = FontWeight.Black,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                    Text(
-                        text = "Your intelligent learning companion",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = CloudWhite.copy(alpha = 0.8f),
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
-                }
+                Text(
+                    text = "🧙‍♂️",
+                    fontSize = 72.sp,
+                    modifier = Modifier.padding(bottom = AppleSpacing.medium)
+                )
+                Text(
+                    text = "Merlin AI",
+                    style = AppleLargeTitle,
+                    color = ApplePrimaryLabel,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Your intelligent learning companion",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = AppleSecondaryLabel,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = AppleSpacing.xs)
+                )
             }
             
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(AppleSpacing.large))
             
-            // 🗨️ CHAT BUTTON - Cool and Elegant 🗨️
-            Card(
-                onClick = onNavigateToChat,
+            // Apple-style navigation buttons
+            AppleCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .clickable { onNavigateToChat() }
                     .semantics {
-                        contentDescription = "Chat with Merlin AI - Ask questions and explore ideas"
+                        contentDescription = "Chat with Merlin AI"
                         role = Role.Button
                     },
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = SageGreen.copy(alpha = 0.9f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = 1,
+                cornerRadius = 16
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        WisdomBlue,
-                                        DeepOcean
-                                    )
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "💬",
-                            fontSize = 32.sp
+                AppleListItem(
+                    title = "Chat with Merlin",
+                    subtitle = "Ask questions and explore ideas",
+                    leading = {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(
+                                    color = AppleBlue.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(AppleCornerRadius.medium)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "💬",
+                                fontSize = 24.sp
+                            )
+                        }
+                    },
+                    trailing = {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = AppleGray,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Chat with Merlin",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = CloudWhite
-                        )
-                        Text(
-                            text = "Ask questions, explore ideas, and learn together",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = CloudWhite.copy(alpha = 0.9f),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                    Text(
-                        text = "🌟",
-                        fontSize = 24.sp,
-                        modifier = Modifier.alpha(0.8f)
-                    )
-                }
+                )
             }
             
-            // 🎮 GAMES BUTTON - Deep and Sophisticated 🎮
-            Card(
-                onClick = onNavigateToGames,
+            AppleCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .clickable { onNavigateToGames() }
                     .semantics {
-                        contentDescription = "Educational Games - Interactive learning experiences and challenges"
+                        contentDescription = "Educational Games"
                         role = Role.Button
                     },
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = RoyalPurple.copy(alpha = 0.9f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = 1,
+                cornerRadius = 16
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Brush.radialGradient(
-                                    colors = listOf(
-                                        LavenderMist,
-                                        RoyalPurple
-                                    )
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🎮",
-                            fontSize = 32.sp
+                AppleListItem(
+                    title = "Educational Games",
+                    subtitle = "Interactive learning experiences",
+                    leading = {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .background(
+                                    color = ApplePurple.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(AppleCornerRadius.medium)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🎮",
+                                fontSize = 24.sp
+                            )
+                        }
+                    },
+                    trailing = {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = AppleGray,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Educational Games",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = CloudWhite
-                        )
-                        Text(
-                            text = "Interactive learning experiences and challenges",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = CloudWhite.copy(alpha = 0.9f),
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                    Text(
-                        text = "🎯",
-                        fontSize = 24.sp,
-                        modifier = Modifier.alpha(0.8f)
-                    )
-                }
+                )
             }
             
             Spacer(modifier = Modifier.weight(1f))

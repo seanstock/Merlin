@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "fa680895997ae819b2876b81dfc4996a",
+    "identityHash": "80be277d984d9dbdf95c0321eb4468c2",
     "entities": [
       {
         "tableName": "child_profile",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT, `birthdate` INTEGER, `age` INTEGER, `gender` TEXT, `preferred_language` TEXT, `location` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT, `birthdate` INTEGER, `age` INTEGER, `gender` TEXT, `preferred_language` TEXT, `location` TEXT, `selected_theme` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -47,6 +47,12 @@
           {
             "fieldPath": "location",
             "columnName": "location",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "selectedTheme",
+            "columnName": "selected_theme",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -783,7 +789,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fa680895997ae819b2876b81dfc4996a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '80be277d984d9dbdf95c0321eb4468c2')"
     ]
   }
 }

@@ -374,9 +374,10 @@ class RuntimeSecurityMonitor(private val context: Context) {
             .setRequiresBatteryNotLow(false)
             .build()
         
-        val periodicWork = PeriodicWorkRequestBuilder<SecurityCheckWorker>(
+        val periodicWork = PeriodicWorkRequestBuilder<UnifiedSecurityWorker>(
             15, TimeUnit.MINUTES // Minimum interval for periodic work
         )
+            .setInputData(UnifiedSecurityWorker.createPeriodicCheckData())
             .setConstraints(constraints)
             .addTag(PERIODIC_SECURITY_WORK)
             .build()
@@ -395,13 +396,13 @@ class RuntimeSecurityMonitor(private val context: Context) {
     }
     
     private fun scheduleCriticalEventSecurityCheck(event: CriticalSecurityEvent) {
-        val workData = workDataOf(
-            "event_type" to event.eventType.name,
-            "event_context" to event.context,
-            "event_timestamp" to event.timestamp
+        val workData = UnifiedSecurityWorker.createCriticalEventCheckData(
+            eventType = event.eventType.name,
+            eventContext = event.context,
+            eventTimestamp = event.timestamp
         )
         
-        val criticalEventWork = OneTimeWorkRequestBuilder<CriticalEventSecurityWorker>()
+        val criticalEventWork = OneTimeWorkRequestBuilder<UnifiedSecurityWorker>()
             .setInputData(workData)
             .setInitialDelay(CRITICAL_EVENT_DELAY, TimeUnit.MILLISECONDS)
             .addTag(CRITICAL_EVENT_WORK)

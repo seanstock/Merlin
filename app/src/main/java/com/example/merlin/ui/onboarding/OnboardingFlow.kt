@@ -17,6 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.merlin.ui.onboarding.OnboardingViewModel.OnboardingStep
+import com.example.merlin.ui.theme.*
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 /**
  * Main onboarding flow that manages navigation between different setup screens.
@@ -87,6 +91,20 @@ fun OnboardingFlow(
                 )
             }
             
+            OnboardingStep.THEME_SELECTION -> {
+                ThemeSelectionScreen(
+                    selectedThemeId = uiState.childProfile.selectedTheme,
+                    onThemeSelected = { themeId ->
+                        viewModel.updateSelectedTheme(themeId)
+                    },
+                    onContinue = {
+                        if (viewModel.validateCurrentStep()) {
+                            viewModel.nextStep()
+                        }
+                    }
+                )
+            }
+            
             OnboardingStep.PARENT_PIN -> {
                 ParentPinScreen(
                     pin = uiState.parentPin,
@@ -138,27 +156,29 @@ fun OnboardingFlow(
             }
         }
         
-        // Loading overlay
+        // Loading overlay with Apple design
         if (uiState.isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Card(
-                    modifier = Modifier.fillMaxSize(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
-                    )
+                AppleCard(
+                    backgroundColor = AppleSystemBackground.copy(alpha = 0.95f),
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(16.dp))
+                        CircularProgressIndicator(
+                            color = AppleBlue
+                        )
+                        Spacer(modifier = Modifier.height(AppleSpacing.medium))
                         Text(
                             text = "Setting up your profile...",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = AppleBody,
+                            color = ApplePrimaryLabel
                         )
                     }
                 }
@@ -186,14 +206,14 @@ private fun ChildInfoScreen(
     modifier: Modifier = Modifier
 ) {
     // Local state for form fields (mirrors ViewModel, but allows instant UI feedback)
-    var name by remember { mutableStateOf(childProfile.name) }
-    var age by remember { mutableStateOf(childProfile.age ?: 6) } // Default age 6
-    var gender by remember { mutableStateOf(childProfile.gender) }
+    var name by remember { mutableStateOf(childProfile.name.ifBlank { "Ayla" }) }
+    var age by remember { mutableStateOf(childProfile.age ?: 3) } // Default age 3
+    var gender by remember { mutableStateOf(childProfile.gender.ifBlank { "Girl" }) }
     var interests by remember { mutableStateOf(childProfile.interests) }
     var preferredLanguage by remember { mutableStateOf(childProfile.preferredLanguage) }
 
     // Predefined options
-    val genderOptions = listOf("", "Boy", "Girl", "Non-binary", "Prefer not to say")
+    val genderOptions = listOf("", "Boy", "Girl", "Prefer not to say")
     val interestOptions = listOf("Math", "Reading", "Science", "Art", "Music", "Games", "Sports", "Animals")
     val languageOptions = listOf("en" to "English", "es" to "Spanish", "fr" to "French", "de" to "German", "zh" to "Chinese")
 
@@ -208,123 +228,181 @@ private fun ChildInfoScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(AppleSpacing.large),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        Text(text = "👶", fontSize = 64.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Tell us about your child", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.large))
+        
+        // Header with Apple design
+        Text(
+            text = "👶", 
+            fontSize = 64.sp,
+            modifier = Modifier.padding(bottom = AppleSpacing.medium)
+        )
+        Text(
+            text = "Tell us about your child",
+            style = AppleNavigationTitle,
+            color = ApplePrimaryLabel,
+            textAlign = TextAlign.Center
+        )
+        
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
 
-        // Name
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Name") },
-            singleLine = true,
+        // Form fields with Apple styling
+        AppleCard(
             modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Age (Slider, 3-16)
-        Text(text = "Age: $age", style = MaterialTheme.typography.bodyLarge)
-        Slider(
-            value = age.toFloat(),
-            onValueChange = { age = it.toInt() },
-            valueRange = 3f..16f,
-            steps = 13,
-            modifier = Modifier.fillMaxWidth(0.9f)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Gender (Dropdown)
-        var genderExpanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(
-            expanded = genderExpanded,
-            onExpandedChange = { genderExpanded = !genderExpanded }
         ) {
-            OutlinedTextField(
-                value = gender,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Gender (optional)") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = genderExpanded,
-                onDismissRequest = { genderExpanded = false }
+            Column(
+                modifier = Modifier.padding(AppleSpacing.large),
+                verticalArrangement = Arrangement.spacedBy(AppleSpacing.large)
             ) {
-                genderOptions.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option.ifBlank { "Select..." }) },
-                        onClick = {
-                            gender = option
-                            genderExpanded = false
-                        }
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Interests (Multi-select chips)
-        Text(text = "Interests (optional)", style = MaterialTheme.typography.bodyLarge)
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            interestOptions.forEach { interest ->
-                val selected = interests.contains(interest)
-                FilterChip(
-                    selected = selected,
-                    onClick = {
-                        interests = if (selected) interests - interest else interests + interest
-                    },
-                    label = { Text(interest) }
+                // Name
+                AppleTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = "Name",
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // Preferred Language (Dropdown)
-        var langExpanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(
-            expanded = langExpanded,
-            onExpandedChange = { langExpanded = !langExpanded }
-        ) {
-            OutlinedTextField(
-                value = languageOptions.find { it.first == preferredLanguage }?.second ?: "Select...",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Preferred Language") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = langExpanded) },
-                modifier = Modifier.menuAnchor().fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = langExpanded,
-                onDismissRequest = { langExpanded = false }
-            ) {
-                languageOptions.forEach { (code, label) ->
-                    DropdownMenuItem(
-                        text = { Text(label) },
-                        onClick = {
-                            preferredLanguage = code
-                            langExpanded = false
-                        }
+                // Age (Slider, 3-16)
+                Column {
+                    Text(
+                        text = "Age: $age",
+                        style = AppleSubheadline.copy(fontWeight = FontWeight.SemiBold),
+                        color = ApplePrimaryLabel
                     )
+                    Spacer(modifier = Modifier.height(AppleSpacing.small))
+                    Slider(
+                        value = age.toFloat(),
+                        onValueChange = { age = it.toInt() },
+                        valueRange = 3f..16f,
+                        steps = 13,
+                        colors = SliderDefaults.colors(
+                            thumbColor = AppleBlue,
+                            activeTrackColor = AppleBlue
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+
+                // Gender (Dropdown)
+                var genderExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
+                    expanded = genderExpanded,
+                    onExpandedChange = { genderExpanded = !genderExpanded }
+                ) {
+                    AppleTextField(
+                        value = gender,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = "Gender (optional)",
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = genderExpanded,
+                        onDismissRequest = { genderExpanded = false }
+                    ) {
+                        genderOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option.ifBlank { "Select..." }) },
+                                onClick = {
+                                    gender = option
+                                    genderExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Interests (Multi-select chips)
+                Column {
+                    Text(
+                        text = "Interests (optional)",
+                        style = AppleSubheadline.copy(fontWeight = FontWeight.SemiBold),
+                        color = ApplePrimaryLabel
+                    )
+                    Spacer(modifier = Modifier.height(AppleSpacing.small))
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(AppleSpacing.small),
+                        verticalArrangement = Arrangement.spacedBy(AppleSpacing.small),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        interestOptions.forEach { interest ->
+                            val selected = interests.contains(interest)
+                            FilterChip(
+                                selected = selected,
+                                onClick = {
+                                    interests = if (selected) interests - interest else interests + interest
+                                },
+                                label = { Text(interest) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = AppleBlue,
+                                    selectedLabelColor = AppleSystemBackground
+                                )
+                            )
+                        }
+                    }
+                }
+
+                // Preferred Language (Dropdown)
+                var langExpanded by remember { mutableStateOf(false) }
+                ExposedDropdownMenuBox(
+                    expanded = langExpanded,
+                    onExpandedChange = { langExpanded = !langExpanded }
+                ) {
+                    AppleTextField(
+                        value = languageOptions.find { it.first == preferredLanguage }?.second ?: "Select...",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = "Preferred Language",
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = langExpanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = langExpanded,
+                        onDismissRequest = { langExpanded = false }
+                    ) {
+                        languageOptions.forEach { (code, label) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    preferredLanguage = code
+                                    langExpanded = false
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
-        Spacer(modifier = Modifier.height(32.dp))
+        
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
 
-        // Navigation buttons
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            OutlinedButton(onClick = onBack) { Text("Back") }
-            Button(onClick = onContinue, enabled = isValid) { Text("Continue") }
+        // Navigation buttons with Apple styling
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(AppleSpacing.medium)
+        ) {
+            AppleButton(
+                text = "Back",
+                onClick = onBack,
+                style = AppleButtonStyle.Secondary,
+                modifier = Modifier.weight(1f)
+            )
+            AppleButton(
+                text = "Continue",
+                onClick = onContinue,
+                style = AppleButtonStyle.Primary,
+                enabled = isValid,
+                modifier = Modifier.weight(1f)
+            )
         }
+        
+        Spacer(modifier = Modifier.height(AppleSpacing.large))
     }
 }
 
@@ -347,93 +425,125 @@ private fun ParentPinScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp)
-            .imePadding(), // Handles keyboard overlaps
+            .verticalScroll(rememberScrollState())
+            .padding(AppleSpacing.large)
+            .imePadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top // Changed for better layout with keyboard
+        verticalArrangement = Arrangement.Top
     ) {
-        Text(text = "🔐", fontSize = 64.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Set a Parent PIN", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(AppleSpacing.large))
+        
+        // Header with Apple design
+        Text(
+            text = "🔐",
+            fontSize = 64.sp,
+            modifier = Modifier.padding(bottom = AppleSpacing.medium)
+        )
+        Text(
+            text = "Set a Parent PIN",
+            style = AppleNavigationTitle,
+            color = ApplePrimaryLabel,
+            textAlign = TextAlign.Center
+        )
         Text(
             text = "This PIN will be used to access parent settings. Choose something secure and memorable.",
-            style = MaterialTheme.typography.bodyMedium,
+            style = AppleBody,
+            color = AppleSecondaryLabel,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = AppleSpacing.medium)
         )
-        Spacer(modifier = Modifier.height(24.dp))
+        
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
 
-        // PIN Input
-        OutlinedTextField(
-            value = pin,
-            onValueChange = { if (it.length <= pinLength && it.all { char -> char.isDigit() }) onPinChange(it) },
-            label = { Text("New PIN ($pinLength digits)") },
-            singleLine = true,
-            visualTransformation = if (showPin) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-            trailingIcon = {
-                val image = if (showPin) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                val description = if (showPin) "Hide PIN" else "Show PIN"
-                IconButton(onClick = { showPin = !showPin }) {
-                    Icon(imageVector = image, contentDescription = description)
-                }
-            },
+        // PIN inputs with Apple styling
+        AppleCard(
             modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        ) {
+            Column(
+                modifier = Modifier.padding(AppleSpacing.large),
+                verticalArrangement = Arrangement.spacedBy(AppleSpacing.large)
+            ) {
+                // PIN Input
+                AppleTextField(
+                    value = pin,
+                    onValueChange = { if (it.length <= pinLength && it.all { char -> char.isDigit() }) onPinChange(it) },
+                    label = "New PIN ($pinLength digits)",
+                    singleLine = true,
+                    visualTransformation = if (showPin) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                    trailingIcon = {
+                        val image = if (showPin) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        val description = if (showPin) "Hide PIN" else "Show PIN"
+                        IconButton(onClick = { showPin = !showPin }) {
+                            Icon(imageVector = image, contentDescription = description)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-        // PIN Confirmation Input
-        OutlinedTextField(
-            value = pinConfirmation,
-            onValueChange = { if (it.length <= pinLength && it.all { char -> char.isDigit() }) onPinConfirmationChange(it) },
-            label = { Text("Confirm PIN") },
-            singleLine = true,
-            visualTransformation = if (showPinConfirmation) VisualTransformation.None else PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-            isError = pinConfirmation.isNotEmpty() && pin != pinConfirmation && pin.length == pinLength,
-            trailingIcon = {
-                val image = if (showPinConfirmation) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                val description = if (showPinConfirmation) "Hide PIN" else "Show PIN"
-                IconButton(onClick = { showPinConfirmation = !showPinConfirmation }) {
-                    Icon(imageVector = image, contentDescription = description)
+                // PIN Confirmation Input
+                AppleTextField(
+                    value = pinConfirmation,
+                    onValueChange = { if (it.length <= pinLength && it.all { char -> char.isDigit() }) onPinConfirmationChange(it) },
+                    label = "Confirm PIN",
+                    singleLine = true,
+                    visualTransformation = if (showPinConfirmation) VisualTransformation.None else PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                    isError = pinConfirmation.isNotEmpty() && pin != pinConfirmation && pin.length == pinLength,
+                    trailingIcon = {
+                        val image = if (showPinConfirmation) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        val description = if (showPinConfirmation) "Hide PIN" else "Show PIN"
+                        IconButton(onClick = { showPinConfirmation = !showPinConfirmation }) {
+                            Icon(imageVector = image, contentDescription = description)
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                // Error messages
+                if (pinConfirmation.isNotEmpty() && pin != pinConfirmation && pin.length == pinLength) {
+                    Text(
+                        text = "PINs do not match",
+                        style = AppleFootnote,
+                        color = AppleRed
+                    )
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-        if (pinConfirmation.isNotEmpty() && pin != pinConfirmation && pin.length == pinLength) {
-            Text(
-                text = "PINs do not match",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.align(Alignment.Start)
-            )
-        }
-        if (pin.isNotEmpty() && pin.length < pinLength) {
-            Text(
-                text = "PIN must be $pinLength digits",
-                color = MaterialTheme.colorScheme.error, // Or a less severe color for guidance
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.align(Alignment.Start)
-            )
+                if (pin.isNotEmpty() && pin.length < pinLength) {
+                    Text(
+                        text = "PIN must be $pinLength digits",
+                        style = AppleFootnote,
+                        color = AppleSecondaryLabel
+                    )
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.weight(1f)) // Pushes buttons to bottom
+        Spacer(modifier = Modifier.weight(1f))
 
-        // Navigation buttons
+        // Navigation buttons with Apple styling
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(AppleSpacing.medium)
         ) {
-            OutlinedButton(onClick = onBack) { Text("Back") }
-            Button(onClick = onContinue, enabled = isPinValid) { Text("Continue") }
+            AppleButton(
+                text = "Back",
+                onClick = onBack,
+                style = AppleButtonStyle.Secondary,
+                modifier = Modifier.weight(1f)
+            )
+            AppleButton(
+                text = "Continue",
+                onClick = onContinue,
+                style = AppleButtonStyle.Primary,
+                enabled = isPinValid,
+                modifier = Modifier.weight(1f)
+            )
         }
-        Spacer(modifier = Modifier.height(16.dp)) // Padding at the very bottom
+        
+        Spacer(modifier = Modifier.height(AppleSpacing.large))
     }
 }
 
-/**
- * Placeholder for TutorialScreen - to be implemented in the next subtask.
- */
 @Composable
 private fun TutorialScreen(
     onComplete: () -> Unit,
@@ -443,45 +553,74 @@ private fun TutorialScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(AppleSpacing.large),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Header with Apple design
         Text(
             text = "🎓",
-            fontSize = 64.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Interactive Tutorial",
-            style = MaterialTheme.typography.headlineMedium
+            fontSize = 64.sp,
+            modifier = Modifier.padding(bottom = AppleSpacing.medium)
         )
         Text(
-            text = "Full tutorial coming soon! You'll learn all about Merlin here.",
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(16.dp)
+            text = "Quick Tutorial",
+            style = AppleNavigationTitle,
+            color = ApplePrimaryLabel,
+            textAlign = TextAlign.Center
         )
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
         
+        // Tutorial content with Apple card
+        AppleCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(AppleSpacing.large),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "You're almost ready!",
+                    style = AppleHeadline,
+                    color = ApplePrimaryLabel,
+                    textAlign = TextAlign.Center
+                )
+                
+                Spacer(modifier = Modifier.height(AppleSpacing.medium))
+                
+                Text(
+                    text = "Merlin is now set up and ready to provide a safe, educational experience for your child. You can access parent controls anytime using your PIN.",
+                    style = AppleBody,
+                    color = AppleSecondaryLabel,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
+        
+        // Navigation buttons with Apple styling
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween // Adjusted for better button layout
+            horizontalArrangement = Arrangement.spacedBy(AppleSpacing.medium)
         ) {
-            OutlinedButton(onClick = onBack) {
-                Text("Back")
-            }
-            Button(onClick = onComplete) {
-                Text("Got It! (Next)") // Changed text for clarity
-            }
+            AppleButton(
+                text = "Back",
+                onClick = onBack,
+                style = AppleButtonStyle.Secondary,
+                modifier = Modifier.weight(1f)
+            )
+            AppleButton(
+                text = "Got It!",
+                onClick = onComplete,
+                style = AppleButtonStyle.Primary,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
-/**
- * Placeholder for AIIntroductionScreen - to be implemented in the next subtask.
- */
 @Composable
 private fun AIIntroductionScreen(
     childName: String,
@@ -492,39 +631,70 @@ private fun AIIntroductionScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .padding(AppleSpacing.large),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // Header with Apple design
         Text(
-            text = "🧙‍♂️", // Merlin emoji
-            fontSize = 80.sp // Made a bit larger
+            text = "🧙‍♂️",
+            fontSize = 80.sp,
+            modifier = Modifier.padding(bottom = AppleSpacing.medium)
         )
-        Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Hello, ${childName.ifBlank { "Friend" }}!", // Personalized greeting
-            style = MaterialTheme.typography.headlineMedium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "I'm Merlin, your magical learning companion! I'm so excited to go on adventures and learn new things with you.",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            text = "Hello, ${childName.ifBlank { "Friend" }}!",
+            style = AppleNavigationTitle,
+            color = ApplePrimaryLabel,
+            textAlign = TextAlign.Center
         )
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
         
+        // Introduction content with Apple card
+        AppleCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(AppleSpacing.large),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "I'm Merlin, your learning companion!",
+                    style = AppleHeadline,
+                    color = ApplePrimaryLabel,
+                    textAlign = TextAlign.Center
+                )
+                
+                Spacer(modifier = Modifier.height(AppleSpacing.medium))
+                
+                Text(
+                    text = "I'm here to help you learn, explore, and discover amazing things together. Ask me questions, play learning games, or just chat about anything that interests you!",
+                    style = AppleBody,
+                    color = AppleSecondaryLabel,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
+        
+        // Navigation buttons with Apple styling
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween // Adjusted for better button layout
+            horizontalArrangement = Arrangement.spacedBy(AppleSpacing.medium)
         ) {
-            OutlinedButton(onClick = onBack) {
-                Text("Go Back")
-            }
-            Button(onClick = onComplete) {
-                Text("Let's Begin! ✨")
-            }
+            AppleButton(
+                text = "Go Back",
+                onClick = onBack,
+                style = AppleButtonStyle.Secondary,
+                modifier = Modifier.weight(1f)
+            )
+            AppleButton(
+                text = "Let's Begin!",
+                onClick = onComplete,
+                style = AppleButtonStyle.Primary,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 } 

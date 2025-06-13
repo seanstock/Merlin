@@ -69,7 +69,7 @@ class WalletViewModel(
                         _balance.value = balanceDto.balance
                         Log.d(TAG, "Balance loaded: ${balanceDto.balance} MC")
                     }
-                    .onError { exception ->
+                    .onFailure { exception ->
                         Log.e(TAG, "Failed to load balance", exception)
                         _errorMessage.value = "Failed to load wallet balance"
                     }
@@ -125,7 +125,7 @@ class WalletViewModel(
                                             
                                             Log.d(TAG, "Successfully spent $cost MC for $timeInSeconds seconds of $category time")
                                         }
-                                        .onError { exception ->
+                                        .onFailure { exception ->
                                             Log.e(TAG, "Failed to spend coins", exception)
                                             _errorMessage.value = "Failed to spend coins"
                                         }
@@ -134,12 +134,12 @@ class WalletViewModel(
                                     Log.w(TAG, "Spending validation failed: ${validation.errorMessage}")
                                 }
                             }
-                            .onError { exception ->
+                            .onFailure { exception ->
                                 Log.e(TAG, "Failed to validate spending", exception)
                                 _errorMessage.value = "Failed to validate spending request"
                             }
                     }
-                    .onError { exception ->
+                    .onFailure { exception ->
                         Log.e(TAG, "Failed to calculate cost", exception)
                         _errorMessage.value = "Failed to calculate cost"
                     }
@@ -183,7 +183,7 @@ class WalletViewModel(
                         
                         Log.d(TAG, "Successfully awarded $amount MC. New balance: ${balanceChange.newBalance}")
                     }
-                    .onError { exception ->
+                    .onFailure { exception ->
                         Log.e(TAG, "Failed to award coins", exception)
                         _errorMessage.value = "Failed to award coins"
                     }

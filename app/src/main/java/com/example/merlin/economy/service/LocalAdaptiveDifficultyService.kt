@@ -88,7 +88,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error calculating task difficulty", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -117,7 +117,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error getting difficulty recommendation", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -154,7 +154,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error predicting success probability", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -195,7 +195,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error recording task result", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -219,7 +219,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error recording task results batch", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -229,23 +229,18 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
     ): Result<PerformanceStatsDto> = withContext(Dispatchers.IO) {
         try {
             val key = "$childId-$subject"
-            val cached = performanceStats[key]
+            val cachedStats = performanceStats[key]
             
-            if (cached != null) {
-                Result.success(cached)
+            if (cachedStats != null) {
+                val updatedCached = cachedStats.copy(lastUpdated = Instant.now().toString())
+                Result.success(updatedCached)
             } else {
-                updatePerformanceStats(childId, subject)
-                val updatedCached = performanceStats[key]
-                if (updatedCached != null) {
-                    Result.success(updatedCached)
-                } else {
-                    Result.error("No performance data available")
-                }
+                Result.failure(Exception("No performance data available"))
             }
             
         } catch (e: Exception) {
             Log.e(TAG, "Error getting performance stats", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -261,7 +256,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error getting recent task results", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -275,7 +270,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             val results = getRecentTaskResults(childId, subject, 50).getOrNull() ?: emptyList()
             
             if (results.isEmpty()) {
-                return@withContext Result.error("Insufficient data for pattern analysis")
+                return@withContext Result.failure(Exception("Insufficient data for pattern analysis"))
             }
             
             val pattern = LearningPatternDto(
@@ -296,7 +291,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error analyzing learning patterns", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -329,7 +324,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error getting performance trends", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -340,7 +335,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
         try {
             val subjectResults = taskResults["$childId-$subject"] ?: emptyList()
             if (subjectResults.isEmpty()) {
-                return@withContext Result.error("No data for subject $subject")
+                return@withContext Result.failure(Exception("No data for subject $subject"))
             }
 
             val gradeLevel = (subjectResults.count { it.success } / 5) + 1
@@ -366,7 +361,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             Result.success(masteryDto)
         } catch (e: Exception) {
             Log.e(TAG, "Error calculating subject mastery for $subject", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -402,7 +397,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             Result.success(masteryList)
         } catch (e: Exception) {
             Log.e(TAG, "Error getting all subject mastery", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -439,7 +434,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error getting learning recommendations", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -454,7 +449,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error recommending session length", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -477,7 +472,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error recommending optimal learning time", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -520,7 +515,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error generating performance report", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -536,7 +531,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error getting difficulty adjustment history", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     
@@ -551,7 +546,7 @@ class LocalAdaptiveDifficultyService : AdaptiveDifficultyService {
             
         } catch (e: Exception) {
             Log.e(TAG, "Error calculating learning velocity", e)
-            Result.error(e)
+            Result.failure(e)
         }
     }
     

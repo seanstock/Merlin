@@ -19,7 +19,7 @@ class PinAuthenticationService(private val context: Context) {
         private const val TAG = "PinAuthenticationService"
     }
     
-    private val userSessionRepository by lazy { UserSessionRepository(context) }
+    private val userSessionRepository = UserSessionRepository.getInstance(context)
     private val parentSettingsRepository by lazy {
         val database = DatabaseProvider.getInstance(context)
         ParentSettingsRepository(database.parentSettingsDao())

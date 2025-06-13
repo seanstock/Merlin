@@ -25,11 +25,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.merlin.ui.theme.MerlinTheme
+import com.example.merlin.ui.theme.*
 
 /**
  * Permissions screen that requests necessary system permissions for the app to function.
- * Provides clear explanations for why each permission is needed.
+ * Uses Apple's clean design language with clear explanations.
  */
 @Composable
 fun PermissionsScreen(
@@ -78,38 +78,36 @@ fun PermissionsScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .padding(AppleSpacing.large),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.large))
         
-        // Header
+        // Header with Apple design
         Text(
             text = "🔐",
-            fontSize = 64.sp
+            fontSize = 64.sp,
+            modifier = Modifier.padding(bottom = AppleSpacing.medium)
         )
-        
-        Spacer(modifier = Modifier.height(16.dp))
         
         Text(
             text = "App Permissions",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
+            style = AppleNavigationTitle,
+            color = ApplePrimaryLabel,
             textAlign = TextAlign.Center
         )
         
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.small))
         
         Text(
-            text = "Merlin needs these permissions to keep your child safe and provide the best learning experience.",
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text = "Merlin needs these permissions to provide a safe and secure learning environment for your child.",
+            style = AppleBody,
+            color = AppleSecondaryLabel,
             textAlign = TextAlign.Center,
-            lineHeight = 22.sp
+            modifier = Modifier.padding(horizontal = AppleSpacing.medium)
         )
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
         
         // Accessibility Permission
         PermissionCard(
@@ -124,7 +122,7 @@ fun PermissionsScreen(
             importance = "Required"
         )
         
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.medium))
         
         // Overlay Permission
         PermissionCard(
@@ -144,86 +142,66 @@ fun PermissionsScreen(
             importance = "Required"
         )
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
         
-        // Security note
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer
-            )
+        // Security note with Apple styling
+        AppleCard(
+            backgroundColor = AppleSystemGray6
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(AppleSpacing.medium)
             ) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = AppleSpacing.small)
                 ) {
                     Text(
                         text = "🔒",
                         fontSize = 20.sp,
-                        modifier = Modifier.padding(end = 8.dp)
+                        modifier = Modifier.padding(end = AppleSpacing.small)
                     )
                     Text(
                         text = "Privacy & Security",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        style = AppleCallout.copy(fontWeight = FontWeight.SemiBold),
+                        color = ApplePrimaryLabel
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(8.dp))
-                
                 Text(
                     text = "These permissions are used solely to provide a safe learning environment. Merlin does not access personal data from other apps or share information with third parties.",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                    lineHeight = 20.sp
+                    style = AppleFootnote,
+                    color = AppleSecondaryLabel
                 )
             }
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
         
-        // Navigation buttons
+        // Navigation buttons with Apple styling
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(AppleSpacing.medium)
         ) {
-            OutlinedButton(
+            AppleButton(
+                text = "Back",
                 onClick = onBack,
+                style = AppleButtonStyle.Secondary,
                 modifier = Modifier.weight(1f)
-            ) {
-                Text("Back")
-            }
+            )
             
-            Button(
+            AppleButton(
+                text = "Continue",
                 onClick = onContinue,
+                style = AppleButtonStyle.Primary,
                 enabled = accessibilityGranted && overlayGranted,
                 modifier = Modifier.weight(1f)
-            ) {
-                Text("Continue")
-            }
-        }
-        
-        if (!accessibilityGranted || !overlayGranted) {
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "Please grant all required permissions to continue",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center
             )
         }
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(AppleSpacing.large))
     }
 }
 
-/**
- * Individual permission card component.
- */
 @Composable
 private fun PermissionCard(
     title: String,
@@ -234,119 +212,93 @@ private fun PermissionCard(
     importance: String,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isGranted) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceVariant
-            }
-        )
+    AppleCard(
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(20.dp)
+            modifier = Modifier.padding(AppleSpacing.medium)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = AppleSpacing.small)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                Text(
+                    text = icon,
+                    fontSize = 24.sp,
+                    modifier = Modifier.padding(end = AppleSpacing.small)
+                )
+                
+                Column(
+                    modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = icon,
-                        fontSize = 24.sp,
-                        modifier = Modifier.padding(end = 12.dp)
+                        text = title,
+                        style = AppleSubheadline.copy(fontWeight = FontWeight.SemiBold),
+                        color = ApplePrimaryLabel
                     )
-                    
-                    Column {
-                        Text(
-                            text = title,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isGranted) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                        
-                        Text(
-                            text = importance,
-                            fontSize = 12.sp,
-                            color = if (importance == "Required") {
-                                MaterialTheme.colorScheme.error
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    Text(
+                        text = importance,
+                        style = AppleCaption,
+                        color = if (isGranted) AppleGreen else AppleOrange
+                    )
                 }
                 
-                // Status icon
-                Icon(
-                    imageVector = if (isGranted) Icons.Filled.Check else Icons.Filled.Warning,
-                    contentDescription = if (isGranted) "Granted" else "Not granted",
-                    tint = if (isGranted) {
-                        Color(0xFF4CAF50)
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    },
-                    modifier = Modifier.size(24.dp)
-                )
+                // Status indicator
+                if (isGranted) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "Granted",
+                        tint = AppleGreen,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = "Not granted",
+                        tint = AppleOrange,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
-            
-            Spacer(modifier = Modifier.height(12.dp))
             
             Text(
                 text = description,
-                fontSize = 14.sp,
-                color = if (isGranted) {
-                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                },
-                lineHeight = 20.sp
+                style = AppleFootnote,
+                color = AppleSecondaryLabel,
+                modifier = Modifier.padding(bottom = AppleSpacing.medium)
             )
             
             if (!isGranted) {
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Button(
+                AppleButton(
+                    text = "Grant Permission",
                     onClick = onRequestPermission,
+                    style = AppleButtonStyle.Primary,
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Grant Permission")
-                }
+                )
             }
         }
     }
 }
 
-/**
- * Check if accessibility service is enabled.
- */
+// Helper functions (these would typically be in a utility class)
 private fun isAccessibilityServiceEnabled(context: Context): Boolean {
-    val serviceName = "${context.packageName}/com.example.merlin.services.MerlinAccessibilityService"
-    val enabledServices = Settings.Secure.getString(
-        context.contentResolver,
-        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-    )
-    return enabledServices?.contains(serviceName) == true
+    // Simplified check - in real implementation, you'd check for your specific service
+    return try {
+        val accessibilityEnabled = Settings.Secure.getInt(
+            context.contentResolver,
+            Settings.Secure.ACCESSIBILITY_ENABLED
+        )
+        accessibilityEnabled == 1
+    } catch (e: Settings.SettingNotFoundException) {
+        false
+    }
 }
 
-/**
- * Check if overlay permission is granted.
- */
 private fun canDrawOverlays(context: Context): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         Settings.canDrawOverlays(context)
     } else {
-        true
+        true // Permission not required on older versions
     }
 }
 
@@ -356,8 +308,8 @@ fun PermissionsScreenPreview() {
     MerlinTheme {
         PermissionsScreen(
             onPermissionUpdate = { _, _ -> },
-            onContinue = { },
-            onBack = { },
+            onContinue = {},
+            onBack = {},
             permissionsGranted = mapOf(
                 "accessibility" to false,
                 "overlay" to true

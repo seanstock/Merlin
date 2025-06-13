@@ -36,6 +36,7 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
     }
     
     private val context = application.applicationContext
+    private val userSessionRepository = UserSessionRepository.getInstance(application)
     
     // TODO: These will be injected via DI in the future
     // For now, we'll need to initialize them when the database is available
@@ -70,6 +71,7 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
         WELCOME,
         PERMISSIONS,
         CHILD_INFO,
+        THEME_SELECTION,
         PARENT_PIN,
         TUTORIAL,
         AI_INTRODUCTION,
@@ -84,14 +86,15 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
         val age: Int? = null,
         val gender: String = "",
         val interests: List<String> = emptyList(),
-        val preferredLanguage: String = "en"
+        val preferredLanguage: String = "en",
+        val selectedTheme: String? = null
     )
     
     /**
      * Check if onboarding has been completed.
      */
     fun isOnboardingCompleted(): Boolean {
-        return onboardingPrefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
+        return userSessionRepository.isOnboardingCompleted()
     }
     
     /**
@@ -111,7 +114,8 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
         val nextStep = when (currentStep) {
             OnboardingStep.WELCOME -> OnboardingStep.PERMISSIONS
             OnboardingStep.PERMISSIONS -> OnboardingStep.CHILD_INFO
-            OnboardingStep.CHILD_INFO -> OnboardingStep.PARENT_PIN
+            OnboardingStep.CHILD_INFO -> OnboardingStep.THEME_SELECTION
+            OnboardingStep.THEME_SELECTION -> OnboardingStep.PARENT_PIN
             OnboardingStep.PARENT_PIN -> OnboardingStep.TUTORIAL
             OnboardingStep.TUTORIAL -> OnboardingStep.AI_INTRODUCTION
             OnboardingStep.AI_INTRODUCTION -> OnboardingStep.COMPLETED
@@ -134,7 +138,8 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
             OnboardingStep.WELCOME -> OnboardingStep.WELCOME
             OnboardingStep.PERMISSIONS -> OnboardingStep.WELCOME
             OnboardingStep.CHILD_INFO -> OnboardingStep.PERMISSIONS
-            OnboardingStep.PARENT_PIN -> OnboardingStep.CHILD_INFO
+            OnboardingStep.THEME_SELECTION -> OnboardingStep.CHILD_INFO
+            OnboardingStep.PARENT_PIN -> OnboardingStep.THEME_SELECTION
             OnboardingStep.TUTORIAL -> OnboardingStep.PARENT_PIN
             OnboardingStep.AI_INTRODUCTION -> OnboardingStep.TUTORIAL
             OnboardingStep.COMPLETED -> OnboardingStep.AI_INTRODUCTION
@@ -151,7 +156,8 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
         age: Int? = null,
         gender: String? = null,
         interests: List<String>? = null,
-        preferredLanguage: String? = null
+        preferredLanguage: String? = null,
+        selectedTheme: String? = null
     ) {
         val currentProfile = _uiState.value.childProfile
         _uiState.value = _uiState.value.copy(
@@ -160,7 +166,8 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
                 age = age ?: currentProfile.age,
                 gender = gender ?: currentProfile.gender,
                 interests = interests ?: currentProfile.interests,
-                preferredLanguage = preferredLanguage ?: currentProfile.preferredLanguage
+                preferredLanguage = preferredLanguage ?: currentProfile.preferredLanguage,
+                selectedTheme = selectedTheme ?: currentProfile.selectedTheme
             )
         )
     }
@@ -203,6 +210,7 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
             OnboardingStep.WELCOME -> true
             OnboardingStep.PERMISSIONS -> validatePermissions()
             OnboardingStep.CHILD_INFO -> validateChildInfo()
+            OnboardingStep.THEME_SELECTION -> true
             OnboardingStep.PARENT_PIN -> validateParentPin()
             OnboardingStep.TUTORIAL -> _uiState.value.tutorialCompleted
             OnboardingStep.AI_INTRODUCTION -> true
@@ -239,7 +247,7 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
     /**
      * Complete the onboarding process by saving all data.
      */
-    private fun completeOnboarding() {
+    fun completeOnboarding() {
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true, error = null)
@@ -261,9 +269,9 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
                     .apply()
 
                 // Save active child ID and name to general UserSessionRepository
-                val userSessionRepository = UserSessionRepository(getApplication())
                 userSessionRepository.setActiveChildId(childId)
                 userSessionRepository.saveChildName(childProfile.name!!)
+                userSessionRepository.setOnboardingCompleted(true)
                 
                 Log.d(TAG, "Onboarding completed successfully for child ID: $childId, Name: ${childProfile.name}")
                 
@@ -291,7 +299,8 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
             age = profileData.age,
             gender = profileData.gender.takeIf { it.isNotBlank() },
             preferredLanguage = profileData.preferredLanguage,
-            location = null // We're not collecting location in this version
+            location = null, // We're not collecting location in this version
+            selectedTheme = profileData.selectedTheme ?: "under_the_sea" // Default theme
         )
     }
     
@@ -384,5 +393,13 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
     fun clearOnboardingData() {
         onboardingPrefs.edit().clear().apply()
         _uiState.value = OnboardingUiState()
+        userSessionRepository.clearActiveUserSession()
+    }
+    
+    /**
+     * Update selected theme.
+     */
+    fun updateSelectedTheme(themeId: String) {
+        updateChildProfile(selectedTheme = themeId)
     }
 } 

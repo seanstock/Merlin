@@ -62,7 +62,7 @@ class LocalEconomyService(
                 lastUpdated = Instant.now().toString()
             ))
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 
@@ -142,7 +142,7 @@ class LocalEconomyService(
                 timestamp = Instant.now().toString()
             ))
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 
@@ -158,7 +158,7 @@ class LocalEconomyService(
             val currentBalance = existingState?.walletSeconds ?: 0
             
             if (currentBalance < amount) {
-                return@withContext Result.error("Insufficient funds")
+                return@withContext Result.failure(Exception("Insufficient funds"))
             }
             
             val newBalance = currentBalance - amount
@@ -178,7 +178,7 @@ class LocalEconomyService(
                 timestamp = Instant.now().toString()
             ))
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 
@@ -230,7 +230,7 @@ class LocalEconomyService(
             
             return Result.success(totalReward)
         } catch (e: Exception) {
-            return Result.error(e)
+            return Result.failure(e)
         }
     }
 
@@ -257,7 +257,7 @@ class LocalEconomyService(
             val balance = getBalance(childId).getOrThrow()
             Result.success(balance.balance >= amount)
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 
@@ -274,7 +274,7 @@ class LocalEconomyService(
                 afterSpendingBalance = if (isValid) balance.balance - amount else balance.balance
             ))
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 
@@ -305,7 +305,7 @@ class LocalEconomyService(
                 totalRealWorldValue = convertToRealWorldValue(balance.balance).getOrThrow()
             ))
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 
@@ -320,7 +320,7 @@ class LocalEconomyService(
             // TODO: Implement by tracking daily coin awards in a separate table
             Result.success(0)
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 
@@ -334,7 +334,7 @@ class LocalEconomyService(
             val remainingCoins = Math.max(0, 60 - todayEarned) // 60 coin daily limit
             Result.success(remainingCoins)
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 
@@ -375,11 +375,11 @@ class LocalEconomyService(
                     ))
                 },
                 onFailure = { error ->
-                    Result.error(error)
+                    Result.failure(error)
                 }
             )
         } catch (e: Exception) {
-            Result.error(e)
+            Result.failure(e)
         }
     }
 

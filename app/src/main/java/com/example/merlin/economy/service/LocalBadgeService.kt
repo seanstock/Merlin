@@ -65,28 +65,31 @@ class LocalBadgeService : BadgeService {
     }
 
     override suspend fun awardBadge(badge: BadgeDto): Result<BadgeDto> {
-        demoBadges.add(badge)
         return Result.success(badge)
     }
 
     override suspend fun awardBadgeById(childId: String, badgeDefinitionId: String, earnedAt: String): Result<BadgeDto> {
-        val definition = demoBadgeDefinitions.find { it.id == badgeDefinitionId }
-        return if (definition != null) {
+        try {
+            val definition = demoBadgeDefinitions.find { it.id == badgeDefinitionId }
+                ?: return Result.failure(Exception("Badge definition not found: $badgeDefinitionId"))
+            
             val newBadge = BadgeDto(
-                id = "earned-${UUID.randomUUID()}",
+                id = UUID.randomUUID().toString(),
                 childId = childId,
                 name = definition.name,
                 description = definition.description,
-                earnedAt = Instant.now().toString(),
+                earnedAt = earnedAt,
                 category = definition.category,
                 imageUrl = definition.imageUrl,
                 rarity = definition.rarity,
                 benefits = definition.rewards
             )
+            
             demoBadges.add(newBadge)
-            Result.success(newBadge)
-        } else {
-            Result.error("Badge definition not found")
+            
+            return Result.success(newBadge)
+        } catch (e: Exception) {
+            return Result.failure(e)
         }
     }
 
@@ -126,7 +129,7 @@ class LocalBadgeService : BadgeService {
 
     override suspend fun getBadgeDefinition(badgeId: String): Result<BadgeDefinitionDto> {
         val definition = demoBadgeDefinitions.find { it.id == badgeId }
-        return if (definition != null) Result.success(definition) else Result.error("Not found")
+        return if (definition != null) Result.success(definition) else Result.failure(Exception("Badge definition not found: $badgeId"))
     }
 
     override suspend fun checkBadgeRequirements(childId: String, badgeDefinitionId: String): Result<BadgeRequirementCheckDto> {

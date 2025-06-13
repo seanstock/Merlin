@@ -81,7 +81,7 @@ class AnalyticsViewModel(
     private suspend fun loadOverallPerformance(childId: String): PerformanceStatsDto? {
         return try {
             val result = adaptiveDifficultyService.getPerformanceStats(childId, "overall")
-            if (result.isSuccess()) {
+            if (result.isSuccess) {
                 result.getOrNull()
             } else {
                 // Generate sample task results and create stats
@@ -96,7 +96,7 @@ class AnalyticsViewModel(
     private suspend fun loadSubjectMastery(childId: String): List<SubjectMasteryDto> {
         return try {
             val result = adaptiveDifficultyService.getAllSubjectMastery(childId)
-            if (result.isSuccess()) {
+            if (result.isSuccess) {
                 val mastery = result.getOrNull()
                 if (mastery.isNullOrEmpty()) {
                     // Generate sample data for all subjects

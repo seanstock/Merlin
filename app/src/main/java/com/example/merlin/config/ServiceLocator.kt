@@ -6,6 +6,7 @@ import com.example.merlin.data.repository.EconomyStateRepository
 import com.example.merlin.data.database.DatabaseProvider
 import com.example.merlin.economy.service.*
 import com.example.merlin.economy.model.*
+import com.example.merlin.ui.theme.ThemeService
 
 /**
  * Service locator for Learning-as-a-Service architecture.
@@ -27,6 +28,12 @@ object ServiceLocator {
     
     @Volatile
     private var screenTimeService: ScreenTimeService? = null
+    
+    @Volatile
+    private var uiConfigurationService: UIConfigurationService? = null
+    
+    @Volatile
+    private var themeService: ThemeService? = null
     
     /**
      * Get AdaptiveDifficultyService implementation based on configuration
@@ -123,6 +130,39 @@ object ServiceLocator {
     }
     
     /**
+     * Get UIConfigurationService implementation based on configuration
+     */
+    fun getUIConfigurationService(context: Context): UIConfigurationService {
+        return LocalUIConfigurationService(context)
+    }
+    
+    /**
+     * Get ThemeService implementation based on configuration
+     */
+    fun getThemeService(context: Context): ThemeService {
+        return themeService ?: synchronized(this) {
+            themeService ?: ServiceConfiguration.getServiceImplementation(
+                localImpl = {
+                    val db = DatabaseProvider.getInstance(context)
+                    val childRepo = ChildProfileRepository(db.childProfileDao())
+                    ThemeService(childRepo)
+                },
+                remoteImpl = {
+                    // TODO: Remote implementation once LaaS backend supports it
+                    val db = DatabaseProvider.getInstance(context)
+                    val childRepo = ChildProfileRepository(db.childProfileDao())
+                    ThemeService(childRepo) // Fallback
+                },
+                mockImpl = {
+                    val db = DatabaseProvider.getInstance(context)
+                    val childRepo = ChildProfileRepository(db.childProfileDao())
+                    ThemeService(childRepo)
+                }
+            ).also { themeService = it }
+        }
+    }
+    
+    /**
      * Clear all service instances (useful for testing and service configuration changes)
      */
     fun clearAllServices() {
@@ -132,6 +172,8 @@ object ServiceLocator {
             badgeService = null
             experienceService = null
             screenTimeService = null
+            uiConfigurationService = null
+            themeService = null
         }
     }
     
@@ -145,6 +187,8 @@ object ServiceLocator {
             "badge" to if (badgeService != null) "initialized" else "not_initialized",
             "experience" to if (experienceService != null) "initialized" else "not_initialized",
             "screen_time" to if (screenTimeService != null) "initialized" else "not_initialized",
+            "ui_configuration" to if (uiConfigurationService != null) "initialized" else "not_initialized",
+            "theme" to if (themeService != null) "initialized" else "not_initialized",
             "configuration" to ServiceConfiguration.getServiceConfig().buildVariant
         )
     }
