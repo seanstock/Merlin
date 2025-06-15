@@ -28,6 +28,7 @@ import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
 import kotlinx.serialization.json.add
 import java.io.IOException
+import kotlin.time.Duration.Companion.seconds
 
 // Test import resolution
 // import com.aallam.openai.api.chat.Tool // This was one of the unresolved imports
@@ -113,7 +114,14 @@ class OpenAIClientWrapper {
             // or leave openAI as null, and subsequent calls would need to handle that.
         } else {
             try {
-                openAI = OpenAI(token = apiKey)
+                openAI = OpenAI(
+                    token = apiKey,
+                    timeout = com.aallam.openai.api.http.Timeout(
+                        socket = 120.seconds,
+                        connect = 60.seconds,
+                        request = 120.seconds
+                    )
+                )
                 Log.d("OpenAIClientWrapper", "OpenAI client initialized successfully.")
             } catch (e: Exception) {
                 Log.e("OpenAIClientWrapper", "Failed to initialize OpenAI client: ${e.message}", e)

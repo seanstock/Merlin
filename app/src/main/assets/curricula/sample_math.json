@@ -1,0 +1,204 @@
+[
+  {
+    "id": 1,
+    "title": "Basic Addition (Grade 1)",
+    "category": "mathematics",
+    "description": "This course introduces basic addition concepts and skills, starting from adding single-digit numbers and progressing to adding multi-digit numbers.",
+    "metadata": {
+      "totalWeeks": 16,
+      "sessionsPerWeek": 3,
+      "estimatedSessionDuration": 35,
+      "difficulty": "beginner",
+      "targetAgeRange": "6-7"
+    },
+    "learningObjectives": [
+      "Understand the concept of addition",
+      "Master addition of single-digit numbers",
+      "Master addition of two-digit numbers"
+    ],
+    "totalTasks": 3,
+    "tasks": [
+      {
+        "id": "1_1",
+        "title": "Introduction to Addition",
+        "description": "Students will learn the basic concept of addition.",
+        "week": 1,
+        "session": 1,
+        "learningObjectives": [
+          "Understand the concept of addition"
+        ],
+        "prerequisites": [],
+        "estimatedDuration": 35,
+        "activities": [
+          {
+            "type": "reading",
+            "description": "Read the introduction to addition",
+            "duration": 15
+          },
+          {
+            "type": "interactive",
+            "description": "Complete interactive addition games",
+            "duration": 20
+          }
+        ],
+        "assessment": {
+          "type": "quiz",
+          "questions": 5,
+          "description": "Basic knowledge check on the concept of addition"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "1_2",
+        "title": "Adding Single-Digit Numbers",
+        "description": "Students will learn how to add single-digit numbers.",
+        "week": 1,
+        "session": 2,
+        "learningObjectives": [
+          "Master addition of single-digit numbers"
+        ],
+        "prerequisites": [
+          "task_1_1"
+        ],
+        "estimatedDuration": 35,
+        "activities": [
+          {
+            "type": "reading",
+            "description": "Read chapter on adding single-digit numbers",
+            "duration": 15
+          },
+          {
+            "type": "interactive",
+            "description": "Complete practice exercises on adding single-digit numbers",
+            "duration": 20
+          }
+        ],
+        "assessment": {
+          "type": "quiz",
+          "questions": 5,
+          "description": "Basic knowledge check on adding single-digit numbers"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "1_3",
+        "title": "Review and Assessment",
+        "description": "Review the week's lessons and assess learned skills.",
+        "week": 1,
+        "session": 3,
+        "learningObjectives": [
+          "Understand the concept of addition",
+          "Master addition of single-digit numbers"
+        ],
+        "prerequisites": [
+          "task_1_1",
+          "task_1_2"
+        ],
+        "estimatedDuration": 35,
+        "activities": [
+          {
+            "type": "interactive",
+            "description": "Complete review exercises",
+            "duration": 25
+          },
+          {
+            "type": "assessment",
+            "description": "Complete assessment quiz",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "quiz",
+          "questions": 10,
+          "description": "Assessment of week 1 lessons"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      }
+    ],
+    "progress": {
+      "completedTasks": 0,
+      "totalTasks": 3,
+      "currentWeek": 1,
+      "currentSession": 1,
+      "percentComplete": 0
+    },
+    "generated": {
+      "timestamp": "2025-06-14T19:52:39.547Z",
+      "generator": "CurriculumGenerator v1.0",
+      "subject": "Basic Addition (Grade 1)",
+      "category": "sample_math"
+    }
+  },
+  {
+    "id": 2,
+    "title": "Introduction to Fractions (Grade 3)",
+    "category": "math",
+    "description": "This course introduces third-grade students to the world of fractions. Students will learn about different types of fractions, how to compare and order fractions, and the real-world application of fractions.",
+    "metadata": {
+      "totalWeeks": 16,
+      "sessionsPerWeek": 3,
+      "estimatedSessionDuration": 35,
+      "difficulty": "beginner",
+      "targetAgeRange": "8-9"
+    },
+    "learningObjectives": [
+      "Understand what fractions represent",
+      "Compare and order fractions",
+      "Use fractions in practical real-world scenarios"
+    ],
+    "totalTasks": 1,
+    "tasks": [
+      {
+        "id": "2_1",
+        "title": "Introduction to Fractions",
+        "description": "Learn what fractions are and what they represent.",
+        "week": 1,
+        "session": 1,
+        "learningObjectives": [
+          "Understand what fractions represent"
+        ],
+        "prerequisites": [],
+        "estimatedDuration": 35,
+        "activities": [
+          {
+            "type": "reading",
+            "description": "Read the introduction to fractions",
+            "duration": 15
+          },
+          {
+            "type": "interactive",
+            "description": "Complete practice exercises on identifying fractions",
+            "duration": 20
+          }
+        ],
+        "assessment": {
+          "type": "quiz",
+          "questions": 5,
+          "description": "Basic knowledge check on fractions"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      }
+    ],
+    "progress": {
+      "completedTasks": 0,
+      "totalTasks": 1,
+      "currentWeek": 1,
+      "currentSession": 1,
+      "percentComplete": 0
+    },
+    "generated": {
+      "timestamp": "2025-06-14T19:52:52.217Z",
+      "generator": "CurriculumGenerator v1.0",
+      "subject": "Introduction to Fractions (Grade 3)",
+      "category": "sample_math"
+    }
+  }
+]

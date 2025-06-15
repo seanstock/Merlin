@@ -1,0 +1,1999 @@
+[
+  {
+    "id": 6,
+    "title": "Common Core Grade 3 Mathematics",
+    "category": "elementary_math",
+    "description": "Complete Common Core Grade 3 Mathematics curriculum covering all standards with structured progression through Operations, Number & Operations, Fractions, Measurement, and Geometry.",
+    "metadata": {
+      "totalWeeks": 16,
+      "sessionsPerWeek": 3,
+      "estimatedSessionDuration": 45,
+      "difficulty": "elementary",
+      "targetAgeRange": "8-9"
+    },
+    "learningObjectives": [
+      "Master multiplication and division concepts within 100",
+      "Understand place value and perform operations within 1000",
+      "Work with fractions as numbers on the number line",
+      "Solve problems involving measurement and area",
+      "Apply mathematical reasoning to real-world problems"
+    ],
+    "totalTasks": 48,
+    "tasks": [
+      {
+        "id": "6_1",
+        "title": "Multiplying Digits with 5 and 10 Up to 999",
+        "description": "Learn and practice multiplying digits with 5 and 10 up to 999 aligned with Common Core standard 3.OA.A.1: Interpret products of whole numbers",
+        "week": 1,
+        "session": 1,
+        "learningObjectives": [
+          "Understand multiplying digits with 5 and 10 up to 999",
+          "Apply interpret products of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Multiplying Digits with 5 and 10 Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with multiplying digits with 5 and 10 up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Multiplying Digits with 5 and 10 Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_2",
+        "title": "Sharing & Grouping Up to 999",
+        "description": "Learn and practice sharing & grouping up to 999 aligned with Common Core standard 3.OA.A.2: Interpret whole-number quotients of whole numbers",
+        "week": 1,
+        "session": 2,
+        "learningObjectives": [
+          "Understand sharing & grouping up to 999",
+          "Apply interpret whole-number quotients of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Sharing & Grouping Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with sharing & grouping up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Sharing & Grouping Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_3",
+        "title": "Multiplication Word Problems Up to 999",
+        "description": "Learn and practice multiplication word problems up to 999 aligned with Common Core standard 3.OA.A.3: Use multiplication and division within 100 to solve word problems",
+        "week": 1,
+        "session": 3,
+        "learningObjectives": [
+          "Understand multiplication word problems up to 999",
+          "Apply use multiplication and division within 100 to solve word problems",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Multiplication Word Problems Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with multiplication word problems up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Multiplication Word Problems Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_4",
+        "title": "Reading and Writing Digits",
+        "description": "Learn and practice reading and writing digits aligned with Common Core standard 3.NBT.A.1: Use place value understanding to round whole numbers to the nearest 10 or 100",
+        "week": 2,
+        "session": 1,
+        "learningObjectives": [
+          "Understand reading and writing digits",
+          "Apply use place value understanding to round whole numbers to the nearest 10 or 100",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_1_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Reading and Writing Digits",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with reading and writing digits",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Reading and Writing Digits"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_5",
+        "title": "Addition with Regrouping Up to 1000",
+        "description": "Learn and practice addition with regrouping up to 1000 aligned with Common Core standard 3.NBT.A.2: Fluently add and subtract within 1000 using strategies and algorithms based on place value",
+        "week": 2,
+        "session": 2,
+        "learningObjectives": [
+          "Understand addition with regrouping up to 1000",
+          "Apply fluently add and subtract within 1000 using strategies and algorithms based on place value",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_1_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Addition with Regrouping Up to 1000",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with addition with regrouping up to 1000",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Addition with Regrouping Up to 1000"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_6",
+        "title": "Equivalent fractions",
+        "description": "Learn and practice equivalent fractions aligned with Common Core standard 3.NF.A.3: Explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+        "week": 2,
+        "session": 3,
+        "learningObjectives": [
+          "Understand equivalent fractions",
+          "Apply explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_1_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Equivalent fractions",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with equivalent fractions",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Equivalent fractions"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_7",
+        "title": "Area - unit squares and pattern blocks",
+        "description": "Learn and practice area - unit squares and pattern blocks aligned with Common Core standard 3.MD.C.5: Recognize area as an attribute of plane figures and understand concepts of area measurement",
+        "week": 3,
+        "session": 1,
+        "learningObjectives": [
+          "Understand area - unit squares and pattern blocks",
+          "Apply recognize area as an attribute of plane figures and understand concepts of area measurement",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_2_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Area - unit squares and pattern blocks",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with area - unit squares and pattern blocks",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Area - unit squares and pattern blocks"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_8",
+        "title": "Calculating and Estimating Area and Perimeter",
+        "description": "Learn and practice calculating and estimating area and perimeter aligned with Common Core standard 3.MD.C.7: Relate area to the operations of multiplication and addition",
+        "week": 3,
+        "session": 2,
+        "learningObjectives": [
+          "Understand calculating and estimating area and perimeter",
+          "Apply relate area to the operations of multiplication and addition",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_2_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Calculating and Estimating Area and Perimeter",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with calculating and estimating area and perimeter",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Calculating and Estimating Area and Perimeter"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_9",
+        "title": "Multiplying Digits with 0 and 1 Up to 999",
+        "description": "Learn and practice multiplying digits with 0 and 1 up to 999 aligned with Common Core standard 3.OA.A.1: Interpret products of whole numbers",
+        "week": 3,
+        "session": 3,
+        "learningObjectives": [
+          "Understand multiplying digits with 0 and 1 up to 999",
+          "Apply interpret products of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_2_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Multiplying Digits with 0 and 1 Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with multiplying digits with 0 and 1 up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Multiplying Digits with 0 and 1 Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_10",
+        "title": "Dividing with Arrays",
+        "description": "Learn and practice dividing with arrays aligned with Common Core standard 3.OA.A.2: Interpret whole-number quotients of whole numbers",
+        "week": 4,
+        "session": 1,
+        "learningObjectives": [
+          "Understand dividing with arrays",
+          "Apply interpret whole-number quotients of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_3_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Dividing with Arrays",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with dividing with arrays",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Dividing with Arrays"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_11",
+        "title": "Division Word Problems Up to 999",
+        "description": "Learn and practice division word problems up to 999 aligned with Common Core standard 3.OA.A.3: Use multiplication and division within 100 to solve word problems",
+        "week": 4,
+        "session": 2,
+        "learningObjectives": [
+          "Understand division word problems up to 999",
+          "Apply use multiplication and division within 100 to solve word problems",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_3_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Division Word Problems Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with division word problems up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Division Word Problems Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_12",
+        "title": "Place Value Tables of Multi-Digits",
+        "description": "Learn and practice place value tables of multi-digits aligned with Common Core standard 3.NBT.A.1: Use place value understanding to round whole numbers to the nearest 10 or 100",
+        "week": 4,
+        "session": 3,
+        "learningObjectives": [
+          "Understand place value tables of multi-digits",
+          "Apply use place value understanding to round whole numbers to the nearest 10 or 100",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_3_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Place Value Tables of Multi-Digits",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with place value tables of multi-digits",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Place Value Tables of Multi-Digits"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_13",
+        "title": "Adding with Digits Up to 1000",
+        "description": "Learn and practice adding with digits up to 1000 aligned with Common Core standard 3.NBT.A.2: Fluently add and subtract within 1000 using strategies and algorithms based on place value",
+        "week": 5,
+        "session": 1,
+        "learningObjectives": [
+          "Understand adding with digits up to 1000",
+          "Apply fluently add and subtract within 1000 using strategies and algorithms based on place value",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_4_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Adding with Digits Up to 1000",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with adding with digits up to 1000",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Adding with Digits Up to 1000"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_14",
+        "title": "Equivalent fractions",
+        "description": "Learn and practice equivalent fractions aligned with Common Core standard 3.NF.A.3: Explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+        "week": 5,
+        "session": 2,
+        "learningObjectives": [
+          "Understand equivalent fractions",
+          "Apply explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_4_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Equivalent fractions",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with equivalent fractions",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Equivalent fractions"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_15",
+        "title": "Area - unit squares and pattern blocks",
+        "description": "Learn and practice area - unit squares and pattern blocks aligned with Common Core standard 3.MD.C.5: Recognize area as an attribute of plane figures and understand concepts of area measurement",
+        "week": 5,
+        "session": 3,
+        "learningObjectives": [
+          "Understand area - unit squares and pattern blocks",
+          "Apply recognize area as an attribute of plane figures and understand concepts of area measurement",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_4_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Area - unit squares and pattern blocks",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with area - unit squares and pattern blocks",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Area - unit squares and pattern blocks"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_16",
+        "title": "Calculating and Estimating Area and Perimeter",
+        "description": "Learn and practice calculating and estimating area and perimeter aligned with Common Core standard 3.MD.C.7: Relate area to the operations of multiplication and addition",
+        "week": 6,
+        "session": 1,
+        "learningObjectives": [
+          "Understand calculating and estimating area and perimeter",
+          "Apply relate area to the operations of multiplication and addition",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_5_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Calculating and Estimating Area and Perimeter",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with calculating and estimating area and perimeter",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Calculating and Estimating Area and Perimeter"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_17",
+        "title": "Times Tables",
+        "description": "Learn and practice times tables aligned with Common Core standard 3.OA.A.1: Interpret products of whole numbers",
+        "week": 6,
+        "session": 2,
+        "learningObjectives": [
+          "Understand times tables",
+          "Apply interpret products of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_5_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Times Tables",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with times tables",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Times Tables"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_18",
+        "title": "Remainders from Division Up to 999",
+        "description": "Learn and practice remainders from division up to 999 aligned with Common Core standard 3.OA.A.2: Interpret whole-number quotients of whole numbers",
+        "week": 6,
+        "session": 3,
+        "learningObjectives": [
+          "Understand remainders from division up to 999",
+          "Apply interpret whole-number quotients of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_5_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Remainders from Division Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with remainders from division up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Remainders from Division Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_19",
+        "title": "Multiplication Word Problems Up to 999",
+        "description": "Learn and practice multiplication word problems up to 999 aligned with Common Core standard 3.OA.A.3: Use multiplication and division within 100 to solve word problems",
+        "week": 7,
+        "session": 1,
+        "learningObjectives": [
+          "Understand multiplication word problems up to 999",
+          "Apply use multiplication and division within 100 to solve word problems",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_6_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Multiplication Word Problems Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with multiplication word problems up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Multiplication Word Problems Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_20",
+        "title": "Identifying the Place Value of a Digit",
+        "description": "Learn and practice identifying the place value of a digit aligned with Common Core standard 3.NBT.A.1: Use place value understanding to round whole numbers to the nearest 10 or 100",
+        "week": 7,
+        "session": 2,
+        "learningObjectives": [
+          "Understand identifying the place value of a digit",
+          "Apply use place value understanding to round whole numbers to the nearest 10 or 100",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_6_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Identifying the Place Value of a Digit",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with identifying the place value of a digit",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Identifying the Place Value of a Digit"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_21",
+        "title": "Addition Tables Up to 1000",
+        "description": "Learn and practice addition tables up to 1000 aligned with Common Core standard 3.NBT.A.2: Fluently add and subtract within 1000 using strategies and algorithms based on place value",
+        "week": 7,
+        "session": 3,
+        "learningObjectives": [
+          "Understand addition tables up to 1000",
+          "Apply fluently add and subtract within 1000 using strategies and algorithms based on place value",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_6_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Addition Tables Up to 1000",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with addition tables up to 1000",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Addition Tables Up to 1000"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_22",
+        "title": "Equivalent fractions",
+        "description": "Learn and practice equivalent fractions aligned with Common Core standard 3.NF.A.3: Explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+        "week": 8,
+        "session": 1,
+        "learningObjectives": [
+          "Understand equivalent fractions",
+          "Apply explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_7_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Equivalent fractions",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with equivalent fractions",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Equivalent fractions"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_23",
+        "title": "Area - unit squares and pattern blocks",
+        "description": "Learn and practice area - unit squares and pattern blocks aligned with Common Core standard 3.MD.C.5: Recognize area as an attribute of plane figures and understand concepts of area measurement",
+        "week": 8,
+        "session": 2,
+        "learningObjectives": [
+          "Understand area - unit squares and pattern blocks",
+          "Apply recognize area as an attribute of plane figures and understand concepts of area measurement",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_7_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Area - unit squares and pattern blocks",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with area - unit squares and pattern blocks",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Area - unit squares and pattern blocks"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_24",
+        "title": "Calculating and Estimating Area and Perimeter",
+        "description": "Learn and practice calculating and estimating area and perimeter aligned with Common Core standard 3.MD.C.7: Relate area to the operations of multiplication and addition",
+        "week": 8,
+        "session": 3,
+        "learningObjectives": [
+          "Understand calculating and estimating area and perimeter",
+          "Apply relate area to the operations of multiplication and addition",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_7_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Calculating and Estimating Area and Perimeter",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with calculating and estimating area and perimeter",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Calculating and Estimating Area and Perimeter"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_25",
+        "title": "Using Models to Multiply Up to 999",
+        "description": "Learn and practice using models to multiply up to 999 aligned with Common Core standard 3.OA.A.1: Interpret products of whole numbers",
+        "week": 9,
+        "session": 1,
+        "learningObjectives": [
+          "Understand using models to multiply up to 999",
+          "Apply interpret products of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_8_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Using Models to Multiply Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with using models to multiply up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Using Models to Multiply Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_26",
+        "title": "Dividing with Digits Up to 999",
+        "description": "Learn and practice dividing with digits up to 999 aligned with Common Core standard 3.OA.A.2: Interpret whole-number quotients of whole numbers",
+        "week": 9,
+        "session": 2,
+        "learningObjectives": [
+          "Understand dividing with digits up to 999",
+          "Apply interpret whole-number quotients of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_8_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Dividing with Digits Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with dividing with digits up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Dividing with Digits Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_27",
+        "title": "Division Word Problems Up to 999",
+        "description": "Learn and practice division word problems up to 999 aligned with Common Core standard 3.OA.A.3: Use multiplication and division within 100 to solve word problems",
+        "week": 9,
+        "session": 3,
+        "learningObjectives": [
+          "Understand division word problems up to 999",
+          "Apply use multiplication and division within 100 to solve word problems",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_8_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Division Word Problems Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with division word problems up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Division Word Problems Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_28",
+        "title": "Expanded Form of Multi-Digits",
+        "description": "Learn and practice expanded form of multi-digits aligned with Common Core standard 3.NBT.A.1: Use place value understanding to round whole numbers to the nearest 10 or 100",
+        "week": 10,
+        "session": 1,
+        "learningObjectives": [
+          "Understand expanded form of multi-digits",
+          "Apply use place value understanding to round whole numbers to the nearest 10 or 100",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_9_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Expanded Form of Multi-Digits",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with expanded form of multi-digits",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Expanded Form of Multi-Digits"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_29",
+        "title": "Subtracting with Digits Up to 1000",
+        "description": "Learn and practice subtracting with digits up to 1000 aligned with Common Core standard 3.NBT.A.2: Fluently add and subtract within 1000 using strategies and algorithms based on place value",
+        "week": 10,
+        "session": 2,
+        "learningObjectives": [
+          "Understand subtracting with digits up to 1000",
+          "Apply fluently add and subtract within 1000 using strategies and algorithms based on place value",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_9_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Subtracting with Digits Up to 1000",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with subtracting with digits up to 1000",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Subtracting with Digits Up to 1000"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_30",
+        "title": "Equivalent fractions",
+        "description": "Learn and practice equivalent fractions aligned with Common Core standard 3.NF.A.3: Explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+        "week": 10,
+        "session": 3,
+        "learningObjectives": [
+          "Understand equivalent fractions",
+          "Apply explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_9_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Equivalent fractions",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with equivalent fractions",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Equivalent fractions"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_31",
+        "title": "Area - unit squares and pattern blocks",
+        "description": "Learn and practice area - unit squares and pattern blocks aligned with Common Core standard 3.MD.C.5: Recognize area as an attribute of plane figures and understand concepts of area measurement",
+        "week": 11,
+        "session": 1,
+        "learningObjectives": [
+          "Understand area - unit squares and pattern blocks",
+          "Apply recognize area as an attribute of plane figures and understand concepts of area measurement",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_10_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Area - unit squares and pattern blocks",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with area - unit squares and pattern blocks",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Area - unit squares and pattern blocks"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_32",
+        "title": "Calculating and Estimating Area and Perimeter",
+        "description": "Learn and practice calculating and estimating area and perimeter aligned with Common Core standard 3.MD.C.7: Relate area to the operations of multiplication and addition",
+        "week": 11,
+        "session": 2,
+        "learningObjectives": [
+          "Understand calculating and estimating area and perimeter",
+          "Apply relate area to the operations of multiplication and addition",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_10_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Calculating and Estimating Area and Perimeter",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with calculating and estimating area and perimeter",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Calculating and Estimating Area and Perimeter"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_33",
+        "title": "Multiplying using Mental Strategies",
+        "description": "Learn and practice multiplying using mental strategies aligned with Common Core standard 3.OA.A.1: Interpret products of whole numbers",
+        "week": 11,
+        "session": 3,
+        "learningObjectives": [
+          "Understand multiplying using mental strategies",
+          "Apply interpret products of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_10_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Multiplying using Mental Strategies",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with multiplying using mental strategies",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Multiplying using Mental Strategies"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_34",
+        "title": "Relating Addition with Division",
+        "description": "Learn and practice relating addition with division aligned with Common Core standard 3.OA.A.2: Interpret whole-number quotients of whole numbers",
+        "week": 12,
+        "session": 1,
+        "learningObjectives": [
+          "Understand relating addition with division",
+          "Apply interpret whole-number quotients of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_11_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Relating Addition with Division",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with relating addition with division",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Relating Addition with Division"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_35",
+        "title": "Multiplication Word Problems Up to 999",
+        "description": "Learn and practice multiplication word problems up to 999 aligned with Common Core standard 3.OA.A.3: Use multiplication and division within 100 to solve word problems",
+        "week": 12,
+        "session": 2,
+        "learningObjectives": [
+          "Understand multiplication word problems up to 999",
+          "Apply use multiplication and division within 100 to solve word problems",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_11_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Multiplication Word Problems Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with multiplication word problems up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Multiplication Word Problems Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_36",
+        "title": "Converting Between Place Values of Multi-Digits",
+        "description": "Learn and practice converting between place values of multi-digits aligned with Common Core standard 3.NBT.A.1: Use place value understanding to round whole numbers to the nearest 10 or 100",
+        "week": 12,
+        "session": 3,
+        "learningObjectives": [
+          "Understand converting between place values of multi-digits",
+          "Apply use place value understanding to round whole numbers to the nearest 10 or 100",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_11_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Converting Between Place Values of Multi-Digits",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with converting between place values of multi-digits",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Converting Between Place Values of Multi-Digits"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_37",
+        "title": "Subtraction with Regrouping Up to 1000",
+        "description": "Learn and practice subtraction with regrouping up to 1000 aligned with Common Core standard 3.NBT.A.2: Fluently add and subtract within 1000 using strategies and algorithms based on place value",
+        "week": 13,
+        "session": 1,
+        "learningObjectives": [
+          "Understand subtraction with regrouping up to 1000",
+          "Apply fluently add and subtract within 1000 using strategies and algorithms based on place value",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_12_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Subtraction with Regrouping Up to 1000",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with subtraction with regrouping up to 1000",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Subtraction with Regrouping Up to 1000"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_38",
+        "title": "Equivalent fractions",
+        "description": "Learn and practice equivalent fractions aligned with Common Core standard 3.NF.A.3: Explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+        "week": 13,
+        "session": 2,
+        "learningObjectives": [
+          "Understand equivalent fractions",
+          "Apply explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_12_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Equivalent fractions",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with equivalent fractions",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Equivalent fractions"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_39",
+        "title": "Area - unit squares and pattern blocks",
+        "description": "Learn and practice area - unit squares and pattern blocks aligned with Common Core standard 3.MD.C.5: Recognize area as an attribute of plane figures and understand concepts of area measurement",
+        "week": 13,
+        "session": 3,
+        "learningObjectives": [
+          "Understand area - unit squares and pattern blocks",
+          "Apply recognize area as an attribute of plane figures and understand concepts of area measurement",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_12_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Area - unit squares and pattern blocks",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with area - unit squares and pattern blocks",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Area - unit squares and pattern blocks"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_40",
+        "title": "Calculating and Estimating Area and Perimeter",
+        "description": "Learn and practice calculating and estimating area and perimeter aligned with Common Core standard 3.MD.C.7: Relate area to the operations of multiplication and addition",
+        "week": 14,
+        "session": 1,
+        "learningObjectives": [
+          "Understand calculating and estimating area and perimeter",
+          "Apply relate area to the operations of multiplication and addition",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_13_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Calculating and Estimating Area and Perimeter",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with calculating and estimating area and perimeter",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Calculating and Estimating Area and Perimeter"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_41",
+        "title": "Repeated Addition As Multiplication Up to 999",
+        "description": "Learn and practice repeated addition as multiplication up to 999 aligned with Common Core standard 3.OA.A.1: Interpret products of whole numbers",
+        "week": 14,
+        "session": 2,
+        "learningObjectives": [
+          "Understand repeated addition as multiplication up to 999",
+          "Apply interpret products of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_13_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Repeated Addition As Multiplication Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with repeated addition as multiplication up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Repeated Addition As Multiplication Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_42",
+        "title": "Understanding the Division Sign Up to 999",
+        "description": "Learn and practice understanding the division sign up to 999 aligned with Common Core standard 3.OA.A.2: Interpret whole-number quotients of whole numbers",
+        "week": 14,
+        "session": 3,
+        "learningObjectives": [
+          "Understand understanding the division sign up to 999",
+          "Apply interpret whole-number quotients of whole numbers",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_13_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Understanding the Division Sign Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with understanding the division sign up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Understanding the Division Sign Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_43",
+        "title": "Division Word Problems Up to 999",
+        "description": "Learn and practice division word problems up to 999 aligned with Common Core standard 3.OA.A.3: Use multiplication and division within 100 to solve word problems",
+        "week": 15,
+        "session": 1,
+        "learningObjectives": [
+          "Understand division word problems up to 999",
+          "Apply use multiplication and division within 100 to solve word problems",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_14_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Division Word Problems Up to 999",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with division word problems up to 999",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Division Word Problems Up to 999"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_44",
+        "title": "Reading and Writing Digits",
+        "description": "Learn and practice reading and writing digits aligned with Common Core standard 3.NBT.A.1: Use place value understanding to round whole numbers to the nearest 10 or 100",
+        "week": 15,
+        "session": 2,
+        "learningObjectives": [
+          "Understand reading and writing digits",
+          "Apply use place value understanding to round whole numbers to the nearest 10 or 100",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_14_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Reading and Writing Digits",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with reading and writing digits",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Reading and Writing Digits"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_45",
+        "title": "Addition with Regrouping Up to 1000",
+        "description": "Learn and practice addition with regrouping up to 1000 aligned with Common Core standard 3.NBT.A.2: Fluently add and subtract within 1000 using strategies and algorithms based on place value",
+        "week": 15,
+        "session": 3,
+        "learningObjectives": [
+          "Understand addition with regrouping up to 1000",
+          "Apply fluently add and subtract within 1000 using strategies and algorithms based on place value",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_14_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Addition with Regrouping Up to 1000",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with addition with regrouping up to 1000",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Addition with Regrouping Up to 1000"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_46",
+        "title": "Equivalent fractions",
+        "description": "Learn and practice equivalent fractions aligned with Common Core standard 3.NF.A.3: Explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+        "week": 16,
+        "session": 1,
+        "learningObjectives": [
+          "Understand equivalent fractions",
+          "Apply explain equivalence of fractions in special cases, and compare fractions by reasoning about their size",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_15_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Equivalent fractions",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with equivalent fractions",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Equivalent fractions"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_47",
+        "title": "Area - unit squares and pattern blocks",
+        "description": "Learn and practice area - unit squares and pattern blocks aligned with Common Core standard 3.MD.C.5: Recognize area as an attribute of plane figures and understand concepts of area measurement",
+        "week": 16,
+        "session": 2,
+        "learningObjectives": [
+          "Understand area - unit squares and pattern blocks",
+          "Apply recognize area as an attribute of plane figures and understand concepts of area measurement",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_15_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Area - unit squares and pattern blocks",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with area - unit squares and pattern blocks",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Area - unit squares and pattern blocks"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      },
+      {
+        "id": "6_48",
+        "title": "Calculating and Estimating Area and Perimeter",
+        "description": "Learn and practice calculating and estimating area and perimeter aligned with Common Core standard 3.MD.C.7: Relate area to the operations of multiplication and addition",
+        "week": 16,
+        "session": 3,
+        "learningObjectives": [
+          "Understand calculating and estimating area and perimeter",
+          "Apply relate area to the operations of multiplication and addition",
+          "Solve problems using grade-appropriate methods"
+        ],
+        "prerequisites": [
+          "task_15_3"
+        ],
+        "estimatedDuration": 45,
+        "activities": [
+          {
+            "type": "instruction",
+            "description": "Introduction to Calculating and Estimating Area and Perimeter",
+            "duration": 15
+          },
+          {
+            "type": "practice",
+            "description": "Guided practice with calculating and estimating area and perimeter",
+            "duration": 20
+          },
+          {
+            "type": "application",
+            "description": "Independent work and problem solving",
+            "duration": 10
+          }
+        ],
+        "assessment": {
+          "type": "formative",
+          "questions": 5,
+          "description": "Check understanding of Calculating and Estimating Area and Perimeter"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      }
+    ],
+    "progress": {
+      "completedTasks": 0,
+      "totalTasks": 48,
+      "currentWeek": 1,
+      "currentSession": 1,
+      "percentComplete": 0
+    },
+    "generated": {
+      "timestamp": "2025-06-14T13:36:45.285Z",
+      "generator": "CommonCoreGenerator v1.0",
+      "source": "Common Core State Standards Grade 3 Mathematics"
+    }
+  }
+]

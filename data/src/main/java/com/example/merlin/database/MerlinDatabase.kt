@@ -32,9 +32,14 @@ data class PlaceholderEntity(
         DeviceState::class,
         Badge::class,
         Experience::class,
-        XpTransaction::class
+        XpTransaction::class,
+        // Curriculum entities
+        CurriculumEntity::class,
+        CurriculumProgressEntity::class,
+        LessonProgressEntity::class,
+        TaskProgressEntity::class
     ],
-    version = 2,
+    version = 4, // Incremented for lesson_progress schema change
     exportSchema = true // Changed to true to export schema
 )
 // SQLCipher Performance Note:
@@ -55,19 +60,33 @@ abstract class MerlinDatabase : RoomDatabase() {
     abstract fun badgeDao(): BadgeDao
     abstract fun experienceDao(): ExperienceDao
     abstract fun xpTransactionDao(): XpTransactionDao
+    
+    // Curriculum DAO
+    abstract fun curriculumDao(): CurriculumDao
 
     // DAOs will be defined here in Subtask 3.3 (DAO Interface Implementation)
     // abstract fun placeholderDao(): PlaceholderDao // Example placeholder DAO
     // ... and so on for other DAOs
 
     companion object {
-        // Example: Migration from version 1 to 2 (define when schema version increases)
-        // val MIGRATION_1_2 = object : Migration(1, 2) {
+        // Example: Migration from version 2 to 3 (curriculum tables)
+        // val MIGRATION_2_3 = object : Migration(2, 3) {
         //     override fun migrate(db: SupportSQLiteDatabase) {
-        //         // Example: db.execSQL("ALTER TABLE child_profile ADD COLUMN new_column_name TEXT")
+        //         // Create curriculum tables
+        //         db.execSQL("""
+        //             CREATE TABLE IF NOT EXISTS curricula (
+        //                 id TEXT PRIMARY KEY NOT NULL,
+        //                 title TEXT NOT NULL,
+        //                 description TEXT NOT NULL,
+        //                 gradeLevel TEXT NOT NULL,
+        //                 subject TEXT NOT NULL,
+        //                 lessonsJson TEXT NOT NULL
+        //             )
+        //         """)
+        //         // ... other table creation SQL
         //     }
         // }
-        // Add more migrations as needed: MIGRATION_2_3, etc.
+        // Add more migrations as needed: MIGRATION_3_4, etc.
 
         // Note on Plaintext to SQLCipher Migration (for future reference if ever needed):
         // If migrating an existing *unencrypted* SQLite database to use SQLCipher with Room,

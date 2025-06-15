@@ -64,9 +64,7 @@ fun SimpleMainMenuScreen(
 
     // Wallet ViewModel for coin balance
     val userSessionRepository = remember { UserSessionRepository.getInstance(context) }
-    val activeChildId by produceState<String?>(initialValue = null, producer = {
-        value = userSessionRepository.getActiveChildId()
-    })
+    val activeChildId = remember { userSessionRepository.getActiveChildId() }
     
     val walletViewModel: WalletViewModel? = activeChildId?.let { childId ->
         androidx.lifecycle.viewmodel.compose.viewModel(

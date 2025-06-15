@@ -3,6 +3,8 @@ package com.example.merlin.ui.settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,20 +23,25 @@ import com.example.merlin.ui.accessibility.AccessibilityConstants
 import com.example.merlin.ui.theme.*
 import com.example.merlin.ui.parent.AnalyticsScreen
 import com.example.merlin.ui.parent.ScreenTimeScreen
+import com.example.merlin.curriculum.ui.CurriculumScreen
+import com.example.merlin.curriculum.ui.CurriculumNavigationWrapper
+import com.example.merlin.ui.settings.ChildProfileScreen
 
 /**
  * Settings navigation destinations
  */
 sealed class SettingsScreen(val route: String, val label: String, val icon: ImageVector) {
     object Profile : SettingsScreen("profile", "Profile", Icons.Default.Face)
+    object Curriculum : SettingsScreen("curriculum", "Curriculum", Icons.Default.School)
     object Analytics : SettingsScreen("analytics", "Analytics", Icons.Default.Analytics)
     object ScreenTime : SettingsScreen("screentime", "Screen Time", Icons.Default.Schedule)
     object Security : SettingsScreen("security", "Security", Icons.Default.Security)
-    object Exit : SettingsScreen("exit", "Exit", Icons.Default.ExitToApp)
+    object Exit : SettingsScreen("exit", "Exit", Icons.AutoMirrored.Filled.ExitToApp)
 }
 
 val settingsScreens = listOf(
     SettingsScreen.Profile,
+    SettingsScreen.Curriculum,
     SettingsScreen.Analytics,
     SettingsScreen.ScreenTime,
     SettingsScreen.Security,
@@ -64,7 +71,7 @@ fun SettingsScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = AccessibilityConstants.ContentDescriptions.BACK_BUTTON,
                             tint = AppleBlue
                         )
@@ -89,7 +96,13 @@ fun SettingsScreen(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(SettingsScreen.Profile.route) {
-                ProfileTabScreen()
+                ChildProfileScreen(
+                    onNavigateBack = { navController.navigateUp() },
+                    showTopBar = false
+                )
+            }
+            composable(SettingsScreen.Curriculum.route) {
+                CurriculumSettingsScreen()
             }
             composable(SettingsScreen.Analytics.route) {
                 AnalyticsScreen()
@@ -262,38 +275,13 @@ fun ExitConfirmationScreen(
 }
 
 @Composable
-fun ProfileTabScreen(
+fun CurriculumSettingsScreen(
     modifier: Modifier = Modifier
 ) {
-    Box(
+    // Use the navigation wrapper that includes the generator
+    CurriculumNavigationWrapper(
+        onBackPressed = { /* No-op since we're in settings tabs */ },
+        showBackButton = false, // Hide back button in settings context
         modifier = modifier
-            .fillMaxSize()
-            .background(AppleSystemBackground)
-            .padding(AppleSpacing.large),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = Icons.Default.Face,
-                contentDescription = null,
-                tint = AppleSecondaryLabel,
-                modifier = Modifier.size(80.dp)
-            )
-            Spacer(modifier = Modifier.height(AppleSpacing.large))
-            Text(
-                text = "Child Profile",
-                style = AppleHeadline,
-                color = ApplePrimaryLabel
-            )
-            Spacer(modifier = Modifier.height(AppleSpacing.small))
-            Text(
-                text = "Edit name, age, theme, and learning preferences",
-                style = AppleBody,
-                color = AppleSecondaryLabel,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
+    )
 } 

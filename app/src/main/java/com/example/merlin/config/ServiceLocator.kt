@@ -7,6 +7,12 @@ import com.example.merlin.data.database.DatabaseProvider
 import com.example.merlin.economy.service.*
 import com.example.merlin.economy.model.*
 import com.example.merlin.ui.theme.ThemeService
+import com.example.merlin.curriculum.service.CurriculumService
+import com.example.merlin.curriculum.service.LocalCurriculumService
+import com.example.merlin.curriculum.service.SyllabusGeneratorService
+import com.example.merlin.curriculum.service.LocalSyllabusGeneratorService
+import com.example.merlin.curriculum.data.CurriculumRepository
+import com.example.merlin.curriculum.domain.CurriculumManager
 
 /**
  * Service locator for Learning-as-a-Service architecture.
@@ -34,6 +40,15 @@ object ServiceLocator {
     
     @Volatile
     private var themeService: ThemeService? = null
+    
+    @Volatile
+    private var curriculumService: CurriculumService? = null
+    
+    @Volatile
+    private var syllabusGeneratorService: SyllabusGeneratorService? = null
+    
+    @Volatile
+    private var curriculumManager: CurriculumManager? = null
     
     /**
      * Get AdaptiveDifficultyService implementation based on configuration
@@ -163,6 +178,60 @@ object ServiceLocator {
     }
     
     /**
+     * Get CurriculumService implementation based on configuration
+     */
+    fun getCurriculumService(context: Context): CurriculumService {
+        return curriculumService ?: synchronized(this) {
+            curriculumService ?: ServiceConfiguration.getServiceImplementation(
+                localImpl = {
+                    val db = DatabaseProvider.getInstance(context)
+                    val repository = CurriculumRepository(db.curriculumDao())
+                    LocalCurriculumService(repository)
+                },
+                remoteImpl = {
+                    // TODO: Implement RemoteCurriculumService for LaaS
+                    val db = DatabaseProvider.getInstance(context)
+                    val repository = CurriculumRepository(db.curriculumDao())
+                    LocalCurriculumService(repository) // Fallback
+                },
+                mockImpl = {
+                    val db = DatabaseProvider.getInstance(context)
+                    val repository = CurriculumRepository(db.curriculumDao())
+                    LocalCurriculumService(repository)
+                }
+            ).also { curriculumService = it }
+        }
+    }
+    
+    /**
+     * Get SyllabusGeneratorService implementation based on configuration
+     */
+    fun getSyllabusGeneratorService(context: Context): SyllabusGeneratorService {
+        return syllabusGeneratorService ?: synchronized(this) {
+            syllabusGeneratorService ?: ServiceConfiguration.getServiceImplementation(
+                localImpl = { LocalSyllabusGeneratorService(context) },
+                remoteImpl = {
+                    // TODO: Implement RemoteSyllabusGeneratorService for LaaS
+                    LocalSyllabusGeneratorService(context) // Fallback to local for now
+                },
+                mockImpl = { LocalSyllabusGeneratorService(context) } // Use local for mocking too
+            ).also { syllabusGeneratorService = it }
+        }
+    }
+    
+    /**
+     * Get CurriculumManager implementation (service-agnostic business logic)
+     */
+    fun getCurriculumManager(context: Context): CurriculumManager {
+        return curriculumManager ?: synchronized(this) {
+            curriculumManager ?: CurriculumManager(
+                curriculumService = getCurriculumService(context),
+                economyService = getEconomyService(context)
+            ).also { curriculumManager = it }
+        }
+    }
+    
+    /**
      * Clear all service instances (useful for testing and service configuration changes)
      */
     fun clearAllServices() {
@@ -174,6 +243,9 @@ object ServiceLocator {
             screenTimeService = null
             uiConfigurationService = null
             themeService = null
+            curriculumService = null
+            syllabusGeneratorService = null
+            curriculumManager = null
         }
     }
     
@@ -189,6 +261,9 @@ object ServiceLocator {
             "screen_time" to if (screenTimeService != null) "initialized" else "not_initialized",
             "ui_configuration" to if (uiConfigurationService != null) "initialized" else "not_initialized",
             "theme" to if (themeService != null) "initialized" else "not_initialized",
+            "curriculum" to if (curriculumService != null) "initialized" else "not_initialized",
+            "syllabus_generator" to if (syllabusGeneratorService != null) "initialized" else "not_initialized",
+            "curriculum_manager" to if (curriculumManager != null) "initialized" else "not_initialized",
             "configuration" to ServiceConfiguration.getServiceConfig().buildVariant
         )
     }

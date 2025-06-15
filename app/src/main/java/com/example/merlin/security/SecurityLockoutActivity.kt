@@ -64,9 +64,8 @@ class SecurityLockoutActivity : AppCompatActivity() {
     }
     
     override fun onBackPressed() {
-        // Prevent back button from bypassing security lockout
-        Log.w(TAG, "Back button pressed - security lockout cannot be bypassed")
-        // Do nothing - don't call super.onBackPressed()
+        super.onBackPressed()
+        // No custom behavior needed, just prevent app exit
     }
     
     override fun onPause() {

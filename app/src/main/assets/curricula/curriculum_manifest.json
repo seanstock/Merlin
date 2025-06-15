@@ -1,0 +1,23 @@
+{
+  "version": "1.0",
+  "generated": "2025-06-14T19:54:17.194Z",
+  "totalCurricula": 6,
+  "categories": {
+    "sample_math": {
+      "count": 2,
+      "file": "sample_math.json"
+    },
+    "sample_science": {
+      "count": 2,
+      "file": "sample_science.json"
+    },
+    "sample_language": {
+      "count": 1,
+      "file": "sample_language.json"
+    },
+    "common_core": {
+      "count": 1,
+      "file": "common_core.json"
+    }
+  }
+}

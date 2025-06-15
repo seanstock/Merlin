@@ -271,11 +271,8 @@ class MainActivity : ComponentActivity(),
      */
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // Don't call super.onBackPressed() to prevent the default back behavior
-        Log.d(TAG, "Back button pressed - ignoring to maintain stickiness")
-        
-        // Optionally show a toast to indicate that back is disabled
-        Toast.makeText(this, "Use settings to exit Merlin safely", Toast.LENGTH_SHORT).show()
+        super.onBackPressed()
+        // Custom back press handling can be added here if needed
     }
 
     override fun onResume() {
@@ -700,6 +697,10 @@ class MainActivity : ComponentActivity(),
         
         Log.d(TAG, "Sticky behavior re-enabled successfully")
     }
+
+    private fun updateScreenTime() {
+        // ... existing code ...
+    }
 }
 
 @Composable
@@ -840,6 +841,7 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
                             gameId = selectedGameId
                 )
             }
+
             "settings" -> {
                 SettingsScreen(
                     onNavigateBack = { currentScreen = "main" },

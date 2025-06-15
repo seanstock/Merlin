@@ -21,7 +21,8 @@ import com.example.merlin.ui.theme.AppTheme
 @Composable
 fun ChildProfileScreen(
     onNavigateBack: () -> Unit,
-    viewModel: ChildProfileSettingsViewModel = viewModel()
+    viewModel: ChildProfileSettingsViewModel = viewModel(),
+    showTopBar: Boolean = true
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -42,22 +43,24 @@ fun ChildProfileScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
-                title = { Text("Child Profile") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+            if (showTopBar) {
+                TopAppBar(
+                    title = { Text("Child Profile") },
+                    navigationIcon = {
+                        IconButton(onClick = onNavigateBack) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        Button(
+                            onClick = { viewModel.saveChanges() },
+                            enabled = uiState.isSavable
+                        ) {
+                            Text("Save")
+                        }
                     }
-                },
-                actions = {
-                    Button(
-                        onClick = { viewModel.saveChanges() },
-                        enabled = uiState.isSavable
-                    ) {
-                        Text("Save")
-                    }
-                }
-            )
+                )
+            }
         }
     ) { paddingValues ->
         if (uiState.isLoading) {
@@ -70,7 +73,7 @@ fun ChildProfileScreen(
                 Column(
                     modifier = Modifier
                         .padding(paddingValues)
-                        .padding(16.dp)
+                        .padding(horizontal = 20.dp, vertical = 12.dp)
                         .fillMaxSize()
                 ) {
                     OutlinedTextField(
@@ -79,7 +82,7 @@ fun ChildProfileScreen(
                         label = { Text("Name") },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = profile.age?.toString() ?: "",
                         onValueChange = { viewModel.onAgeChanged(it) },
@@ -87,13 +90,21 @@ fun ChildProfileScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
                     Text("Theme", style = MaterialTheme.typography.titleMedium)
                     ThemeSelector(
                         themes = uiState.availableThemes,
                         selectedThemeId = profile.selectedTheme,
                         onThemeSelected = { viewModel.onThemeChanged(it.id) }
                     )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    Button(
+                        onClick = { viewModel.saveChanges() },
+                        enabled = uiState.isSavable,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Save Changes")
+                    }
                 }
             } else {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

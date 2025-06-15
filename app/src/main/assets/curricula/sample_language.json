@@ -1,0 +1,68 @@
+[
+  {
+    "id": 5,
+    "title": "Reading Comprehension Basics",
+    "category": "sample_language",
+    "description": "A comprehensive course in Reading Comprehension Basics",
+    "metadata": {
+      "totalWeeks": 16,
+      "sessionsPerWeek": 3,
+      "estimatedSessionDuration": 35,
+      "difficulty": "intermediate",
+      "targetAgeRange": "13-16"
+    },
+    "learningObjectives": [
+      "Understand fundamental concepts of Reading Comprehension Basics",
+      "Apply knowledge in practical scenarios",
+      "Develop critical thinking skills"
+    ],
+    "totalTasks": 1,
+    "tasks": [
+      {
+        "id": "5_1",
+        "title": "Introduction to Reading Comprehension Basics",
+        "description": "Learn the basics of Reading Comprehension Basics",
+        "week": 1,
+        "session": 1,
+        "learningObjectives": [
+          "Understand basic Reading Comprehension Basics concepts"
+        ],
+        "prerequisites": [],
+        "estimatedDuration": 35,
+        "activities": [
+          {
+            "type": "reading",
+            "description": "Introduction reading",
+            "duration": 20
+          },
+          {
+            "type": "quiz",
+            "description": "Knowledge check",
+            "duration": 15
+          }
+        ],
+        "assessment": {
+          "type": "quiz",
+          "questions": 5,
+          "description": "Basic understanding check"
+        },
+        "status": "pending",
+        "progress": 0,
+        "completedAt": null
+      }
+    ],
+    "progress": {
+      "completedTasks": 0,
+      "totalTasks": 1,
+      "currentWeek": 1,
+      "currentSession": 1,
+      "percentComplete": 0
+    },
+    "generated": {
+      "timestamp": "2025-06-14T19:54:10.217Z",
+      "generator": "CurriculumGenerator v1.0 (Fallback)",
+      "subject": "Reading Comprehension Basics",
+      "category": "sample_language"
+    }
+  }
+]
