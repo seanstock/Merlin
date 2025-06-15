@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,15 +27,32 @@ import com.example.merlin.ui.theme.AppleSpacing
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CurriculumDashboard(
-    curricula: List<CurriculumDto>,
-    isLoading: Boolean,
+    uiState: CurriculumUiState,
     onCurriculumSelected: (String) -> Unit,
+    onDeleteClicked: (String) -> Unit,
     onBackPressed: () -> Unit,
     onGenerateNewCurriculum: () -> Unit,
     modifier: Modifier = Modifier,
     showBackButton: Boolean = true,
     fabPosition: FabPosition = FabPosition.End
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+    var curriculumToDelete by remember { mutableStateOf<String?>(null) }
+
+    if (showDialog && curriculumToDelete != null) {
+        DeleteConfirmationDialog(
+            onConfirm = {
+                onDeleteClicked(curriculumToDelete!!)
+                showDialog = false
+                curriculumToDelete = null
+            },
+            onDismiss = {
+                showDialog = false
+                curriculumToDelete = null
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -73,7 +91,7 @@ fun CurriculumDashboard(
         floatingActionButtonPosition = fabPosition,
         modifier = modifier.fillMaxSize()
     ) { innerPadding ->
-        if (isLoading) {
+        if (uiState.isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -82,7 +100,7 @@ fun CurriculumDashboard(
             ) {
                 CircularProgressIndicator()
             }
-        } else if (curricula.isEmpty()) {
+        } else if (uiState.curricula.isEmpty()) {
             // Empty state with call to action
             Box(
                 modifier = Modifier
@@ -156,10 +174,14 @@ fun CurriculumDashboard(
                     }
                 }
                 
-                items(curricula) { curriculum ->
+                items(uiState.curricula) { curriculum ->
                     CurriculumCard(
                         curriculum = curriculum,
-                        onClick = { onCurriculumSelected(curriculum.id) }
+                        onClick = { onCurriculumSelected(curriculum.id) },
+                        onDelete = {
+                            curriculumToDelete = curriculum.id
+                            showDialog = true
+                        }
                     )
                 }
             }
@@ -171,6 +193,7 @@ fun CurriculumDashboard(
 fun CurriculumCard(
     curriculum: CurriculumDto,
     onClick: () -> Unit,
+    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -216,16 +239,50 @@ fun CurriculumCard(
                 )
             }
             
-            // Start button
-            IconButton(onClick = onClick) {
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = "Start",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            // Action buttons
+            Row {
+                IconButton(onClick = onClick) {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = "Start",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+fun DeleteConfirmationDialog(
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Delete Curriculum") },
+        text = { Text("Are you sure you want to permanently delete this curriculum?") },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Delete")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 private fun getSubjectEmoji(subject: String): String {

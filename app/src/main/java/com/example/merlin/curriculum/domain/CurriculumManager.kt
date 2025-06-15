@@ -71,6 +71,14 @@ class CurriculumManager(
         return curriculumService.getNextLesson(curriculumId, childId)
     }
     
+    suspend fun deleteCurriculum(id: String): Result<Unit> {
+        return curriculumService.deleteCurriculum(id)
+    }
+    
+    suspend fun getCurriculumDetails(id: String): Result<CurriculumDto> {
+        return curriculumService.getCurriculumById(id)
+    }
+    
     private fun buildContext(progress: CurriculumProgressDto): CurriculumContext {
         return CurriculumContext(
             curriculumId = progress.curriculumId,

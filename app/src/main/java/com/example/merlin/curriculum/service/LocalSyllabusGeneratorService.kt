@@ -182,6 +182,7 @@ class LocalSyllabusGeneratorService(
 
         return try {
             val tempDto = gson.fromJson(cleaned, CurriculumDto::class.java)
+            // Ensure a unique ID is assigned for every new generation
             tempDto.copy(id = UUID.randomUUID().toString())
         } catch (e: Exception) {
             throw IllegalStateException("Failed to parse AI JSON. Cleaned response: $cleaned", e)

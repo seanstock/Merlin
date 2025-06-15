@@ -23,12 +23,50 @@ import androidx.compose.ui.platform.LocalContext
 import com.example.merlin.config.ServiceLocator
 import com.example.merlin.utils.UserSessionRepository
 import androidx.compose.ui.text.style.TextAlign
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LessonListScreen(
+    curriculumId: String,
+    onBackPressed: () -> Unit,
+    onLessonSelected: (LessonDto) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val curriculumManager = remember { ServiceLocator.getCurriculumManager(context) }
+    val factory = remember { LessonListViewModelFactory(curriculumId, curriculumManager) }
+    val viewModel: LessonListViewModel = viewModel(factory = factory)
+
+    val uiState by viewModel.uiState.collectAsState()
+
+    when {
+        uiState.isLoading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+        uiState.error != null -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = uiState.error!!, color = MaterialTheme.colorScheme.error)
+            }
+        }
+        uiState.curriculum != null -> {
+            LessonListContent(
+                curriculum = uiState.curriculum!!,
+                onBackPressed = onBackPressed,
+                onLessonSelected = onLessonSelected,
+                modifier = modifier
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LessonListContent(
     curriculum: CurriculumDto,
     onBackPressed: () -> Unit,
     onLessonSelected: (LessonDto) -> Unit,

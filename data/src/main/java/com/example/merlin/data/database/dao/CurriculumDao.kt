@@ -23,6 +23,9 @@ interface CurriculumDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCurricula(curricula: List<CurriculumEntity>)
     
+    @Query("DELETE FROM curricula WHERE id = :id")
+    suspend fun deleteCurriculumById(id: String)
+    
     // Curriculum progress operations
     @Query("SELECT * FROM curriculum_progress WHERE curriculumId = :curriculumId AND childId = :childId")
     suspend fun getCurriculumProgress(curriculumId: String, childId: String): CurriculumProgressEntity?

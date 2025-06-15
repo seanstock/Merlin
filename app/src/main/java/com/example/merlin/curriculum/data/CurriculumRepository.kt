@@ -72,6 +72,10 @@ class CurriculumRepository(
     suspend fun saveCurriculum(curriculum: CurriculumEntity): Long {
         return curriculumDao.insertCurriculum(curriculum)
     }
+
+    suspend fun deleteCurriculum(id: String) {
+        curriculumDao.deleteCurriculumById(id)
+    }
 }
 
 // Stub entities for compatibility - these will be replaced by proper Room entities

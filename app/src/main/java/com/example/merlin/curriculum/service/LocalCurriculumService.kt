@@ -308,6 +308,15 @@ class LocalCurriculumService(
         }
     }
 
+    override suspend fun deleteCurriculum(id: String): Result<Unit> {
+        return try {
+            repository.deleteCurriculum(id)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun getChildProgress(curriculumId: String, childId: String): Result<CurriculumProgressDto> {
         return try {
             val progress = repository.getChildProgress(curriculumId, childId)

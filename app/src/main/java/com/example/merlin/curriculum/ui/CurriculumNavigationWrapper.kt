@@ -1,99 +1,69 @@
 package com.example.merlin.curriculum.ui
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.merlin.config.ServiceLocator
-import com.example.merlin.curriculum.model.CurriculumDto
-import kotlinx.coroutines.launch
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 
 @Composable
 fun CurriculumNavigationWrapper(
-    onBackPressed: () -> Unit,
     modifier: Modifier = Modifier,
+    onBackPressed: () -> Unit,
     showBackButton: Boolean = true
 ) {
-    var currentScreen by remember { mutableStateOf(CurriculumScreenType.LIST) }
-    var selectedCurriculum by remember { mutableStateOf<CurriculumDto?>(null) }
-    
-    val context = LocalContext.current
-    val curriculumService = remember { ServiceLocator.getCurriculumService(context) }
-    val scope = rememberCoroutineScope()
-    
-    // single ViewModel instance for curricula list
-    val curriculaVM: CurriculumViewModel = viewModel(
-        factory = CurriculumViewModelFactory(ServiceLocator.getCurriculumManager(context))
-    )
-    
-    when (currentScreen) {
-        CurriculumScreenType.LIST -> {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = "curriculum_dashboard",
+        modifier = modifier
+    ) {
+        // The main dashboard screen showing the list of curricula
+        composable("curriculum_dashboard") {
             CurriculumScreen(
+                navController = navController,
                 onBackPressed = onBackPressed,
-                onNavigateToGenerator = { 
-                    currentScreen = CurriculumScreenType.GENERATOR 
+                onNavigateToGenerator = {
+                    navController.navigate("curriculum_generator")
                 },
                 onCurriculumSelected = { curriculumId ->
-                    // Find the curriculum and navigate to lessons
-                    scope.launch {
-                        curriculumService.getAvailableCurricula()
-                            .onSuccess { curricula ->
-                                val curriculum = curricula.find { it.id == curriculumId }
-                                if (curriculum != null) {
-                                    selectedCurriculum = curriculum
-                                    currentScreen = CurriculumScreenType.LESSON_LIST
-                                }
-                            }
-                    }
+                    // Navigate to the lesson list, passing the ID
+                    navController.navigate("lesson_list/$curriculumId")
                 },
-                showBackButton = showBackButton,
-                modifier = modifier,
-                viewModelOverride = curriculaVM
+                showBackButton = showBackButton
             )
         }
-        
-        CurriculumScreenType.LESSON_LIST -> {
-            selectedCurriculum?.let { curriculum ->
-                LessonListScreen(
-                    curriculum = curriculum,
-                    onBackPressed = { 
-                        currentScreen = CurriculumScreenType.LIST 
-                    },
-                    onLessonSelected = { lesson ->
-                        // TODO: Navigate to lesson detail/activity screen
-                        println("Selected lesson: ${lesson.title}")
-                    },
-                    modifier = modifier
-                )
-            }
-        }
-        
-        CurriculumScreenType.GENERATOR -> {
-            val syllabusGeneratorService = remember { 
-                ServiceLocator.getSyllabusGeneratorService(context) 
-            }
-            
-            val generatorViewModel: CurriculumGeneratorViewModel = viewModel(
-                factory = CurriculumGeneratorViewModelFactory(
-                    syllabusGeneratorService = syllabusGeneratorService,
-                    curriculumService = curriculumService
-                )
-            )
-            
+
+        // The screen for generating a new curriculum
+        composable("curriculum_generator") {
             CurriculumGeneratorScreen(
-                viewModel = generatorViewModel,
-                onNavigateBack = { currentScreen = CurriculumScreenType.LIST },
-                onCurriculumGenerated = { _ ->
-                    curriculaVM.loadCurricula()
-                    currentScreen = CurriculumScreenType.LIST
+                onNavigateBack = { navController.popBackStack() },
+                onCurriculumGenerated = {
+                    // Set the result and pop back
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("curriculum_generated", true)
+                    navController.popBackStack()
                 }
             )
         }
+
+        // The screen showing the lessons for a selected curriculum
+        composable(
+            route = "lesson_list/{curriculumId}",
+            arguments = listOf(navArgument("curriculumId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val curriculumId = backStackEntry.arguments?.getString("curriculumId")
+            if (curriculumId != null) {
+                // This now correctly uses the refactored LessonListScreen
+                LessonListScreen(
+                    curriculumId = curriculumId,
+                    onBackPressed = { navController.popBackStack() }
+                )
+            }
+        }
     }
 }
-
-enum class CurriculumScreenType {
-    LIST,
-    LESSON_LIST,
-    GENERATOR
-} 

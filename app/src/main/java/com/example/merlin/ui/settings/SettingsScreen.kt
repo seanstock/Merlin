@@ -23,8 +23,8 @@ import com.example.merlin.ui.accessibility.AccessibilityConstants
 import com.example.merlin.ui.theme.*
 import com.example.merlin.ui.parent.AnalyticsScreen
 import com.example.merlin.ui.parent.ScreenTimeScreen
-import com.example.merlin.curriculum.ui.CurriculumScreen
 import com.example.merlin.curriculum.ui.CurriculumNavigationWrapper
+import com.example.merlin.curriculum.ui.CurriculumScreen
 import com.example.merlin.ui.settings.ChildProfileScreen
 
 /**

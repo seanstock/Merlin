@@ -1,13 +1,16 @@
 package com.example.merlin.curriculum.ui
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.merlin.config.ServiceLocator
 
 @Composable
 fun CurriculumScreen(
+    navController: NavController,
     onBackPressed: () -> Unit,
     onNavigateToGenerator: () -> Unit = {},
     onCurriculumSelected: (String) -> Unit = {},
@@ -25,13 +28,27 @@ fun CurriculumScreen(
         factory = CurriculumViewModelFactory(curriculumManager)
     )
     
+    // Listen for the result from the generator screen
+    val navResult = navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getLiveData<Boolean>("curriculum_generated")
+        ?.observeAsState()
+
+    // When the result is observed, refresh the data and remove the signal
+    LaunchedEffect(navResult) {
+        if (navResult?.value == true) {
+            viewModel.refreshCurricula()
+            navController.currentBackStackEntry
+                ?.savedStateHandle
+                ?.remove<Boolean>("curriculum_generated")
+        }
+    }
+    
     // Collect state
-    val curricula by viewModel.curricula.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     
     // Handle error state
-    error?.let { errorMessage ->
+    uiState.error?.let { errorMessage ->
         LaunchedEffect(errorMessage) {
             println("Curriculum error: $errorMessage")
             // In a real app, you might show a snackbar or error dialog
@@ -39,9 +56,11 @@ fun CurriculumScreen(
     }
     
     CurriculumDashboard(
-        curricula = curricula,
-        isLoading = isLoading,
+        uiState = uiState,
         onCurriculumSelected = onCurriculumSelected,
+        onDeleteClicked = { curriculumId ->
+            viewModel.deleteCurriculum(curriculumId)
+        },
         onBackPressed = onBackPressed,
         onGenerateNewCurriculum = onNavigateToGenerator,
         showBackButton = showBackButton,

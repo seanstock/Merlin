@@ -19,14 +19,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.merlin.curriculum.model.GenerationStage
+import androidx.compose.ui.platform.LocalContext
+import com.example.merlin.config.ServiceLocator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CurriculumGeneratorScreen(
-    viewModel: CurriculumGeneratorViewModel = viewModel(),
     onNavigateBack: () -> Unit = {},
     onCurriculumGenerated: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val syllabusGeneratorService = remember { ServiceLocator.getSyllabusGeneratorService(context) }
+    val curriculumService = remember { ServiceLocator.getCurriculumService(context) }
+    val factory = remember {
+        CurriculumGeneratorViewModelFactory(syllabusGeneratorService, curriculumService)
+    }
+    val viewModel: CurriculumGeneratorViewModel = viewModel(factory = factory)
+
     var syllabusText by remember { mutableStateOf("") }
     var curriculumTitle by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("") }

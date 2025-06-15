@@ -14,6 +14,7 @@ interface CurriculumService {
     suspend fun getAvailableCurricula(): Result<List<CurriculumDto>>
     suspend fun getCurriculumById(id: String): Result<CurriculumDto>
     suspend fun saveCurriculum(curriculum: CurriculumDto): Result<Long>
+    suspend fun deleteCurriculum(id: String): Result<Unit>
     suspend fun getChildProgress(curriculumId: String, childId: String): Result<CurriculumProgressDto>
     suspend fun recordLessonProgress(lessonId: String, childId: String, progress: LessonProgressDto): Result<Unit>
     suspend fun recordTaskProgress(taskId: String, childId: String, progress: TaskProgressDto): Result<Unit>
