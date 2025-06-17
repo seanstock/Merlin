@@ -91,6 +91,11 @@ fun ChatScreen(
     }
     val walletViewModel: WalletViewModel = viewModel(factory = walletViewModelFactory)
     
+    // App Launch Service for spend coins dialog
+    val appLaunchService = remember { 
+        com.example.merlin.config.ServiceLocator.getAppLaunchService(context) 
+    }
+    
     // State
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -430,6 +435,8 @@ fun ChatScreen(
     if (showSpendDialog) {
         SpendCoinsDialog(
             currentBalance = walletBalance,
+            appLaunchService = appLaunchService,
+            childId = activeChildId,
             onSpendCoins = { timeInSeconds, category ->
                 walletViewModel.spendCoins(timeInSeconds, category)
             },

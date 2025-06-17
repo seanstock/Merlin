@@ -50,6 +50,15 @@ object ServiceLocator {
     @Volatile
     private var curriculumManager: CurriculumManager? = null
     
+    @Volatile
+    private var appLaunchService: AppLaunchService? = null
+    
+    @Volatile
+    private var appSessionManager: AppSessionManager? = null
+    
+    @Volatile
+    private var kioskManager: com.example.merlin.kiosk.KioskManager? = null
+    
     /**
      * Get AdaptiveDifficultyService implementation based on configuration
      */
@@ -232,6 +241,44 @@ object ServiceLocator {
     }
     
     /**
+     * Get AppLaunchService implementation based on configuration
+     */
+    fun getAppLaunchService(context: Context): AppLaunchService {
+        return appLaunchService ?: synchronized(this) {
+            appLaunchService ?: ServiceConfiguration.getServiceImplementation(
+                localImpl = {
+                    LocalAppLaunchService(context, getEconomyService(context))
+                },
+                remoteImpl = {
+                    // TODO: Implement RemoteAppLaunchService for LaaS
+                    LocalAppLaunchService(context, getEconomyService(context)) // Fallback
+                },
+                mockImpl = {
+                    LocalAppLaunchService(context, getEconomyService(context))
+                }
+            ).also { appLaunchService = it }
+        }
+    }
+    
+    /**
+     * Get AppSessionManager singleton instance
+     */
+    fun getAppSessionManager(): AppSessionManager {
+        return appSessionManager ?: synchronized(this) {
+            appSessionManager ?: AppSessionManager.getInstance().also { appSessionManager = it }
+        }
+    }
+
+    /**
+     * Get KioskManager singleton – used for adding/removing allowed lock-task packages
+     */
+    fun getKioskManager(context: Context): com.example.merlin.kiosk.KioskManager {
+        return kioskManager ?: synchronized(this) {
+            kioskManager ?: com.example.merlin.kiosk.KioskManager(context).also { kioskManager = it }
+        }
+    }
+
+    /**
      * Clear all service instances (useful for testing and service configuration changes)
      */
     fun clearAllServices() {
@@ -246,6 +293,9 @@ object ServiceLocator {
             curriculumService = null
             syllabusGeneratorService = null
             curriculumManager = null
+            appLaunchService = null
+            appSessionManager = null
+            kioskManager = null
         }
     }
     
@@ -264,6 +314,7 @@ object ServiceLocator {
             "curriculum" to if (curriculumService != null) "initialized" else "not_initialized",
             "syllabus_generator" to if (syllabusGeneratorService != null) "initialized" else "not_initialized",
             "curriculum_manager" to if (curriculumManager != null) "initialized" else "not_initialized",
+            "app_launch" to if (appLaunchService != null) "initialized" else "not_initialized",
             "configuration" to ServiceConfiguration.getServiceConfig().buildVariant
         )
     }

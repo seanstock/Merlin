@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Merlin</string>
     <string name="accessibility_service_description">Merlin requires accessibility permissions to provide its lock screen functionality and ensure app security.</string>
+    <!-- Strings for Device Admin receiver -->
+    <string name="device_admin_label">Merlin Device Admin</string>
+    <string name="device_admin_description">Allows Merlin to lock the device in kiosk mode for child safety.</string>
 </resources>

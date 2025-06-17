@@ -70,6 +70,10 @@ import kotlinx.coroutines.Dispatchers
 import androidx.lifecycle.lifecycleScope
 import com.example.merlin.ui.parent.ParentDashboardScreen
 import com.example.merlin.ui.settings.ChildProfileScreen
+import com.example.merlin.timer.ScreenTimeManager
+import android.app.admin.DevicePolicyManager
+import android.os.UserManager
+import com.example.merlin.kiosk.KioskManager
 
 class MainActivity : ComponentActivity(), 
     SecurityResponseManager.SecurityLockoutCallback,
@@ -98,6 +102,12 @@ class MainActivity : ComponentActivity(),
     // Flag to track if we're in the middle of a proper exit sequence
     private var isExitingProperly = false
 
+    // Flag to track if we've returned from a proper exit, to avoid re-init bugs
+    private var isComingFromProperExit = false
+
+    // Kiosk helper
+    private lateinit var kioskManager: com.example.merlin.kiosk.KioskManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
@@ -106,8 +116,11 @@ class MainActivity : ComponentActivity(),
         val wasProperExit = prefs.getBoolean(PREF_PROPER_EXIT, false)
         
         if (wasProperExit) {
+            // Set the flag to inform onResume to skip security checks
+            isComingFromProperExit = true
+            
             // Clear the flag and use minimal initialization
-            prefs.edit().putBoolean(PREF_PROPER_EXIT, false).apply()
+            prefs.edit().putBoolean(PREF_PROPER_EXIT, false).commit()
             Log.d(TAG, "Returning from proper exit - minimal initialization")
             
             // Still do basic setup but without aggressive protections
@@ -122,6 +135,8 @@ class MainActivity : ComponentActivity(),
                     }
                 }
             }
+            // Ensure kioskManager exists even in minimal init path
+            kioskManager = com.example.merlin.kiosk.KioskManager(this)
             return
         }
         
@@ -149,6 +164,18 @@ class MainActivity : ComponentActivity(),
             }
         }
 
+        // Listen for screen time expiration
+        lifecycleScope.launch {
+            ScreenTimeManager.timeExpiredEvent.collect { event ->
+                if (event != null) {
+                    Log.w(TAG, "Screen time expired. Re-enabling sticky behavior.")
+                    Toast.makeText(this@MainActivity, "Time's up!", Toast.LENGTH_LONG).show()
+                    reEnableStickyBehavior()
+                    ScreenTimeManager.consumeTimeExpiredEvent()
+                }
+            }
+        }
+
         // Delay lock task to avoid immediate "App is Pinned" popup issues
         window.decorView.post {
             // Give the UI time to fully initialize before enabling lock task
@@ -156,13 +183,12 @@ class MainActivity : ComponentActivity(),
                 attemptLockTaskIfNeeded()
             }, 2000) // 2 second delay
         }
-
-        if (!checkSystemAlertWindowPermission(this)) {
-            requestSystemAlertWindowPermission(this, REQUEST_CODE_SYSTEM_ALERT_WINDOW)
-        }
         
         // Trigger critical event for app launch
         securityEventInterceptor.triggerSensitiveOperationCheck("app_launch", "MainActivity onCreate")
+
+        // Initialize kiosk manager
+        kioskManager = com.example.merlin.kiosk.KioskManager(this)
     }
 
     /**
@@ -281,9 +307,9 @@ class MainActivity : ComponentActivity(),
         // Start screen time tracking
                         screenTimeService.startSession()
         
-        // Don't do aggressive reinitialization if we're exiting properly
-        if (isExitingProperly) {
-            Log.d(TAG, "In proper exit sequence - skipping aggressive resume actions")
+        // Don't do aggressive reinitialization if we're exiting properly or returning from a proper exit
+        if (isExitingProperly || isComingFromProperExit) {
+            Log.d(TAG, "Proper exit sequence or returning from proper exit - skipping aggressive resume actions")
             return
         }
         
@@ -297,10 +323,7 @@ class MainActivity : ComponentActivity(),
         startSecurityMonitoring()
         
         // Enable immersive mode if we haven't done so yet, or re-enable it
-        if (shouldEnableImmersiveMode && !isExitingProperly) {
-            enableImmersiveMode()
-        } else if (!isExitingProperly) {
-            // Re-enable immersive mode in case it was disabled
+        if (shouldEnableImmersiveMode) {
             enableImmersiveMode()
         }
         
@@ -548,71 +571,18 @@ class MainActivity : ComponentActivity(),
         }
     }
 
-    private fun checkSystemAlertWindowPermission(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Settings.canDrawOverlays(context)
-        } else {
-            // On versions older than M, if the permission is in the manifest, it's granted at install time.
-            // However, SYSTEM_ALERT_WINDOW behavior was significantly different and less controlled pre-M.
-            // For simplicity and focus on modern Android, we assume it's effectively available if declared.
-            true
-        }
-    }
-
-    private fun requestSystemAlertWindowPermission(activity: Activity, requestCode: Int) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!Settings.canDrawOverlays(activity)) {
-                val intent = Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:" + activity.packageName)
-                )
-                activity.startActivityForResult(intent, requestCode)
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_SYSTEM_ALERT_WINDOW) {
-            // It's important to re-check the permission status here, as resultCode is not reliable for this permission.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (Settings.canDrawOverlays(this)) {
-                    // Permission granted
-                    Toast.makeText(this, "SYSTEM_ALERT_WINDOW permission granted.", Toast.LENGTH_SHORT).show()
-                    // Trigger security check for permission granted
-                    securityEventInterceptor.triggerSensitiveOperationCheck("permission", "SYSTEM_ALERT_WINDOW granted")
-                } else {
-                    // Permission denied
-                    Toast.makeText(this, "SYSTEM_ALERT_WINDOW permission denied. Overlay functionality will be limited.", Toast.LENGTH_LONG).show()
-                    // Trigger security check for permission denied
-                    securityEventInterceptor.triggerSensitiveOperationCheck("permission", "SYSTEM_ALERT_WINDOW denied")
-                }
-            }
-        }
-    }
-
-    private fun attemptLockTaskIfNeeded() {
+    fun attemptLockTaskIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            try {
-                // Don't enable lock task if we're in the middle of exiting
-                if (isExitingProperly) {
-                    Log.d(TAG, "Skipping lock task - proper exit in progress")
-                    return
-                }
-                
-                val activeChildId = userSessionRepository.getActiveChildId()
-                if (activeChildId != null) {
-                    val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                    if (activityManager.lockTaskModeState == ActivityManager.LOCK_TASK_MODE_NONE) {
-                        startLockTask()
-                        Log.d(TAG, "Task lock enabled - onboarding complete, app cannot be swiped away")
-                    }
-                } else {
-                    // Onboarding incomplete – do NOT lock task to allow permissions screens
-                    Log.d(TAG, "Onboarding not complete - skipping task lock")
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to enable task lock: ${e.message}")
+            // Lazy-init kioskManager in case we took the minimal start-up path
+            if (!::kioskManager.isInitialized) {
+                kioskManager = com.example.merlin.kiosk.KioskManager(this)
+            }
+
+            val activeChildId = userSessionRepository.getActiveChildId()
+            if (activeChildId != null) {
+                kioskManager.startKioskMode(this)
+            } else {
+                Log.d(TAG, "Onboarding not complete - skipping kiosk start")
             }
         }
     }
@@ -626,7 +596,7 @@ class MainActivity : ComponentActivity(),
         
         // Set flag to prevent aggressive reinitialization on next startup
         val prefs = getSharedPreferences("merlin_state", Context.MODE_PRIVATE)
-        prefs.edit().putBoolean(PREF_PROPER_EXIT, true).apply()
+        prefs.edit().putBoolean(PREF_PROPER_EXIT, true).commit()
         
         // Stop lock task mode if active
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -639,16 +609,6 @@ class MainActivity : ComponentActivity(),
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to stop lock task: ${e.message}")
             }
-        }
-        
-        // Signal accessibility service to stop aggressive behavior
-        try {
-            val serviceIntent = Intent(this, com.example.merlin.services.MerlinAccessibilityService::class.java)
-            serviceIntent.action = "DISABLE_AGGRESSIVE_MODE"
-            startService(serviceIntent)
-            Log.d(TAG, "Signaled accessibility service to disable aggressive mode")
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to signal accessibility service: ${e.message}")
         }
         
         // Clean up security components
@@ -672,16 +632,6 @@ class MainActivity : ComponentActivity(),
         // Clear the proper exit flag
         val prefs = getSharedPreferences("merlin_state", Context.MODE_PRIVATE)
         prefs.edit().putBoolean(PREF_PROPER_EXIT, false).apply()
-        
-        // Signal accessibility service to re-enable aggressive mode
-        try {
-            val serviceIntent = Intent(this, com.example.merlin.services.MerlinAccessibilityService::class.java)
-            serviceIntent.action = "ENABLE_AGGRESSIVE_MODE"
-            startService(serviceIntent)
-            Log.d(TAG, "Signaled accessibility service to enable aggressive mode")
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to signal accessibility service: ${e.message}")
-        }
         
         // Set up sticky window behavior
         setupStickyWindow()
@@ -725,6 +675,8 @@ fun MerlinApp(modifier: Modifier = Modifier, showReEnableProtection: Boolean = f
         OnboardingFlow(
             onComplete = {
                 showOnboarding = false
+                // After successful onboarding, attempt to enter kiosk mode now that an active child ID exists
+                (context as? MainActivity)?.attemptLockTaskIfNeeded()
             },
             modifier = modifier
         )
@@ -807,7 +759,6 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
                                         currentScreen = "games" 
                                     },
                                     onNavigateToChat = { currentScreen = "chat" },
-                                    onSpendCoins = { /* TODO: Handle spend coins */ },
                                     onNavigateToSettings = handleSettingsRequest,
                                     modifier = modifier
                                 )

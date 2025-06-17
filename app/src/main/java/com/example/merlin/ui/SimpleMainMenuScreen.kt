@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -26,28 +27,46 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.statusBarsPadding
 import com.example.merlin.R
+import com.example.merlin.timer.ScreenTimeManager
+import com.example.merlin.ui.wallet.SpendCoinsDialog
 import com.example.merlin.ui.game.GameManager
-import com.example.merlin.ui.theme.AppleCard
-import com.example.merlin.ui.theme.AppleSpacing
-import com.example.merlin.ui.theme.AppTheme
-import com.example.merlin.ui.theme.AppThemes
+import com.example.merlin.ui.theme.*
 import com.example.merlin.ui.wallet.WalletDisplay
 import com.example.merlin.ui.wallet.WalletViewModel
 import com.example.merlin.ui.wallet.WalletViewModelFactory
+
 import com.example.merlin.utils.UserSessionRepository
 import com.example.merlin.viewmodels.SimpleMenuViewModel
 import com.example.merlin.viewmodels.SimpleMenuViewModelFactory
 import com.example.merlin.config.ServiceLocator
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.launch
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.RadialGradientShader
+import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.TileMode
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.graphics.drawable.toBitmap
 
 /**
  * Simple icon-based main menu for ages 3-4, using the app's design system.
+ * Enhanced with Apple LiquidGlass-inspired visual design for better engagement.
  */
 @Composable
 fun SimpleMainMenuScreen(
     onNavigateToGames: (String) -> Unit,
     onNavigateToChat: () -> Unit,
-    onSpendCoins: () -> Unit,
     onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -62,6 +81,11 @@ fun SimpleMainMenuScreen(
     )
     val menuItems by menuViewModel.menuItems.collectAsState()
 
+    // Filter out chat button from menu items - we'll use the greeting as chat button instead
+    val filteredMenuItems = remember(menuItems) {
+        menuItems.filter { it.id != "chat" }
+    }
+
     // Wallet ViewModel for coin balance
     val userSessionRepository = remember { UserSessionRepository.getInstance(context) }
     val activeChildId = remember { userSessionRepository.getActiveChildId() }
@@ -74,9 +98,16 @@ fun SimpleMainMenuScreen(
     val coinBalance by walletViewModel?.balance?.collectAsState() ?: remember { mutableStateOf(0) }
     val walletLoading by walletViewModel?.isLoading?.collectAsState() ?: remember { mutableStateOf(false) }
 
+    // Refresh balance when screen becomes visible
+    LaunchedEffect(Unit) {
+        walletViewModel?.refreshBalance()
+    }
+
+    // App Launch Service for spend coins dialog
+    val appLaunchService = remember { ServiceLocator.getAppLaunchService(context) }
+
     // Theme service and current theme
     val themeService = remember { ServiceLocator.getThemeService(context) }
-    // CHANGE HERE: Initialize with null instead of a default theme.
     val currentTheme by remember(activeChildId) {
         val childId = activeChildId
         if (childId != null) {
@@ -84,46 +115,66 @@ fun SimpleMainMenuScreen(
         } else {
             flowOf(AppThemes.getDefaultTheme())
         }
-    }.collectAsState(initial = null) // Set initial value to null
+    }.collectAsState(initial = null)
 
-    // Show a loading state or a neutral background until the theme is loaded.
+    var showSpendDialog by remember { mutableStateOf(false) }
+
     if (currentTheme == null) {
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(color = Color.White), // A neutral background
+                .background(color = AppleSystemBackground),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(color = AppleBlue)
         }
-        return // Stop execution here until theme is loaded
+        return
     }
 
-    // Once the theme is not null, the rest of the composable will render with the correct theme.
     Box(modifier = modifier.fillMaxSize()) {
-        // Background Image from the now-loaded currentTheme
+        // Background with subtle overlay for better readability
         Image(
-            painter = painterResource(id = currentTheme!!.backgroundImage), // Use !! because we already checked for null
+            painter = painterResource(id = currentTheme!!.backgroundImage),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.FillHeight
+            contentScale = ContentScale.Crop
+        )
+        
+        // Subtle gradient overlay for better contrast
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.1f),
+                            Color.Black.copy(alpha = 0.3f)
+                        )
+                    )
+                )
         )
 
-        // Main content with proper spacing for top status bar
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // Top Status Bar with system bar padding
-            TopStatusBar(
+            // Enhanced top status bar
+            EnhancedTopStatusBar(
                 title = currentTheme!!.tutorName,
                 balance = coinBalance,
                 isLoading = walletLoading,
-                onSpendCoins = onSpendCoins,
+                onSpendCoins = { showSpendDialog = true },
                 onSettingsClick = onNavigateToSettings,
                 modifier = Modifier.statusBarsPadding()
             )
 
-            // Centered 2x2 Grid Menu - takes remaining space
+            // Welcome message as chat button
+            ChatWelcomeSection(
+                tutorName = currentTheme!!.tutorName,
+                onChatClick = onNavigateToChat,
+                modifier = Modifier.padding(AppleSpacing.large)
+            )
+
+            // Enhanced grid with larger icons for landscape support
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -131,22 +182,374 @@ fun SimpleMainMenuScreen(
                 contentAlignment = Alignment.Center
             ) {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 120.dp), // Reduced from 160dp
-                    contentPadding = PaddingValues(AppleSpacing.small), // Reduced padding
-                    verticalArrangement = Arrangement.spacedBy(AppleSpacing.medium), // Reduced spacing
-                    horizontalArrangement = Arrangement.spacedBy(AppleSpacing.medium) // Reduced spacing
+                    columns = GridCells.Adaptive(minSize = 160.dp),
+                    contentPadding = PaddingValues(AppleSpacing.medium),
+                    verticalArrangement = Arrangement.spacedBy(AppleSpacing.large),
+                    horizontalArrangement = Arrangement.spacedBy(AppleSpacing.large)
                 ) {
-                    items(menuItems) { item ->
-                        SimpleMenuItem(
+                    itemsIndexed(filteredMenuItems) { index, item ->
+                        LiquidGlassMenuItem(
                             item = item,
                             onClick = {
-                                when (item.id) {
-                                    "chat" -> onNavigateToChat()
-                                    "spend_coins" -> onSpendCoins()
+                                when {
+                                    item.id == "spend_coins" -> showSpendDialog = true
+                                    item.isApp && item.packageName != null -> {
+                                        // Launch the app directly
+                                        coroutineScope.launch {
+                                            appLaunchService.launchApp(item.packageName!!)
+                                        }
+                                    }
                                     else -> onNavigateToGames(item.id)
                                 }
-                            }
+                            },
+                            gridIndex = index,
+                            totalItems = filteredMenuItems.size
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    if (showSpendDialog && walletViewModel != null && activeChildId != null) {
+        SpendCoinsDialog(
+            currentBalance = coinBalance,
+            appLaunchService = appLaunchService,
+            childId = activeChildId,
+            onDismiss = { showSpendDialog = false },
+            onSpendCoins = { timeInSeconds, category ->
+                walletViewModel.spendCoins(timeInSeconds, category)
+                showSpendDialog = false
+            },
+            walletViewModel = walletViewModel
+        )
+    }
+}
+
+@Composable
+fun ChatWelcomeSection(
+    tutorName: String,
+    onChatClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Animation for subtle scaling effect
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "chat_button_scale"
+    )
+
+    AppleCard(
+        modifier = modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .clickable(
+                onClick = onChatClick,
+                onClickLabel = "Start chatting with $tutorName"
+            )
+            .semantics {
+                contentDescription = "Chat with $tutorName button"
+                role = Role.Button
+            },
+        backgroundColor = AppleSystemBackground.copy(alpha = 0.95f),
+        elevation = 3,
+        cornerRadius = 20
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(AppleSpacing.large)
+        ) {
+            // Animated chat icon with LiquidGlass effect
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(
+                        brush = createLiquidGlassBrush(AppleBlue),
+                        shape = RoundedCornerShape(20.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "💬",
+                    fontSize = 32.sp
+                )
+            }
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Hi there! 👋",
+                    style = AppleHeadline.copy(fontSize = 22.sp),
+                    color = ApplePrimaryLabel
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Would you like to talk with $tutorName?",
+                    style = AppleBody,
+                    color = AppleSecondaryLabel
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun LiquidGlassMenuItem(
+    item: SimpleMenuViewModel.MenuItem,
+    onClick: () -> Unit,
+    gridIndex: Int = 0,
+    totalItems: Int = 6 // Add total items parameter
+) {
+    // Animation states for LiquidGlass effects
+    var isPressed by remember { mutableStateOf(false) }
+    var isHovered by remember { mutableStateOf(false) }
+    
+    val infiniteTransition = rememberInfiniteTransition(label = "liquid_glass_animation")
+    
+    // Calculate items per row based on screen width and item size
+    // Approximate calculation: assuming ~160dp per item + spacing
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+    val itemWidth = 160.dp + 16.dp // minSize + approximate spacing
+    val itemsPerRow = maxOf(1, (screenWidth / itemWidth).toInt())
+    
+    // Calculate position in current row
+    val positionInRow = gridIndex % itemsPerRow
+    
+    // Wave timing: 0.8 seconds divided by items per row
+    val waveOffsetPerItem = 800f / itemsPerRow // milliseconds
+    val timeOffset = positionInRow * waveOffsetPerItem
+    
+    // Wave floating animation with calculated offset
+    val glassOffset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 16f, // Big movement
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = EaseInOutSine),
+            repeatMode = RepeatMode.Reverse,
+            initialStartOffset = StartOffset(
+                offsetMillis = timeOffset.toInt()
+            )
+        ),
+        label = "glass_float_wave"
+    )
+    
+    // Smooth continuous shimmer effect
+    val shimmerAngle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmer_angle"
+    )
+    
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "menu_item_scale"
+    )
+
+    // Check if this is the memory button for comparison
+    val isMemoryButton = item.id == "sample-game"
+
+    // Much more subtle 3D effect
+    Box(
+        modifier = Modifier
+            .scale(scale)
+            .offset(y = glassOffset.dp)
+            .size(180.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // Only show shadow for non-memory buttons
+        if (!isMemoryButton) {
+            // Very subtle shadow - much smaller offset and lighter
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(
+                        x = if (isPressed) 0.5.dp else 1.dp, // Much smaller offset
+                        y = if (isPressed) 1.dp else 2.dp    // Much smaller offset
+                    )
+                    .background(
+                        Color.Black.copy(alpha = 0.1f), // Much lighter shadow
+                        RoundedCornerShape(32.dp)
+                    )
+            )
+        }
+
+        // Main button with child-friendly bright colors
+        Card(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable(
+                    onClick = onClick,
+                    onClickLabel = item.title
+                )
+                .semantics {
+                    contentDescription = "${item.title} button"
+                    role = Role.Button
+                },
+            shape = RoundedCornerShape(32.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent
+            ),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 0.dp
+            )
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                // Bright, child-friendly base color layer
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = if (isMemoryButton) {
+                                // Spinning gradient for Merlin's Memory
+                                createSmoothLiquidGlassBrush(
+                                    baseColor = getItemAccentColor(item.id).copy(alpha = 0.7f), // More translucent
+                                    shimmerAngle = shimmerAngle
+                                )
+                            } else {
+                                // Shimmer effect for other buttons
+                                createSmoothLiquidGlassBrush(
+                                    baseColor = getItemAccentColor(item.id).copy(alpha = 0.7f), // More translucent
+                                    shimmerAngle = shimmerAngle
+                                )
+                            },
+                            shape = RoundedCornerShape(32.dp)
+                        )
+                )
+                
+                // Only show 3D effects for non-memory buttons
+                if (!isMemoryButton) {
+                    // TOP HIGHLIGHT - positioned at actual top of button
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp) // Specific height
+                            .align(Alignment.TopCenter) // Actually position at top
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.6f), // More visible
+                                        Color.White.copy(alpha = 0.3f),
+                                        Color.Transparent // Fade out
+                                    )
+                                ),
+                                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+                            )
+                    )
+                    
+                    // CENTER HIGHLIGHT - positioned in actual center  
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp) // Larger size
+                            .align(Alignment.Center) // Actually position at center
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.5f), // More visible
+                                        Color.White.copy(alpha = 0.2f),
+                                        Color.Transparent
+                                    ),
+                                    radius = 60f // Fixed radius
+                                ),
+                                shape = RoundedCornerShape(60.dp)
+                            )
+                    )
+                    
+                    // BOTTOM SHADOW - positioned at actual bottom
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(40.dp) // Specific height
+                            .align(Alignment.BottomCenter) // Actually position at bottom
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.Black.copy(alpha = 0.2f) // More visible
+                                    )
+                                ),
+                                shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                            )
+                    )
+                }
+                
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize() // Keep this but make content transparent
+                ) {
+                    // App icon or emoji with NO background so gradients show through
+                    Box(
+                        modifier = Modifier.size(80.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (item.isApp && item.appIcon != null) {
+                            // Display real app icon
+                            val bitmap = remember(item.appIcon) {
+                                item.appIcon!!.toBitmap(192, 192).asImageBitmap() // 80dp * 2.4 density ≈ 192px
+                            }
+                            Image(
+                                bitmap = bitmap,
+                                contentDescription = item.title,
+                                modifier = Modifier.size(64.dp),
+                                contentScale = ContentScale.Fit
+                            )
+                        } else {
+                            // Fallback to emoji for games and apps without icons
+        Text(
+                                text = if (item.isApp) item.emoji else getDistinctEmojiForGame(item.id),
+                                fontSize = 64.sp, // Increased from 48sp
+                                textAlign = TextAlign.Center,
+                                style = TextStyle(
+                                    shadow = if (isMemoryButton) null else Shadow(
+                                        color = Color.Black.copy(alpha = 0.3f),
+                                        offset = Offset(2f, 2f),
+                                        blurRadius = 3f
+                                    )
+                                )
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(AppleSpacing.medium))
+                    
+                    // Clean text with more padding and lighter background
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = AppleSpacing.large) // More padding from icon edges
+                            .background(
+                                Color.Black.copy(alpha = 0.25f), // Much lighter background (was 0.5f)
+                                RoundedCornerShape(12.dp)
+                            )
+                            .padding(
+                                horizontal = AppleSpacing.medium,
+                                vertical = AppleSpacing.small
+                            )
+                    ) {
+        Text(
+            text = item.title,
+                            style = AppleCallout.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            ),
+            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2
+        )
                     }
                 }
             }
@@ -155,39 +558,7 @@ fun SimpleMainMenuScreen(
 }
 
 @Composable
-fun SimpleMenuItem(
-    item: SimpleMenuViewModel.MenuItem,
-    onClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = onClick)
-            .background(Color.Black.copy(alpha = 0.4f))
-            .padding(AppleSpacing.small)
-            .width(110.dp)
-            .height(110.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = item.emoji,
-            fontSize = 40.sp,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = item.title,
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
-fun TopStatusBar(
+fun EnhancedTopStatusBar(
     title: String,
     balance: Int,
     isLoading: Boolean,
@@ -195,40 +566,240 @@ fun TopStatusBar(
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color.Black.copy(alpha = 0.3f))
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+    val remainingSeconds by ScreenTimeManager.remainingSeconds.collectAsState()
+
+    AppleCard(
+        modifier = modifier.fillMaxWidth(),
+        backgroundColor = AppleSystemBackground.copy(alpha = 0.95f),
+        elevation = 1,
+        cornerRadius = 0 // Square corners for status bar
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // Title
+            // Enhanced tutor name with dramatic styling
         Text(
             text = title,
-            color = Color.White,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
-        )
+                style = TextStyle(
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Default,
+                    fontWeight = FontWeight.ExtraBold, // Much bolder font
+                    fontSize = 28.sp, // Much larger size
+                    letterSpacing = 0.5.sp,
+                    shadow = Shadow(
+                        color = AppleBlue.copy(alpha = 0.3f),
+                        offset = Offset(1f, 1f),
+                        blurRadius = 2f
+                    )
+                ),
+                color = ApplePrimaryLabel
+            )
 
-        // Wallet and Settings
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            // Use the proper WalletDisplay component
+            // Right side controls
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AppleSpacing.medium)
+            ) {
+                // Timer display with LiquidGlass styling
+            if (remainingSeconds > 0) {
+                val minutes = remainingSeconds / 60
+                val seconds = remainingSeconds % 60
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                brush = createLiquidGlassBrush(AppleBlue),
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            .padding(
+                                horizontal = AppleSpacing.medium,
+                                vertical = AppleSpacing.small
+                            )
+                    ) {
+                Text(
+                    text = String.format("%02d:%02d", minutes, seconds),
+                            style = AppleCallout.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
+                }
+                
+                // Enhanced wallet display
             WalletDisplay(
                 balance = balance,
                 isLoading = isLoading,
                 onClick = onSpendCoins
             )
             
-            // Settings Icon
-            IconButton(onClick = onSettingsClick) {
+                // Enhanced settings button with LiquidGlass
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            brush = createLiquidGlassBrush(AppleGray2),
+                            shape = RoundedCornerShape(16.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    IconButton(
+                        onClick = onSettingsClick,
+                        modifier = Modifier.size(44.dp)
+                    ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    tint = Color.White,
-                    modifier = Modifier.size(28.dp)
-                )
+                            tint = AppleBlue,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+/**
+ * Create Apple LiquidGlass-inspired brush with dynamic light refraction
+ */
+@Composable
+private fun createLiquidGlassBrush(baseColor: Color): Brush {
+    return Brush.radialGradient(
+        colors = listOf(
+            baseColor.copy(alpha = 0.9f),
+            baseColor.copy(alpha = 0.7f),
+            baseColor.copy(alpha = 0.5f),
+            Color.White.copy(alpha = 0.3f),
+            baseColor.copy(alpha = 0.6f)
+        ),
+        radius = 300f
+    )
+}
+
+/**
+ * Advanced LiquidGlass brush with smooth seamless shimmer effects
+ */
+@Composable
+private fun createSmoothLiquidGlassBrush(
+    baseColor: Color,
+    shimmerAngle: Float
+): Brush {
+    // Convert angle to radians for smooth circular motion
+    val angleRad = Math.toRadians(shimmerAngle.toDouble())
+    
+    // Create smooth flowing shimmer using sweeping gradient
+    val shimmerColors = listOf(
+        baseColor.copy(alpha = 0.7f),
+        baseColor.copy(alpha = 0.9f),
+        Color.White.copy(alpha = 0.6f), // Bright shimmer highlight
+        baseColor.copy(alpha = 0.8f),
+        baseColor.copy(alpha = 0.6f),
+        Color.White.copy(alpha = 0.3f), // Secondary highlight
+        baseColor.copy(alpha = 0.8f),
+        baseColor.copy(alpha = 0.7f)
+    )
+    
+    // Calculate smooth sweeping motion across the surface
+    val centerX = 90f // Center of 180dp item
+    val centerY = 90f
+    val radius = 150f
+    
+    val startX = centerX + (Math.cos(angleRad) * radius).toFloat()
+    val startY = centerY + (Math.sin(angleRad) * radius).toFloat()
+    val endX = centerX - (Math.cos(angleRad) * radius).toFloat()
+    val endY = centerY - (Math.sin(angleRad) * radius).toFloat()
+    
+    return Brush.linearGradient(
+        colors = shimmerColors,
+        start = Offset(startX, startY),
+        end = Offset(endX, endY)
+    )
+}
+
+/**
+ * Get accent color for different menu items with enhanced variety
+ */
+@Composable
+private fun getItemAccentColor(itemId: String): Color {
+    return when (itemId) {
+        "spend_coins" -> AppleYellow
+        else -> when (itemId.hashCode() % 8) {
+            0 -> ApplePurple
+            1 -> AppleGreen
+            2 -> AppleOrange
+            3 -> AppleTeal
+            4 -> AppleIndigo
+            5 -> AppleCyan
+            6 -> AppleMint
+            else -> AppleBlue
+        }
+    }
+}
+
+/**
+ * Create a much stronger, more visible dome gradient
+ */
+@Composable
+private fun createStrongDomeGradient(): Brush {
+    return Brush.radialGradient(
+        colors = listOf(
+            Color.White.copy(alpha = 0.4f), // Much brighter center
+            Color.White.copy(alpha = 0.2f), // Visible mid-bright
+            Color.Transparent,              // Clear middle
+            Color.Black.copy(alpha = 0.2f), // Visible shadow
+            Color.Black.copy(alpha = 0.4f)  // Strong dark edges
+        ),
+        center = Offset(0.5f, 0.3f), // Higher up for more dramatic lighting
+        radius = 0.9f
+    )
+}
+
+/**
+ * Create a bright, visible highlight effect
+ */
+@Composable
+private fun createBrightHighlight(): Brush {
+    return Brush.linearGradient(
+        colors = listOf(
+            Color.White.copy(alpha = 0.6f), // Very bright highlight at top
+            Color.White.copy(alpha = 0.3f), // Visible fade
+            Color.White.copy(alpha = 0.1f), // Subtle continuation
+            Color.Transparent               // Fade to nothing
+        ),
+        start = Offset(0f, 0f),
+        end = Offset(0f, 0.5f) // Extend further down
+    )
+}
+
+/**
+ * Strong 3D effect for emoji container
+ */
+@Composable
+private fun createEmojiContainerBrush(baseColor: Color): Brush {
+    return Brush.radialGradient(
+        colors = listOf(
+            baseColor.copy(alpha = 0.8f),
+            baseColor.copy(alpha = 0.6f),
+            baseColor.copy(alpha = 0.4f),
+            Color.White.copy(alpha = 0.3f), // Bright center highlight
+            baseColor.copy(alpha = 0.5f)
+        ),
+        center = Offset(0.5f, 0.3f),
+        radius = 0.8f
+    )
+}
+
+/**
+ * Get a distinct emoji for different games that 3-year-olds can easily recognize
+ */
+@Composable
+private fun getDistinctEmojiForGame(gameId: String): String {
+    return when (gameId) {
+        "sample-game" -> "🧠"        // Brain for Merlin's Memory
+        "color-match" -> "🌈"        // Rainbow for Color Match
+        "shape-match" -> "🔷"        // Blue diamond for Shape Match
+        "number-match" -> "🔢"       // Numbers symbol for Number Match
+        "shape-drop" -> "🎯"         // Target for Shape Drop Adventure
+        "spend-coins" -> "🪙"        // Coin for Spend Coins
+        else -> "🎮"                 // Game controller for unknown games
     }
 } 

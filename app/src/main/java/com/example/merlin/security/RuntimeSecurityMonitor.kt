@@ -322,27 +322,32 @@ class RuntimeSecurityMonitor(private val context: Context) {
     
     private fun startPeriodicSecurityChecks() {
         monitoringJob = monitoringScope.launch {
-            while (isMonitoringActive) {
-                try {
-                    performSecurityCheck(SecurityCheckType.PERIODIC_BACKGROUND)
-                    
-                    // Calculate next check interval with randomization
-                    val baseInterval = BASE_CHECK_INTERVAL
-                    val variance = secureRandom.nextInt(INTERVAL_VARIANCE.toInt()) - (INTERVAL_VARIANCE / 2)
-                    val nextInterval = baseInterval + variance
-                    
-                    // Store the interval for statistics
-                    securityLogPrefs.edit()
-                        .putLong(KEY_CHECK_INTERVAL, nextInterval)
-                        .putLong(KEY_LAST_CHECK, System.currentTimeMillis())
-                        .apply()
-                    
-                    delay(nextInterval)
-                    
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error during periodic security check", e)
-                    delay(BASE_CHECK_INTERVAL) // Fallback interval
-                }
+            performPeriodicSecurityCheck()
+        }
+    }
+    
+    private suspend fun performPeriodicSecurityCheck() {
+        while (isMonitoringActive) {
+            try {
+                // Perform the security check
+                performSecurityCheck(SecurityCheckType.PERIODIC_BACKGROUND)
+                
+                // Calculate next check time with variance
+                val nextCheckInterval = BASE_CHECK_INTERVAL + Random.nextLong(-INTERVAL_VARIANCE, INTERVAL_VARIANCE)
+                
+                // Wait for the next check
+                delay(nextCheckInterval)
+
+            } catch (e: CancellationException) {
+                // This is expected when monitoring is stopped.
+                // Log it for debugging but at a lower level, and then exit the loop.
+                Log.d(TAG, "Periodic security check coroutine was cancelled.", e)
+                break // Exit the loop as the job is cancelled
+            } catch (e: Exception) {
+                // Log other exceptions as errors
+                Log.e(TAG, "Error during periodic security check", e)
+                // Wait a bit before retrying to avoid tight loop on error
+                delay(BASE_CHECK_INTERVAL)
             }
         }
     }

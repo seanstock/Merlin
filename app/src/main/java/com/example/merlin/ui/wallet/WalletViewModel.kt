@@ -5,9 +5,12 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.merlin.economy.service.LocalEconomyService
+import com.example.merlin.economy.service.AppLaunchService
 import com.example.merlin.data.repository.EconomyStateRepository
 import com.example.merlin.data.repository.ChildProfileRepository
 import com.example.merlin.data.database.DatabaseProvider
+import com.example.merlin.timer.ScreenTimeManager
+import com.example.merlin.config.ServiceLocator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +33,8 @@ class WalletViewModel(
     private val economyStateRepository = EconomyStateRepository(database.economyStateDao())
     private val childProfileRepository = ChildProfileRepository(database.childProfileDao())
     private val economyService = LocalEconomyService(economyStateRepository, childProfileRepository)
+    private val appLaunchService = ServiceLocator.getAppLaunchService(application)
+    private val appSessionManager = ServiceLocator.getAppSessionManager()
 
     // Wallet state
     private val _balance = MutableStateFlow(0)
@@ -41,9 +46,7 @@ class WalletViewModel(
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    // Screen time state
-    private val _screenTimeRemaining = MutableStateFlow(0)
-    val screenTimeRemaining: StateFlow<Int> = _screenTimeRemaining.asStateFlow()
+    // Screen time state is now managed globally by ScreenTimeManager
 
     // Notification events
     private val _notificationEvent = MutableStateFlow<WalletNotificationEvent?>(null)
@@ -83,7 +86,7 @@ class WalletViewModel(
     }
 
     /**
-     * Spend coins on screen time
+     * Spend coins on screen time or special purchases
      */
     fun spendCoins(timeInSeconds: Int, category: String) {
         viewModelScope.launch {
@@ -91,58 +94,107 @@ class WalletViewModel(
             _errorMessage.value = null
 
             try {
-                // Calculate cost based on category
-                val costResult = economyService.calculateScreenTimeCost(timeInSeconds, category)
-                costResult
-                    .onSuccess { cost ->
-                        // Check if user can afford it
+                when (category) {
+                    "call_daddy" -> {
+                        // Special case: Fixed cost for calling daddy
+                        val cost = timeInSeconds // In this case, timeInSeconds is actually the cost
                         val validationResult = economyService.validateSpendingRequest(childId, cost, category)
                         validationResult
                             .onSuccess { validation ->
                                 if (validation.isValid) {
-                                    // Spend the coins
                                     val spendResult = economyService.spendCoins(
                                         childId = childId,
                                         amount = cost,
-                                        category = category,
-                                        description = "Screen time unlock: ${timeInSeconds / 60}m ${timeInSeconds % 60}s",
+                                        category = "SPENDING_CALL",
+                                        description = "Call to daddy",
                                         metadata = mapOf(
                                             "category" to category,
-                                            "timeInSeconds" to timeInSeconds.toString()
+                                            "cost" to cost.toString()
                                         )
                                     )
                                     spendResult
                                         .onSuccess { balanceChange ->
                                             _balance.value = balanceChange.newBalance
-                                            _screenTimeRemaining.value = timeInSeconds
                                             
                                             // Trigger success notification
                                             _notificationEvent.value = WalletNotificationEvent.SpendingSuccess(
                                                 amount = cost,
-                                                timeUnlocked = timeInSeconds,
+                                                timeUnlocked = 0, // No screen time unlocked
                                                 category = category
                                             )
                                             
-                                            Log.d(TAG, "Successfully spent $cost MC for $timeInSeconds seconds of $category time")
+                                            Log.d(TAG, "Successfully spent $cost MC for call to daddy")
                                         }
                                         .onFailure { exception ->
-                                            Log.e(TAG, "Failed to spend coins", exception)
-                                            _errorMessage.value = "Failed to spend coins"
+                                            Log.e(TAG, "Failed to spend coins for call", exception)
+                                            _errorMessage.value = "Failed to spend coins for call"
                                         }
                                 } else {
                                     _errorMessage.value = validation.errorMessage
-                                    Log.w(TAG, "Spending validation failed: ${validation.errorMessage}")
+                                    Log.w(TAG, "Call spending validation failed: ${validation.errorMessage}")
                                 }
                             }
                             .onFailure { exception ->
-                                Log.e(TAG, "Failed to validate spending", exception)
+                                Log.e(TAG, "Failed to validate call spending", exception)
                                 _errorMessage.value = "Failed to validate spending request"
                             }
                     }
-                    .onFailure { exception ->
-                        Log.e(TAG, "Failed to calculate cost", exception)
-                        _errorMessage.value = "Failed to calculate cost"
+                    
+                    else -> {
+                        // Regular screen time purchase
+                        val costResult = economyService.calculateScreenTimeCost(timeInSeconds, category)
+                        costResult
+                            .onSuccess { cost ->
+                                // Check if user can afford it
+                                val validationResult = economyService.validateSpendingRequest(childId, cost, category)
+                                validationResult
+                                    .onSuccess { validation ->
+                                        if (validation.isValid) {
+                                            // Spend the coins
+                                            val spendResult = economyService.spendCoins(
+                                                childId = childId,
+                                                amount = cost,
+                                                category = category,
+                                                description = "Screen time unlock: ${timeInSeconds / 60}m ${timeInSeconds % 60}s",
+                                                metadata = mapOf(
+                                                    "category" to category,
+                                                    "timeInSeconds" to timeInSeconds.toString()
+                                                )
+                                            )
+                                            spendResult
+                                                .onSuccess { balanceChange ->
+                                                    _balance.value = balanceChange.newBalance
+                                                    ScreenTimeManager.addTime(timeInSeconds)
+                                                    
+                                                    // Trigger success notification
+                                                    _notificationEvent.value = WalletNotificationEvent.SpendingSuccess(
+                                                        amount = cost,
+                                                        timeUnlocked = timeInSeconds,
+                                                        category = category
+                                                    )
+                                                    
+                                                    Log.d(TAG, "Successfully spent $cost MC for $timeInSeconds seconds of $category time")
+                                                }
+                                                .onFailure { exception ->
+                                                    Log.e(TAG, "Failed to spend coins", exception)
+                                                    _errorMessage.value = "Failed to spend coins"
+                                                }
+                                        } else {
+                                            _errorMessage.value = validation.errorMessage
+                                            Log.w(TAG, "Spending validation failed: ${validation.errorMessage}")
+                                        }
+                                    }
+                                    .onFailure { exception ->
+                                        Log.e(TAG, "Failed to validate spending", exception)
+                                        _errorMessage.value = "Failed to validate spending request"
+                                    }
+                            }
+                            .onFailure { exception ->
+                                Log.e(TAG, "Failed to calculate cost", exception)
+                                _errorMessage.value = "Failed to calculate cost"
+                            }
                     }
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Unexpected error spending coins", e)
                 _errorMessage.value = "Unexpected error spending coins"
@@ -202,21 +254,17 @@ class WalletViewModel(
     }
 
     /**
+     * Refresh balance from database - call this when returning to screen
+     */
+    fun refreshBalance() {
+        loadBalance()
+    }
+
+    /**
      * Clear notification event
      */
     fun clearNotificationEvent() {
         _notificationEvent.value = null
-    }
-
-    /**
-     * Update screen time remaining (called by timer)
-     */
-    fun updateScreenTimeRemaining(seconds: Int) {
-        _screenTimeRemaining.value = seconds
-        if (seconds <= 0) {
-            // Trigger screen time expired notification
-            _notificationEvent.value = WalletNotificationEvent.ScreenTimeExpired
-        }
     }
 
     /**
@@ -247,6 +295,80 @@ class WalletViewModel(
                 _notificationEvent.value = WalletNotificationEvent.BalanceWarning(
                     "Only $currentBalance MC left - earn more by completing tasks!"
                 )
+            }
+        }
+    }
+
+    /**
+     * Purchase app access - separate from screen time spending
+     */
+    fun purchaseAppAccess(appPackage: String, durationMinutes: Int) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            try {
+                // Whitelist the external app for lock-task mode
+                ServiceLocator.getKioskManager(getApplication()).addAllowedPackage(appPackage)
+
+                val purchaseResult = appLaunchService.purchaseAppAccess(
+                    childId = childId,
+                    appPackage = appPackage,
+                    durationMinutes = durationMinutes
+                )
+                
+                purchaseResult
+                    .onSuccess { purchase ->
+                        if (purchase.success) {
+                            // Now spend the coins through the economy service
+                            val spendResult = economyService.spendCoins(
+                                childId = childId,
+                                amount = purchase.totalCost,
+                                category = "SPENDING_APP_ACCESS",
+                                description = "App access purchase: $appPackage for $durationMinutes minutes",
+                                metadata = mapOf(
+                                    "app_package" to appPackage,
+                                    "duration_minutes" to durationMinutes.toString()
+                                )
+                            )
+                            
+                            spendResult
+                                .onSuccess { balanceChange ->
+                                    _balance.value = balanceChange.newBalance
+                                    
+                                    // Get app icon and add session
+                                    val iconResult = (appLaunchService as? com.example.merlin.economy.service.LocalAppLaunchService)?.getAppIcon(appPackage)
+                                    val appIcon = iconResult?.getOrNull()
+                                    val appName = appPackage.substringAfterLast(".")
+                                    appSessionManager.addSession(purchase, appName, appIcon)
+                                    
+                                    // Trigger success notification
+                                    _notificationEvent.value = WalletNotificationEvent.SpendingSuccess(
+                                        amount = purchase.totalCost,
+                                        timeUnlocked = 0, // No screen time unlocked
+                                        category = "app_access"
+                                    )
+                                    
+                                    Log.d(TAG, "Successfully purchased app access: $appPackage for $durationMinutes minutes")
+                                }
+                                .onFailure { exception ->
+                                    Log.e(TAG, "Failed to spend coins for app access", exception)
+                                    _errorMessage.value = "Failed to spend coins for app access"
+                                }
+                        } else {
+                            _errorMessage.value = purchase.errorMessage
+                            Log.e(TAG, "App access purchase failed: ${purchase.errorMessage}")
+                        }
+                    }
+                    .onFailure { exception ->
+                        Log.e(TAG, "Failed to purchase app access", exception)
+                        _errorMessage.value = "Failed to purchase app access"
+                    }
+            } catch (e: Exception) {
+                Log.e(TAG, "Unexpected error purchasing app access", e)
+                _errorMessage.value = "Unexpected error purchasing app access"
+            } finally {
+                _isLoading.value = false
             }
         }
     }

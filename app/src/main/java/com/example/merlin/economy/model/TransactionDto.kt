@@ -32,6 +32,7 @@ object TransactionCategory {
     const val SPENDING_PHYSICAL_ACTIVITY = "spending_physical_activity"
     const val SPENDING_CUSTOMIZATION = "spending_customization"
     const val SPENDING_LEARNING_ENHANCEMENT = "spending_learning_enhancement"
+    const val SPENDING_APP_ACCESS = "spending_app_access"  // NEW: For purchasing app access
     
     val EARNING_CATEGORIES = setOf(
         EARNING_TASK_COMPLETION,
@@ -49,7 +50,8 @@ object TransactionCategory {
         SPENDING_CREATIVE_APPS,
         SPENDING_PHYSICAL_ACTIVITY,
         SPENDING_CUSTOMIZATION,
-        SPENDING_LEARNING_ENHANCEMENT
+        SPENDING_LEARNING_ENHANCEMENT,
+        SPENDING_APP_ACCESS  // Add to spending categories
     )
     
     /**
@@ -62,7 +64,8 @@ object TransactionCategory {
         SPENDING_CREATIVE_APPS to 0.7f,      // 0.7:1 discount
         SPENDING_PHYSICAL_ACTIVITY to 0.5f,  // 0.5:1 discount
         SPENDING_CUSTOMIZATION to 1.0f,      // 1:1 ratio
-        SPENDING_LEARNING_ENHANCEMENT to 1.0f // 1:1 ratio, unlimited
+        SPENDING_LEARNING_ENHANCEMENT to 1.0f, // 1:1 ratio, unlimited
+        SPENDING_APP_ACCESS to 0.9f          // 0.9:1 slight discount for app access
     )
 }
 

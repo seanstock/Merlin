@@ -208,7 +208,7 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
     fun validateCurrentStep(): Boolean {
         return when (_uiState.value.currentStep) {
             OnboardingStep.WELCOME -> true
-            OnboardingStep.PERMISSIONS -> validatePermissions()
+            OnboardingStep.PERMISSIONS -> true
             OnboardingStep.CHILD_INFO -> validateChildInfo()
             OnboardingStep.THEME_SELECTION -> true
             OnboardingStep.PARENT_PIN -> validateParentPin()
@@ -216,15 +216,6 @@ class OnboardingViewModel(application: Application) : AndroidViewModel(applicati
             OnboardingStep.AI_INTRODUCTION -> true
             OnboardingStep.COMPLETED -> true
         }
-    }
-    
-    /**
-     * Validate that required permissions are granted.
-     */
-    private fun validatePermissions(): Boolean {
-        val permissions = _uiState.value.permissionsGranted
-        // For now, we'll require accessibility and overlay permissions
-        return permissions["accessibility"] == true && permissions["overlay"] == true
     }
     
     /**

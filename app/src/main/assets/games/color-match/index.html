@@ -379,14 +379,14 @@
 
         // Encouraging messages
         const ENCOURAGEMENT = [
-            "Brilliant! 🌟 +3 coins!",
-            "Perfect match! 🎨 +3 coins!",
-            "You're amazing! 🌈 +3 coins!",
-            "Fantastic eye! 👁️ +3 coins!",
-            "Color master! 🏆 +3 coins!",
-            "Wonderful! ✨ +3 coins!",
-            "Excellent! 🎯 +3 coins!",
-            "Super job! 🚀 +3 coins!"
+            "Brilliant! 🌟 +30 coins!",
+            "Perfect match! 🎨 +30 coins!",
+            "You're amazing! 🌈 +30 coins!",
+            "Fantastic eye! 👁️ +30 coins!",
+            "Color master! 🏆 +30 coins!",
+            "Wonderful! ✨ +30 coins!",
+            "Excellent! 🎯 +30 coins!",
+            "Super job! 🚀 +30 coins!"
         ];
 
         // DOM elements
@@ -521,7 +521,7 @@
                 // Award coins for correct answer
                 if (typeof MerlinGameBridge !== 'undefined') {
                     try {
-                        const coinResult = MerlinGameBridge.earnCoins(3, 'color-match', 'correct color match');
+                        const coinResult = MerlinGameBridge.earnCoins(30, 'color-match', 'correct color match');
                         MerlinGameBridge.logDebug(`Coin earning result: ${coinResult}`);
                     } catch (e) {
                         MerlinGameBridge.logDebug(`Error earning coins: ${e.message}`);

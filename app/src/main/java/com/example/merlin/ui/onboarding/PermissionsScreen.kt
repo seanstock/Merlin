@@ -42,19 +42,14 @@ fun PermissionsScreen(
     val context = LocalContext.current
     
     // Permission states
-    var accessibilityGranted by remember { 
-        mutableStateOf(permissionsGranted["accessibility"] ?: false) 
-    }
+    val accessibilityGranted = true
     var overlayGranted by remember { 
         mutableStateOf(permissionsGranted["overlay"] ?: false) 
     }
     
     // Check permissions on composition
     LaunchedEffect(Unit) {
-        accessibilityGranted = isAccessibilityServiceEnabled(context)
         overlayGranted = canDrawOverlays(context)
-        
-        onPermissionUpdate("accessibility", accessibilityGranted)
         onPermissionUpdate("overlay", overlayGranted)
     }
     
@@ -64,14 +59,6 @@ fun PermissionsScreen(
     ) { _ ->
         overlayGranted = canDrawOverlays(context)
         onPermissionUpdate("overlay", overlayGranted)
-    }
-    
-    // Launcher for accessibility settings
-    val accessibilityLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { _ ->
-        accessibilityGranted = isAccessibilityServiceEnabled(context)
-        onPermissionUpdate("accessibility", accessibilityGranted)
     }
     
     Column(
@@ -108,21 +95,6 @@ fun PermissionsScreen(
         )
         
         Spacer(modifier = Modifier.height(AppleSpacing.extraLarge))
-        
-        // Accessibility Permission
-        PermissionCard(
-            title = "Accessibility Service",
-            description = "Allows Merlin to create a secure lock screen that protects your child from accessing other apps without permission.",
-            icon = "🛡️",
-            isGranted = accessibilityGranted,
-            onRequestPermission = {
-                val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-                accessibilityLauncher.launch(intent)
-            },
-            importance = "Required"
-        )
-        
-        Spacer(modifier = Modifier.height(AppleSpacing.medium))
         
         // Overlay Permission
         PermissionCard(
@@ -193,7 +165,7 @@ fun PermissionsScreen(
                 text = "Continue",
                 onClick = onContinue,
                 style = AppleButtonStyle.Primary,
-                enabled = accessibilityGranted && overlayGranted,
+                enabled = true,
                 modifier = Modifier.weight(1f)
             )
         }
