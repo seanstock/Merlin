@@ -58,6 +58,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.ui.graphics.SolidColor
 
 /**
  * Simple icon-based main menu for ages 3-4, using the app's design system.
@@ -440,13 +441,7 @@ fun LiquidGlassMenuItem(
                             .height(60.dp) // Specific height
                             .align(Alignment.TopCenter) // Actually position at top
                             .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = 0.6f), // More visible
-                                        Color.White.copy(alpha = 0.3f),
-                                        Color.Transparent // Fade out
-                                    )
-                                ),
+                                brush = SolidColor(Color.Transparent),
                                 shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
                             )
                     )
@@ -457,14 +452,7 @@ fun LiquidGlassMenuItem(
                             .size(120.dp) // Larger size
                             .align(Alignment.Center) // Actually position at center
                             .background(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = 0.5f), // More visible
-                                        Color.White.copy(alpha = 0.2f),
-                                        Color.Transparent
-                                    ),
-                                    radius = 60f // Fixed radius
-                                ),
+                                brush = SolidColor(Color.Transparent),
                                 shape = RoundedCornerShape(60.dp)
                             )
                     )
@@ -663,16 +651,8 @@ fun EnhancedTopStatusBar(
  */
 @Composable
 private fun createLiquidGlassBrush(baseColor: Color): Brush {
-    return Brush.radialGradient(
-        colors = listOf(
-            baseColor.copy(alpha = 0.9f),
-            baseColor.copy(alpha = 0.7f),
-            baseColor.copy(alpha = 0.5f),
-            Color.White.copy(alpha = 0.3f),
-            baseColor.copy(alpha = 0.6f)
-        ),
-        radius = 300f
-    )
+    // Non-rotating gradient removed – use solid color
+    return SolidColor(baseColor)
 }
 
 /**
@@ -740,17 +720,8 @@ private fun getItemAccentColor(itemId: String): Color {
  */
 @Composable
 private fun createStrongDomeGradient(): Brush {
-    return Brush.radialGradient(
-        colors = listOf(
-            Color.White.copy(alpha = 0.4f), // Much brighter center
-            Color.White.copy(alpha = 0.2f), // Visible mid-bright
-            Color.Transparent,              // Clear middle
-            Color.Black.copy(alpha = 0.2f), // Visible shadow
-            Color.Black.copy(alpha = 0.4f)  // Strong dark edges
-        ),
-        center = Offset(0.5f, 0.3f), // Higher up for more dramatic lighting
-        radius = 0.9f
-    )
+    // Removed – return transparent brush so no overlay
+    return SolidColor(Color.Transparent)
 }
 
 /**
@@ -758,16 +729,8 @@ private fun createStrongDomeGradient(): Brush {
  */
 @Composable
 private fun createBrightHighlight(): Brush {
-    return Brush.linearGradient(
-        colors = listOf(
-            Color.White.copy(alpha = 0.6f), // Very bright highlight at top
-            Color.White.copy(alpha = 0.3f), // Visible fade
-            Color.White.copy(alpha = 0.1f), // Subtle continuation
-            Color.Transparent               // Fade to nothing
-        ),
-        start = Offset(0f, 0f),
-        end = Offset(0f, 0.5f) // Extend further down
-    )
+    // Removed top highlight
+    return SolidColor(Color.Transparent)
 }
 
 /**
@@ -802,4 +765,25 @@ private fun getDistinctEmojiForGame(gameId: String): String {
         "spend-coins" -> "🪙"        // Coin for Spend Coins
         else -> "🎮"                 // Game controller for unknown games
     }
+}
+
+// Helper extensions for simple lighten/darken adjustments (factor 0f-1f)
+private fun Color.lighten(factor: Float): Color {
+    val newFactor = factor.coerceIn(0f, 1f)
+    return Color(
+        red = red + (1f - red) * newFactor,
+        green = green + (1f - green) * newFactor,
+        blue = blue + (1f - blue) * newFactor,
+        alpha = alpha
+    )
+}
+
+private fun Color.darken(factor: Float): Color {
+    val newFactor = factor.coerceIn(0f, 1f)
+    return Color(
+        red = red * (1f - newFactor),
+        green = green * (1f - newFactor),
+        blue = blue * (1f - newFactor),
+        alpha = alpha
+    )
 } 
