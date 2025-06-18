@@ -34,6 +34,7 @@ import com.example.merlin.ui.theme.*
 import com.example.merlin.ui.wallet.WalletDisplay
 import com.example.merlin.ui.wallet.WalletViewModel
 import com.example.merlin.ui.wallet.WalletViewModelFactory
+import com.example.merlin.data.database.DatabaseProvider
 
 import com.example.merlin.utils.UserSessionRepository
 import com.example.merlin.viewmodels.SimpleMenuViewModel
@@ -95,6 +96,18 @@ fun SimpleMainMenuScreen(
         androidx.lifecycle.viewmodel.compose.viewModel(
             factory = WalletViewModelFactory(application, childId)
         )
+    }
+    
+    // Get child name
+    var childName by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(activeChildId) {
+        activeChildId?.let { childId ->
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val database = DatabaseProvider.getInstance(context)
+                val childProfile = database.childProfileDao().getById(childId)
+                childName = childProfile?.name
+            }
+        }
     }
     val coinBalance by walletViewModel?.balance?.collectAsState() ?: remember { mutableStateOf(0) }
     val walletLoading by walletViewModel?.isLoading?.collectAsState() ?: remember { mutableStateOf(false) }
@@ -168,12 +181,51 @@ fun SimpleMainMenuScreen(
                 modifier = Modifier.statusBarsPadding()
             )
 
-            // Welcome message as chat button
-            ChatWelcomeSection(
-                tutorName = currentTheme!!.tutorName,
-                onChatClick = onNavigateToChat,
-                modifier = Modifier.padding(AppleSpacing.large)
-            )
+            // Child name circle button in top left
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(AppleSpacing.large)
+            ) {
+                if (childName != null) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .size(80.dp)
+                            .offset(x = 5.dp, y = 5.dp)
+                            .background(
+                                Color.Black.copy(alpha = 0.15f),
+                                CircleShape
+                            )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .size(80.dp)
+                            .clickable(onClick = onNavigateToChat)
+                            .background(
+                                brush = createSmoothLiquidGlassBrush(
+                                    baseColor = AppleBlue.copy(alpha = 0.8f),
+                                    shimmerAngle = 0f
+                                ),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Hi\n${childName.take(8)}! 👋",
+                            style = AppleCallout.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp,
+                                lineHeight = 14.sp
+                            ),
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2
+                        )
+                    }
+                }
+            }
 
             // Enhanced grid with larger icons for landscape support
             Box(
@@ -230,6 +282,7 @@ fun SimpleMainMenuScreen(
 @Composable
 fun ChatWelcomeSection(
     tutorName: String,
+    childName: String?,
     onChatClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -282,7 +335,7 @@ fun ChatWelcomeSection(
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Hi there! 👋",
+                    text = if (childName != null) "Hi $childName! 👋" else "Hi there! 👋",
                     style = AppleHeadline.copy(fontSize = 22.sp),
                     color = ApplePrimaryLabel
                 )
@@ -361,30 +414,27 @@ fun LiquidGlassMenuItem(
     // Check if this is the memory button for comparison
     val isMemoryButton = item.id == "sample-game"
 
-    // Much more subtle 3D effect
-    Box(
-        modifier = Modifier
-            .scale(scale)
-            .offset(y = glassOffset.dp)
-            .size(180.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        // Only show shadow for non-memory buttons
-        if (!isMemoryButton) {
-            // Very subtle shadow - much smaller offset and lighter
+            // Strong 3D effect with pronounced shadow
+        Box(
+            modifier = Modifier
+                .scale(scale)
+                .offset(y = glassOffset.dp)
+                .size(180.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            // Simple solid shadow
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .offset(
-                        x = if (isPressed) 0.5.dp else 1.dp, // Much smaller offset
-                        y = if (isPressed) 1.dp else 2.dp    // Much smaller offset
+                        x = if (isPressed) 2.dp else 5.dp,
+                        y = if (isPressed) 3.dp else 5.dp
                     )
                     .background(
-                        Color.Black.copy(alpha = 0.1f), // Much lighter shadow
+                        Color.Black.copy(alpha = 0.15f),
                         RoundedCornerShape(32.dp)
                     )
             )
-        }
 
         // Main button with child-friendly bright colors
         Card(
@@ -432,59 +482,42 @@ fun LiquidGlassMenuItem(
                         )
                 )
                 
-                // 3D effects for all buttons
-                // TOP HIGHLIGHT - bright edge lighting
+                // Rounded corner bevel using gradients
+                // TOP-LEFT to BOTTOM-RIGHT light bevel
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                        .align(Alignment.TopCenter)
+                        .fillMaxSize()
                         .background(
-                            brush = Brush.verticalGradient(
+                            brush = Brush.linearGradient(
                                 colors = listOf(
-                                    Color.White.copy(alpha = 0.4f),
-                                    Color.White.copy(alpha = 0.1f),
-                                    Color.Transparent
-                                )
+                                    Color.White.copy(alpha = 0.6f),
+                                    Color.Transparent,
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.4f)
+                                ),
+                                start = Offset(0f, 0f),
+                                end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY)
                             ),
-                            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+                            shape = RoundedCornerShape(32.dp)
                         )
                 )
                 
-                // CENTER HIGHLIGHT - glossy dome effect
+                // Circular highlight for rounded 3D effect
                 Box(
                     modifier = Modifier
-                        .size(120.dp)
-                        .align(Alignment.Center)
+                        .fillMaxSize()
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    Color.White.copy(alpha = 0.3f),
-                                    Color.White.copy(alpha = 0.1f),
-                                    Color.Transparent
-                                ),
-                                center = Offset(0.5f, 0.3f),
-                                radius = 0.8f
-                            ),
-                            shape = RoundedCornerShape(60.dp)
-                        )
-                )
-                
-                // BOTTOM SHADOW - depth shadow
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .align(Alignment.BottomCenter)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
+                                    Color.White.copy(alpha = 0.4f),
+                                    Color.White.copy(alpha = 0.2f),
                                     Color.Transparent,
-                                    Color.Black.copy(alpha = 0.3f),
-                                    Color.Black.copy(alpha = 0.4f)
-                                )
+                                    Color.Black.copy(alpha = 0.2f)
+                                ),
+                                center = Offset(0.3f, 0.3f),
+                                radius = 1.2f
                             ),
-                            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                            shape = RoundedCornerShape(32.dp)
                         )
                 )
                 
@@ -799,4 +832,4 @@ private fun Color.darken(factor: Float): Color {
         blue = blue * (1f - newFactor),
         alpha = alpha
     )
-} 
+}
