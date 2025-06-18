@@ -432,48 +432,61 @@ fun LiquidGlassMenuItem(
                         )
                 )
                 
-                // Only show 3D effects for non-memory buttons
-                if (!isMemoryButton) {
-                    // TOP HIGHLIGHT - positioned at actual top of button
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(60.dp) // Specific height
-                            .align(Alignment.TopCenter) // Actually position at top
-                            .background(
-                                brush = SolidColor(Color.Transparent),
-                                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
-                            )
-                    )
-                    
-                    // CENTER HIGHLIGHT - positioned in actual center  
-                    Box(
-                        modifier = Modifier
-                            .size(120.dp) // Larger size
-                            .align(Alignment.Center) // Actually position at center
-                            .background(
-                                brush = SolidColor(Color.Transparent),
-                                shape = RoundedCornerShape(60.dp)
-                            )
-                    )
-                    
-                    // BOTTOM SHADOW - positioned at actual bottom
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(40.dp) // Specific height
-                            .align(Alignment.BottomCenter) // Actually position at bottom
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        Color.Black.copy(alpha = 0.2f) // More visible
-                                    )
+                // 3D effects for all buttons
+                // TOP HIGHLIGHT - bright edge lighting
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .align(Alignment.TopCenter)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.4f),
+                                    Color.White.copy(alpha = 0.1f),
+                                    Color.Transparent
+                                )
+                            ),
+                            shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
+                        )
+                )
+                
+                // CENTER HIGHLIGHT - glossy dome effect
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .align(Alignment.Center)
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color.White.copy(alpha = 0.3f),
+                                    Color.White.copy(alpha = 0.1f),
+                                    Color.Transparent
                                 ),
-                                shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
-                            )
-                    )
-                }
+                                center = Offset(0.5f, 0.3f),
+                                radius = 0.8f
+                            ),
+                            shape = RoundedCornerShape(60.dp)
+                        )
+                )
+                
+                // BOTTOM SHADOW - depth shadow
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.3f),
+                                    Color.Black.copy(alpha = 0.4f)
+                                )
+                            ),
+                            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                        )
+                )
                 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
