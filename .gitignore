@@ -130,6 +130,13 @@ node_modules/
 *.sln
 *.sw?
 # OS specific
+
+# Markdown files (except README)
+*.md
+!README.md
+!readme.md
+!Readme.md
+
 # Task files
 tasks.json
 tasks/ 

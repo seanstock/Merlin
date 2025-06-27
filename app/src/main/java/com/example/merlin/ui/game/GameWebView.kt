@@ -139,10 +139,10 @@ private fun WebView.configureSecureWebView(
         // Enable DOM storage for game state
         domStorageEnabled = true
         
-        // Disable potentially dangerous features
-        allowFileAccess = false
+        // Configure file access for local games while maintaining security
+        allowFileAccess = true  // Required for loading games from assets
         allowContentAccess = false
-        allowFileAccessFromFileURLs = false
+        allowFileAccessFromFileURLs = false  // Still prevent cross-origin file access
         allowUniversalAccessFromFileURLs = false
         
         // Disable geolocation and other sensitive APIs
@@ -204,7 +204,8 @@ private fun WebView.configureSecureWebView(
 
         override fun onReceivedError(view: WebView?, errorCode: Int, description: String?, failingUrl: String?) {
             super.onReceivedError(view, errorCode, description, failingUrl)
-            onError("Failed to load game: $description")
+            Log.e("GameWebView", "WebView error: code=$errorCode, description=$description, url=$failingUrl")
+            onError("Failed to load game: $description (Error code: $errorCode)")
             onLoadingChanged(false)
         }
     }
@@ -226,6 +227,7 @@ private fun WebView.configureSecureWebView(
 
     // Load the game
     val gameUrl = "file:///android_asset/games/$gameId/index.html?level=$level"
+    Log.d("GameWebView", "Loading game: $gameUrl")
     loadUrl(gameUrl)
     onLoadingChanged(true)
 }

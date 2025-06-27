@@ -43,6 +43,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.LocalTextStyle
 // Wallet imports
 import com.example.merlin.ui.wallet.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import android.Manifest
 
 /**
  * Main chat screen for interacting with Merlin the AI tutor.
@@ -113,6 +117,11 @@ fun ChatScreen(
     // 💰 WALLET UI STATE
     var showSpendDialog by remember { mutableStateOf(false) }
     
+    // 🎙️ VOICE CHAT STATE
+    var isVoiceChatActive by remember { mutableStateOf(false) }
+    var voiceTranscript by remember { mutableStateOf("") }
+    var pendingVoiceSend by remember { mutableStateOf(false) }
+    
     // Speech-to-Text manager with performance optimization
     val speechToTextManager = remember { SpeechToTextManager(context) }
     val isListening by speechToTextManager.isListeningFlow.collectAsState()
@@ -172,15 +181,47 @@ fun ChatScreen(
         }
     }
 
+    val micPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            // Permission granted, start voice chat immediately
+            isVoiceChatActive = true
+            voiceTranscript = ""
+            pendingVoiceSend = true
+            speechToTextManager.startListening { recognizedText ->
+                voiceTranscript = recognizedText
+            }
+        }
+    }
+
+    fun ensureMicPermissionAndStart() {
+        if (ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.RECORD_AUDIO
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            // Already granted
+            isVoiceChatActive = true
+            voiceTranscript = ""
+            pendingVoiceSend = true
+            speechToTextManager.startListening { recognizedText ->
+                voiceTranscript = recognizedText
+            }
+        } else {
+            // Request permission
+            micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
-        // 🌿 SOPHISTICATED BACKGROUND WITH OPTIMIZED GRADIENTS 🌿
-        val backgroundGradient = rememberOptimizedGradient(
-            key = "main_background",
+        // 🌿 SOFT SCANDINAVIAN BACKGROUND 🌿
+        val scandinavianBackgroundGradient = rememberOptimizedGradient(
+            key = "scandinavian_background",
             colors = listOf(
-                MistyBlue.copy(alpha = 0.1f),
-                SeafoamMist.copy(alpha = 0.08f),
-                IceBlue.copy(alpha = 0.05f),
-                CloudWhite
+                Color(0xFFF8F9FA), // Off-white
+                Color(0xFFF3F4F6), // Light gray
+                Color(0xFFE5E7EB)  // Slightly darker gray
             ),
             isVertical = true
         )
@@ -188,10 +229,10 @@ fun ChatScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(backgroundGradient)
+                .background(scandinavianBackgroundGradient)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Top App Bar
+                // Top App Bar - Minimalist Scandinavian Style
                 TopAppBar(
                     title = { 
                         Row(
@@ -203,10 +244,10 @@ fun ChatScreen(
                             }
                         ) {
                             Text(
-                                text = "🧙‍♂️ Merlin AI",
+                                text = "🧙‍♂️ Merlin",
                                 style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = WisdomBlue
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF475569) // Soft slate
                             )
                             if (isLoading) {
                                 CircularProgressIndicator(
@@ -216,7 +257,7 @@ fun ChatScreen(
                                             contentDescription = AccessibilityConstants.ContentDescriptions.LOADING_INDICATOR
                                         },
                                     strokeWidth = 3.dp,
-                                    color = SageGreen
+                                    color = Color(0xFF059669) // Soft emerald
                                 )
                             }
                         }
@@ -234,8 +275,8 @@ fun ChatScreen(
                             ) {
                                 Icon(
                                     Icons.Default.ArrowBack, 
-                                    contentDescription = null, // Already described by button
-                                    tint = WisdomBlue,
+                                    contentDescription = null,
+                                    tint = Color(0xFF64748B), // Soft slate
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -250,7 +291,36 @@ fun ChatScreen(
                             modifier = Modifier.padding(end = 8.dp)
                         )
                         
-                        // Settings button for PIN-gated access to main app
+                        // Small TTS button in top bar
+                        IconButton(
+                            onClick = { viewModel.toggleTts() },
+                            modifier = Modifier
+                                .size(40.dp) // Smaller size
+                                .clip(CircleShape)
+                                .background(
+                                    if (isTtsEnabled) 
+                                        Color(0xFF10B981).copy(alpha = 0.1f) // Soft emerald background
+                                    else 
+                                        Color(0xFF6B7280).copy(alpha = 0.1f) // Soft gray background
+                                )
+                                .semantics {
+                                    contentDescription = if (isTtsEnabled) {
+                                        "Disable Merlin voice replies"
+                                    } else {
+                                        "Enable Merlin voice replies"
+                                    }
+                                    role = Role.Button
+                                }
+                        ) {
+                            Icon(
+                                imageVector = if (isTtsEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
+                                contentDescription = null,
+                                tint = if (isTtsEnabled) Color(0xFF10B981) else Color(0xFF6B7280), // Soft colors
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        
+                        // Settings button
                         IconButton(
                             onClick = onNavigateToSettings,
                             modifier = Modifier
@@ -262,11 +332,12 @@ fun ChatScreen(
                         ) {
                             Icon(
                                 Icons.Default.Settings, 
-                                contentDescription = null, // Already described by button
-                                tint = RoyalPurple,
+                                contentDescription = null,
+                                tint = Color(0xFF64748B), // Soft slate
                                 modifier = Modifier.size(24.dp)
                             )
                         }
+                        
                         // Clear chat
                         IconButton(
                             onClick = { viewModel.clearChat() },
@@ -279,14 +350,14 @@ fun ChatScreen(
                         ) {
                             Icon(
                                 Icons.Default.Refresh, 
-                                contentDescription = null, // Already described by button
-                                tint = SageGreen,
+                                contentDescription = null,
+                                tint = Color(0xFF6B7280), // Soft gray
                                 modifier = Modifier.size(24.dp)
                             )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = CloudWhite.copy(alpha = 0.95f)
+                        containerColor = Color(0xFFFFFFFF) // Pure white
                     )
                 )
 
@@ -412,20 +483,19 @@ fun ChatScreen(
                     }
                 }
 
-                // Input area
-                ChatInputArea(
-                    currentInput = currentInput,
-                    onInputChange = { viewModel.updateInput(it) },
-                    onSendMessage = { viewModel.sendMessage(it) },
+                // Large Talk Button for Toddlers
+                ToddlerTalkButton(
+                    isVoiceChatActive = isVoiceChatActive,
                     isLoading = isLoading,
-                    isListening = isListening,
-                    isSTTAvailable = isSTTAvailable,
-                    onStartListening = {
-                        speechToTextManager.startListening { recognizedText ->
-                            viewModel.updateInput(recognizedText)
-                        }
+                    onStartVoiceChat = {
+                        println("🎙️ Voice chat button pressed - STARTING voice chat")
+                        ensureMicPermissionAndStart()
                     },
-                    onStopListening = { speechToTextManager.stopListening() }
+                    onStopVoiceChat = {
+                        println("🎙️ Voice chat button pressed - STOPPING voice chat")
+                        isVoiceChatActive = false
+                        speechToTextManager.stopListening()
+                    }
                 )
             }
         }
@@ -443,6 +513,18 @@ fun ChatScreen(
             onDismiss = { showSpendDialog = false }
         )
     }
+
+    // Auto-reset voice chat button colour when STT stops
+    LaunchedEffect(isListening) {
+        if (!isListening) {
+            isVoiceChatActive = false
+            if (pendingVoiceSend && voiceTranscript.isNotBlank()) {
+                viewModel.sendMessage(voiceTranscript)
+            }
+            pendingVoiceSend = false
+            voiceTranscript = ""
+        }
+    }
 }
 
 /**
@@ -456,15 +538,15 @@ private fun MessageBubble(
 ) {
     val timeFormat = remember { SimpleDateFormat("HH:mm", Locale.getDefault()) }
     
-    // ⚡ PERFORMANCE OPTIMIZATION: Use cached gradients for avatars
+    // ⚡ PERFORMANCE OPTIMIZATION: Use soft Scandinavian gradients for avatars
     val merlinAvatarGradient = rememberOptimizedGradient(
         key = "merlin_avatar",
-        colors = listOf(WisdomBlue, DeepOcean)
+        colors = listOf(Color(0xFF6366F1), Color(0xFF4F46E5)) // Soft indigo
     )
     
     val userAvatarGradient = rememberOptimizedGradient(
         key = "user_avatar", 
-        colors = listOf(AmberGlow, WarmTerracotta)
+        colors = listOf(Color(0xFF10B981), Color(0xFF059669)) // Soft emerald
     )
     
     // ⚡ PERFORMANCE OPTIMIZATION: Record frame time for monitoring
@@ -511,11 +593,11 @@ private fun MessageBubble(
                 ),
                 colors = CardDefaults.cardColors(
                     containerColor = if (message.isFromUser) {
-                        SageGreen.copy(alpha = 0.9f)
+                        Color(0xFF10B981).copy(alpha = 0.1f) // Soft emerald background
                     } else if (message.hasError) {
-                        WarmTerracotta.copy(alpha = 0.8f)
+                        Color(0xFFEF4444).copy(alpha = 0.1f) // Soft red background
                     } else {
-                        LavenderMist.copy(alpha = 0.85f)
+                        Color(0xFF6366F1).copy(alpha = 0.08f) // Soft indigo background
                     }
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -535,16 +617,16 @@ private fun MessageBubble(
                     Text(
                         text = message.content,
                         color = if (message.isFromUser) {
-                            CloudWhite
+                            Color(0xFF059669) // Darker emerald for text
                         } else if (message.hasError) {
-                            CloudWhite
+                            Color(0xFFDC2626) // Darker red for error text
                         } else {
-                            MidnightNavy
+                            Color(0xFF1E293B) // Dark slate for text
                         },
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
-                        fontSize = AccessibilityConstants.CHILD_BODY_TEXT, // Larger text for children
-                        lineHeight = 22.sp
+                        fontSize = AccessibilityConstants.CHILD_BODY_TEXT * 1.5f, // 50% bigger font size for toddlers
+                        lineHeight = 33.sp
                     )
                     
                     // Function call button (e.g., for launching games)
@@ -632,10 +714,11 @@ private fun ChatInputArea(
     onInputChange: (String) -> Unit,
     onSendMessage: (String) -> Unit,
     isLoading: Boolean,
-    isListening: Boolean,
-    isSTTAvailable: Boolean,
-    onStartListening: () -> Unit,
-    onStopListening: () -> Unit,
+    isTtsEnabled: Boolean,
+    onToggleTts: () -> Unit,
+    onStartVoiceChat: () -> Unit,
+    onStopVoiceChat: () -> Unit,
+    isVoiceChatActive: Boolean,
     modifier: Modifier = Modifier
 ) {
     val focusRequester = remember { FocusRequester() }
@@ -659,6 +742,17 @@ private fun ChatInputArea(
     val sendButtonInactiveGradient = rememberOptimizedGradient(
         key = "send_inactive",
         colors = listOf(CloudySky, MoonlightSilver)
+    )
+    
+    // Voice chat button gradients
+    val voiceChatActiveGradient = rememberOptimizedGradient(
+        key = "voice_chat_active",
+        colors = listOf(AmberGlow, WarmTerracotta)
+    )
+    
+    val voiceChatInactiveGradient = rememberOptimizedGradient(
+        key = "voice_chat_inactive",
+        colors = listOf(SageGreen, ForestGreen)
     )
     
     // ⚡ PERFORMANCE OPTIMIZATION: Adaptive animation duration
@@ -685,37 +779,30 @@ private fun ChatInputArea(
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 🎤 ELEGANT VOICE BUTTON WITH OPTIMIZATION 🎤
-            if (isSTTAvailable) {
+            // 📣 TTS TOGGLE BUTTON
+            run {
                 IconButton(
                     onClick = {
-                        // ⚡ PERFORMANCE OPTIMIZATION: Debounce speech input
-                        if (ChatScreenPerformance.VoiceInputOptimization.shouldProcessSpeech()) {
-                            if (isListening) {
-                                onStopListening()
-                            } else {
-                                onStartListening()
-                            }
-                        }
+                        onToggleTts()
                     },
                     modifier = Modifier
                         .size(AccessibilityConstants.LARGE_TOUCH_TARGET) // Larger for primary action
                         .clip(CircleShape)
                         .background(
-                            if (isListening) voiceButtonActiveGradient else voiceButtonInactiveGradient
+                            if (isTtsEnabled) voiceButtonActiveGradient else voiceButtonInactiveGradient
                         )
                         .semantics {
-                            contentDescription = if (isListening) {
-                                AccessibilityConstants.ContentDescriptions.VOICE_INPUT_STOP
+                            contentDescription = if (isTtsEnabled) {
+                                "Disable Merlin voice replies"
                             } else {
-                                AccessibilityConstants.ContentDescriptions.VOICE_INPUT_START
+                                "Enable Merlin voice replies"
                             }
                             role = Role.Button
                         }
                 ) {
                     Icon(
-                        imageVector = if (isListening) Icons.Default.Stop else Icons.Default.Mic,
-                        contentDescription = null, // Already described by button
+                        imageVector = if (isTtsEnabled) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
+                        contentDescription = null,
                         tint = CloudWhite,
                         modifier = Modifier.size(24.dp)
                     )
@@ -734,7 +821,7 @@ private fun ChatInputArea(
                     },
                 placeholder = { 
                     Text(
-                        text = if (isListening) "🎤 Listening..." else "💭 Share your thoughts with Merlin...",
+                        text = if (isVoiceChatActive) "🎤 Listening..." else "💭 Share your thoughts with Merlin...",
                         color = MoonlightSilver.copy(alpha = 0.7f),
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = AccessibilityConstants.CHILD_BODY_TEXT,
@@ -755,7 +842,7 @@ private fun ChatInputArea(
                         }
                     }
                 ),
-                enabled = !isLoading && !isListening,
+                enabled = !isLoading && !isVoiceChatActive,
                 maxLines = 3,
                 shape = RoundedCornerShape(20.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -768,7 +855,7 @@ private fun ChatInputArea(
             
             // 🚀 ELEGANT SEND BUTTON WITH OPTIMIZATION 🚀
             val sendButtonScale by animateFloatAsState(
-                targetValue = if (currentInput.isNotBlank() && !isLoading && !isListening) 1.08f else 1f,
+                targetValue = if (currentInput.isNotBlank() && !isLoading && !isVoiceChatActive) 1.08f else 1f,
                 animationSpec = if (shouldUseSimplifiedAnimations) {
                     tween(durationMillis = animationDuration / 2)
                 } else {
@@ -783,13 +870,13 @@ private fun ChatInputArea(
                         onSendMessage(currentInput)
                     }
                 },
-                enabled = currentInput.isNotBlank() && !isLoading && !isListening,
+                enabled = currentInput.isNotBlank() && !isLoading && !isVoiceChatActive,
                 modifier = Modifier
                     .size(AccessibilityConstants.LARGE_TOUCH_TARGET) // Larger for primary action
                     .scale(sendButtonScale)
                     .clip(CircleShape)
                     .background(
-                        if (currentInput.isNotBlank() && !isLoading && !isListening) {
+                        if (currentInput.isNotBlank() && !isLoading && !isVoiceChatActive) {
                             sendButtonActiveGradient
                         } else {
                             sendButtonInactiveGradient
@@ -819,12 +906,165 @@ private fun ChatInputArea(
                     )
                 }
             }
+            
+            // 🎙️ VOICE CHAT BUTTON (Press-to-Talk) 🎙️
+            val voiceChatButtonScale by animateFloatAsState(
+                targetValue = if (isVoiceChatActive) 1.1f else 1f,
+                animationSpec = if (shouldUseSimplifiedAnimations) {
+                    tween(durationMillis = animationDuration / 2)
+                } else {
+                    tween(durationMillis = animationDuration)
+                },
+                label = "voice_chat_button_scale"
+            )
+            
+            IconButton(
+                onClick = { 
+                    println("🎙️ Voice chat IconButton clicked! Current state: $isVoiceChatActive")
+                    if (isVoiceChatActive) {
+                        onStopVoiceChat()
+                    } else {
+                        onStartVoiceChat()
+                    }
+                },
+                enabled = !isLoading,
+                modifier = Modifier
+                    .size(AccessibilityConstants.LARGE_TOUCH_TARGET)
+                    .scale(voiceChatButtonScale)
+                    .clip(CircleShape)
+                    .background(
+                        if (isVoiceChatActive) {
+                            voiceChatActiveGradient
+                        } else {
+                            voiceChatInactiveGradient
+                        }
+                    )
+                    .semantics {
+                        contentDescription = if (isVoiceChatActive) {
+                            "Stop voice chat with Merlin"
+                        } else {
+                            "Start voice chat with Merlin"
+                        }
+                        role = Role.Button
+                    }
+            ) {
+                Icon(
+                    imageVector = if (isVoiceChatActive) Icons.Default.Stop else Icons.Default.Mic,
+                    contentDescription = null, // Already described by button
+                    tint = CloudWhite,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
         }
     }
 
-    LaunchedEffect(!isLoading && !isListening) {
-        if (!isLoading && !isListening) {
-            focusRequester.requestFocus()
+    // Removed automatic focus to prevent keyboard from opening on screen entry
+    // The keyboard will now only open when user explicitly taps the text field
+}
+
+/**
+ * Large talk button designed specifically for toddlers.
+ * Features big, easy-to-tap design with soft Scandinavian colors.
+ */
+@Composable
+private fun ToddlerTalkButton(
+    isVoiceChatActive: Boolean,
+    isLoading: Boolean,
+    onStartVoiceChat: () -> Unit,
+    onStopVoiceChat: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Soft Scandinavian gradients for the button
+    val talkButtonActiveGradient = rememberOptimizedGradient(
+        key = "talk_active",
+        colors = listOf(Color(0xFF10B981), Color(0xFF059669)) // Soft emerald
+    )
+    
+    val talkButtonInactiveGradient = rememberOptimizedGradient(
+        key = "talk_inactive",
+        colors = listOf(Color(0xFF6366F1), Color(0xFF4F46E5)) // Soft indigo
+    )
+    
+    // Button scale animation
+    val buttonScale by animateFloatAsState(
+        targetValue = if (isVoiceChatActive) 1.05f else 1f,
+        animationSpec = tween(durationMillis = 200),
+        label = "talk_button_scale"
+    )
+    
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Button(
+            onClick = {
+                if (isVoiceChatActive) {
+                    onStopVoiceChat()
+                } else {
+                    onStartVoiceChat()
+                }
+            },
+            enabled = !isLoading,
+            modifier = Modifier
+                .size(180.dp) // 50% bigger for toddlers (120 * 1.5 = 180)
+                .scale(buttonScale)
+                .semantics {
+                    contentDescription = if (isVoiceChatActive) {
+                        "Stop talking to Merlin"
+                    } else {
+                        "Start talking to Merlin"
+                    }
+                    role = Role.Button
+                },
+            shape = CircleShape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent
+            ),
+            contentPadding = PaddingValues(0.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .background(
+                        if (isVoiceChatActive) {
+                            talkButtonActiveGradient
+                        } else {
+                            talkButtonInactiveGradient
+                        }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(32.dp),
+                            strokeWidth = 4.dp,
+                            color = Color.White
+                        )
+                    } else {
+                        Icon(
+                            imageVector = if (isVoiceChatActive) Icons.Default.Stop else Icons.Default.Mic,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(60.dp) // Bigger icon for bigger button
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = if (isVoiceChatActive) "Stop" else "Talk",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp // Double the font size
+                        )
+                    }
+                }
+            }
         }
     }
-} 
+}

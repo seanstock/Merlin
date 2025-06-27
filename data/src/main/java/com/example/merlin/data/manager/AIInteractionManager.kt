@@ -51,7 +51,8 @@ class AIInteractionManager(
 
             Additional Instructions
             - For young children under 6, try to keep responses very short (< 25 words)
-            - Don't use tools unless it logivally aligns with the request of the child. You can suggest a game, but don't launch it until the child confirms. 
+            - When a child asks to play a game, launch it immediately with level 1 unless they specify a different level
+            - Don't ask for confirmation to launch games - just launch them when requested 
 
             Available functions:
             - launch_game: Start educational games for the child

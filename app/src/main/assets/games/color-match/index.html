@@ -2,9 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Color Match Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title></title>
     <style>
+        /* CSS Custom Properties for easy theming */
+        :root {
+            --primary-bg: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+            --surface-bg: rgba(255, 255, 255, 0.95);
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --text-primary: #2D3748;
+            --text-secondary: #718096;
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-lifted: 0 12px 40px rgba(0, 0, 0, 0.15);
+            --border-radius: 24px;
+            --border-radius-small: 16px;
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 48px;
+        }
+
+        /* Reset and base styles */
         * {
             margin: 0;
             padding: 0;
@@ -12,702 +32,767 @@
         }
 
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary-bg);
             min-height: 100vh;
-            color: #333;
-            user-select: none;
             overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
         }
 
+        /* Game container - optimized for landscape tablets */
         .game-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 25px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
-            width: 95%;
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
             position: relative;
+        }
+
+        /* Header with game info */
+        .game-header {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
         }
 
         .game-title {
-            font-size: 2.2em;
-            margin-bottom: 15px;
-            color: #6c5ce7;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .game-info {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-            font-weight: bold;
+            align-items: center;
+            gap: var(--spacing-xs);
         }
 
-        .level-display {
-            color: #fd79a8;
+        .game-stats {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
         }
 
-        .score-display {
-            color: #fdcb6e;
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-secondary);
         }
 
-        .timer-display {
-            color: #e84393;
-        }
-
-        .target-color-area {
-            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            color: white;
-        }
-
-        .target-label {
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .target-color {
-            width: 100px;
-            height: 100px;
-            margin: 0 auto;
-            border-radius: 20px;
-            border: 4px solid white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
+        /* Main game area */
+        .game-area {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
             position: relative;
+            overflow: visible !important;
+            min-height: 400px !important;
+            height: auto !important;
+            width: 100% !important;
         }
 
-        .target-color::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            border-radius: 20px;
-            background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
-            z-index: -1;
+        /* Target color section */
+        .target-section {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            min-height: 350px !important;
+            width: 100% !important;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .target-container {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            min-height: 300px !important;
+            width: 100% !important;
+            padding: 16px;
+        }
+
+        /* Target color styling */
+        .target-color {
+            width: 150px !important;
+            height: 150px !important;
+            min-width: 150px;
+            min-height: 150px;
+            border-radius: var(--border-radius);
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            flex-shrink: 0;
+            margin: 4px;
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .target-color.celebrating {
+            animation: celebrate 0.8s ease-out;
         }
 
         .color-name {
-            font-size: 1.4em;
-            margin-top: 15px;
-            font-weight: bold;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 16px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        .colors-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-            padding: 10px;
+        /* Color options section */
+        .colors-section {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            min-height: 350px !important;
+            width: 100% !important;
         }
 
+        .colors-container {
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 300px !important;
+            width: 100% !important;
+            padding: 16px;
+        }
+
+        /* Individual color option styling */
         .color-option {
-            width: 70px;
-            height: 70px;
-            border-radius: 15px;
+            width: 100px !important;
+            height: 100px !important;
+            min-width: 100px;
+            min-height: 100px;
+            border-radius: var(--border-radius-small);
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid rgba(255, 255, 255, 0.8);
-            margin: 0 auto;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-soft);
             position: relative;
-        }
-
-        .color-option::before {
-            content: '';
-            position: absolute;
-            top: -3px;
-            left: -3px;
-            right: -3px;
-            bottom: -3px;
-            border-radius: 15px;
-            background: linear-gradient(45deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            touch-action: manipulation;
+            user-select: none;
+            flex-shrink: 0;
+            margin: 4px;
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 1;
+            border: 4px solid rgba(255, 255, 255, 0.8);
         }
 
         .color-option:hover {
-            transform: scale(1.15);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lifted);
         }
 
-        .color-option:hover::before {
-            opacity: 1;
+        .color-option:active {
+            transform: scale(0.95);
         }
 
         .color-option.correct {
-            border-color: #00b894;
-            animation: correctGlow 0.8s ease;
-            transform: scale(1.2);
+            border-color: var(--success-color);
+            animation: correctGlow 0.8s ease-out;
         }
 
         .color-option.incorrect {
-            border-color: #e17055;
-            animation: incorrectPulse 0.6s ease;
+            border-color: #e74c3c;
+            animation: incorrectShake 0.6s ease-out;
         }
 
-        @keyframes correctGlow {
-            0%, 100% { 
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-                border-color: #00b894;
-            }
-            50% { 
-                box-shadow: 0 0 25px #00b894, 0 0 35px #00b894;
-                border-color: #00cec9;
-                transform: scale(1.25);
-            }
-        }
-
-        @keyframes incorrectPulse {
-            0%, 100% { 
-                border-color: #e17055;
-                transform: scale(1);
-            }
-            25% { 
-                border-color: #d63031;
-                transform: scale(0.9);
-            }
-            75% { 
-                border-color: #e17055;
-                transform: scale(1.1);
-            }
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 15px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 15px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #fd79a8, #e84393);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 10px;
-        }
-
+        /* Game controls */
         .game-controls {
-            margin-top: 20px;
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-md);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
         }
 
         .game-button {
-            background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
             border: none;
-            padding: 12px 25px;
-            border-radius: 20px;
+            border-radius: var(--border-radius-small);
             color: white;
-            font-size: 1em;
-            font-weight: bold;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: var(--spacing-sm) var(--spacing-md);
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 5px;
-            font-family: inherit;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-soft);
+            min-width: 120px;
+            touch-action: manipulation;
         }
 
         .game-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lifted);
         }
 
-        .game-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .game-button:active {
+            transform: translateY(0);
         }
 
-        .game-message {
-            margin: 15px 0;
-            font-size: 1.2em;
-            font-weight: bold;
-            min-height: 30px;
-            color: #666;
-        }
-
-        .hidden {
+        .game-button.hidden {
             display: none;
         }
 
-        .celebration {
+        /* Success message */
+        .success-message {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 5em;
-            animation: celebrateCoin 2s ease-in-out;
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            text-align: center;
+            box-shadow: var(--shadow-lifted);
+            z-index: 200;
+            opacity: 0;
             pointer-events: none;
-            text-shadow: 0 0 20px #ffd700, 0 0 30px #ffed4e, 0 0 40px #fdcb6e;
-            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes celebrateCoin {
-            0% { 
-                transform: translate(-50%, -50%) scale(0) rotate(0deg); 
-                opacity: 0; 
-                filter: brightness(1);
+        .success-message.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-message h2 {
+            font-size: 2rem;
+            color: var(--success-color);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .success-message p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Animations */
+        @keyframes celebrate {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(-10deg); }
+            50% { transform: scale(1.3) rotate(10deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes correctGlow {
+            0%, 100% { 
+                box-shadow: var(--shadow-soft);
+                border-color: var(--success-color);
             }
-            15% { 
-                transform: translate(-50%, -50%) scale(1.3) rotate(180deg); 
-                opacity: 1; 
-                filter: brightness(1.5);
-            }
-            30% { 
-                transform: translate(-50%, -50%) scale(1.1) rotate(360deg); 
-                opacity: 1; 
-                filter: brightness(1.8);
-            }
-            60% { 
-                transform: translate(-50%, -50%) scale(1.2) rotate(540deg); 
-                opacity: 1; 
-                filter: brightness(1.5);
-            }
-            85% { 
-                transform: translate(-50%, -50%) scale(1) rotate(720deg); 
-                opacity: 0.8; 
-                filter: brightness(1.2);
-            }
-            100% { 
-                transform: translate(-50%, -50%) scale(0.8) rotate(720deg); 
-                opacity: 0; 
-                filter: brightness(1);
+            50% { 
+                box-shadow: 0 0 25px var(--success-color), 0 0 35px var(--success-color);
+                border-color: #27AE60;
+                transform: scale(1.15);
             }
         }
 
-        .encouragement {
-            color: #fd79a8;
-            font-size: 1.1em;
-            margin: 10px 0;
-            font-weight: bold;
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
 
-        .rainbow-text {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: rainbowShift 3s ease-in-out infinite;
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
         }
 
-        @keyframes rainbowShift {
-            0%, 100% { filter: hue-rotate(0deg); }
-            50% { filter: hue-rotate(180deg); }
+        /* Particle effects */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--success-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            animation: particleFloat 1s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(0);
+            }
+        }
+
+        /* Color definitions */
+        .color-red { background-color: #e74c3c !important; }
+        .color-blue { background-color: #3498db !important; }
+        .color-green { background-color: #2ecc71 !important; }
+        .color-yellow { background-color: #f1c40f !important; }
+        .color-purple { background-color: #9b59b6 !important; }
+        .color-orange { background-color: #e67e22 !important; }
+        .color-pink { background-color: #e91e63 !important; }
+        .color-cyan { background-color: #1abc9c !important; }
+        .color-lime { background-color: #8bc34a !important; }
+        .color-indigo { background-color: #673ab7 !important; }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+            }
+            
+            .target-color {
+                width: 120px !important;
+                height: 120px !important;
+            }
+            
+            .color-option {
+                width: 80px !important;
+                height: 80px !important;
+            }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1 class="game-title">🌈 Color Match</h1>
-        
-        <div class="game-info">
-            <div class="level-display">Level: <span id="levelDisplay">1</span></div>
-            <div class="score-display">Score: <span id="scoreDisplay">0</span></div>
-            <div class="timer-display">Time: <span id="timerDisplay">00:00</span></div>
-        </div>
+        <!-- Game Header -->
+        <header class="game-header">
+            <div class="game-title">
+                🎨 Color Match Adventure
+            </div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span>Level:</span>
+                    <span id="level-display">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>⭐</span>
+                    <span id="score-display">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>❤️</span>
+                    <span id="lives-display">3</span>
+                </div>
+            </div>
+        </header>
 
-        <div class="progress-bar">
-            <div id="progressFill" class="progress-fill"></div>
-        </div>
+        <!-- Main Game Area -->
+        <main class="game-area">
+            <!-- Target Color Section -->
+            <section class="target-section">
+                <h2 class="section-title">Find This Color</h2>
+                <div class="target-container">
+                    <div class="target-color" id="target-color">
+                        <!-- Target color will be set dynamically -->
+                    </div>
+                    <div class="color-name" id="color-name">RED</div>
+                </div>
+            </section>
 
-        <div id="targetColorArea" class="target-color-area">
-            <div class="target-label">Find this color:</div>
-            <div id="targetColor" class="target-color"></div>
-            <div id="colorName" class="color-name"></div>
-        </div>
+            <!-- Color Options Section -->
+            <section class="colors-section">
+                <h2 class="section-title">Choose a Color</h2>
+                <div class="colors-container" id="colors-container">
+                    <!-- Color options will be dynamically generated -->
+                </div>
+            </section>
 
-        <div id="colorsGrid" class="colors-grid"></div>
+            <!-- Success Message -->
+            <div class="success-message" id="success-message">
+                <h2>🎉 Perfect Match!</h2>
+                <p>You found the right color!</p>
+            </div>
+        </main>
 
-        <div id="gameMessage" class="game-message"></div>
-
-        <div class="game-controls">
-            <button id="startButton" class="game-button">Start Matching!</button>
-            <button id="nextLevelButton" class="game-button hidden">Next Level</button>
-            <button id="restartButton" class="game-button hidden">Play Again</button>
-        </div>
+        <!-- Game Controls -->
+        <footer class="game-controls">
+            <button class="game-button hidden" id="start-button">Start Playing! 🚀</button>
+            <button class="game-button hidden" id="next-level-button">Next Level! ➡️</button>
+            <button class="game-button hidden" id="restart-button">Play Again! 🔄</button>
+        </footer>
     </div>
 
     <script>
         // Game state management
-        const gameState = {
-            level: 1,
-            score: 0,
-            currentRound: 0,
-            totalRounds: 6,
-            targetColor: null,
-            colorOptions: [],
-            startTime: null,
-            timer: null,
-            isPlaying: false,
-            correctAnswers: 0
-        };
-
-        // Color definitions with names and hex values
-        const COLORS = [
-            { name: 'Red', hex: '#e74c3c', rgb: 'rgb(231, 76, 60)' },
-            { name: 'Blue', hex: '#3498db', rgb: 'rgb(52, 152, 219)' },
-            { name: 'Green', hex: '#2ecc71', rgb: 'rgb(46, 204, 113)' },
-            { name: 'Yellow', hex: '#f1c40f', rgb: 'rgb(241, 196, 15)' },
-            { name: 'Purple', hex: '#9b59b6', rgb: 'rgb(155, 89, 182)' },
-            { name: 'Orange', hex: '#e67e22', rgb: 'rgb(230, 126, 34)' },
-            { name: 'Pink', hex: '#e91e63', rgb: 'rgb(233, 30, 99)' },
-            { name: 'Cyan', hex: '#1abc9c', rgb: 'rgb(26, 188, 156)' },
-            { name: 'Lime', hex: '#8bc34a', rgb: 'rgb(139, 195, 74)' },
-            { name: 'Indigo', hex: '#673ab7', rgb: 'rgb(103, 58, 183)' },
-            { name: 'Teal', hex: '#009688', rgb: 'rgb(0, 150, 136)' },
-            { name: 'Brown', hex: '#795548', rgb: 'rgb(121, 85, 72)' },
-            { name: 'Gray', hex: '#607d8b', rgb: 'rgb(96, 125, 139)' },
-            { name: 'Coral', hex: '#ff7043', rgb: 'rgb(255, 112, 67)' },
-            { name: 'Violet', hex: '#7c4dff', rgb: 'rgb(124, 77, 255)' }
-        ];
-
-        // Encouraging messages
-        const ENCOURAGEMENT = [
-            "Brilliant! 🌟 +30 coins!",
-            "Perfect match! 🎨 +30 coins!",
-            "You're amazing! 🌈 +30 coins!",
-            "Fantastic eye! 👁️ +30 coins!",
-            "Color master! 🏆 +30 coins!",
-            "Wonderful! ✨ +30 coins!",
-            "Excellent! 🎯 +30 coins!",
-            "Super job! 🚀 +30 coins!"
-        ];
-
-        // DOM elements
-        const elements = {
-            levelDisplay: document.getElementById('levelDisplay'),
-            scoreDisplay: document.getElementById('scoreDisplay'),
-            timerDisplay: document.getElementById('timerDisplay'),
-            progressFill: document.getElementById('progressFill'),
-            targetColor: document.getElementById('targetColor'),
-            colorName: document.getElementById('colorName'),
-            colorsGrid: document.getElementById('colorsGrid'),
-            gameMessage: document.getElementById('gameMessage'),
-            startButton: document.getElementById('startButton'),
-            nextLevelButton: document.getElementById('nextLevelButton'),
-            restartButton: document.getElementById('restartButton')
-        };
-
-        // Get level from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const levelParam = parseInt(urlParams.get('level')) || 1;
-        gameState.level = levelParam;
-
-        // Initialize game
-        function initGame() {
-            elements.levelDisplay.textContent = gameState.level;
-            elements.scoreDisplay.textContent = gameState.score;
-            updateProgress(0);
-            
-            // Adjust difficulty based on level
-            gameState.totalRounds = Math.min(6 + gameState.level, 10);
-            
-            if (typeof MerlinGameBridge !== 'undefined') {
-                MerlinGameBridge.logDebug(`Color Match Game initialized at level ${gameState.level}`);
-                MerlinGameBridge.logDebug('Coin earning system available');
-            } else {
-                console.log('MerlinGameBridge not available - coin earning disabled');
-            }
-        }
-
-        // Start game
-        function startGame() {
-            gameState.isPlaying = true;
-            gameState.startTime = Date.now();
-            gameState.currentRound = 0;
-            gameState.correctAnswers = 0;
-            
-            elements.startButton.classList.add('hidden');
-            elements.nextLevelButton.classList.add('hidden');
-            elements.restartButton.classList.add('hidden');
-            
-            startTimer();
-            nextRound();
-            
-            if (typeof MerlinGameBridge !== 'undefined') {
-                MerlinGameBridge.updateProgress(10);
-            }
-        }
-
-        // Start next round
-        function nextRound() {
-            if (gameState.currentRound >= gameState.totalRounds) {
-                completeGame();
-                return;
+        class ColorMatchGame {
+            constructor() {
+                this.level = 1;
+                this.score = 0;
+                this.lives = 3;
+                this.isPlaying = false;
+                this.currentTargetColor = null;
+                this.colorOptions = [];
+                
+                // Color definitions
+                this.colors = [
+                    { name: 'RED', class: 'color-red', displayName: 'Red' },
+                    { name: 'BLUE', class: 'color-blue', displayName: 'Blue' },
+                    { name: 'GREEN', class: 'color-green', displayName: 'Green' },
+                    { name: 'YELLOW', class: 'color-yellow', displayName: 'Yellow' },
+                    { name: 'PURPLE', class: 'color-purple', displayName: 'Purple' },
+                    { name: 'ORANGE', class: 'color-orange', displayName: 'Orange' },
+                    { name: 'PINK', class: 'color-pink', displayName: 'Pink' },
+                    { name: 'CYAN', class: 'color-cyan', displayName: 'Cyan' },
+                    { name: 'LIME', class: 'color-lime', displayName: 'Lime' },
+                    { name: 'INDIGO', class: 'color-indigo', displayName: 'Indigo' }
+                ];
+                
+                // DOM elements
+                this.elements = {
+                    levelDisplay: document.getElementById('level-display'),
+                    scoreDisplay: document.getElementById('score-display'),
+                    livesDisplay: document.getElementById('lives-display'),
+                    targetColor: document.getElementById('target-color'),
+                    colorName: document.getElementById('color-name'),
+                    colorsContainer: document.getElementById('colors-container'),
+                    successMessage: document.getElementById('success-message'),
+                    startButton: document.getElementById('start-button'),
+                    nextLevelButton: document.getElementById('next-level-button'),
+                    restartButton: document.getElementById('restart-button')
+                };
+                
+                this.init();
             }
             
-            gameState.currentRound++;
-            elements.gameMessage.textContent = `Round ${gameState.currentRound} of ${gameState.totalRounds}`;
+            init() {
+                console.log('Initializing Color Match game...');
+                this.updateDisplay();
+                this.bindEvents();
+                this.logGameStart();
+                
+                // Auto-start the game immediately
+                setTimeout(() => {
+                    this.startGame();
+                }, 100);
+                
+                console.log('Color Match game initialization complete');
+            }
             
-            generateColors();
-            updateProgress((gameState.currentRound / gameState.totalRounds) * 80);
-        }
-
-        // Generate colors for current round
-        function generateColors() {
-            const difficulty = Math.min(gameState.level, 6);
-            const numColors = Math.min(4 + difficulty, 9);
-            
-            // Select target color
-            gameState.targetColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-            
-            // Generate color options (including target)
-            gameState.colorOptions = [gameState.targetColor];
-            
-            // Add random colors
-            while (gameState.colorOptions.length < numColors) {
-                const randomColor = COLORS[Math.floor(Math.random() * COLORS.length)];
-                if (!gameState.colorOptions.some(c => c.hex === randomColor.hex)) {
-                    gameState.colorOptions.push(randomColor);
+            logGameStart() {
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    MerlinGameBridge.logDebug('Color Match Adventure initialized');
+                    MerlinGameBridge.updateProgress(0);
+                } else {
+                    console.log('MerlinGameBridge not available - running in standalone mode');
                 }
             }
             
-            // Shuffle colors
-            gameState.colorOptions = shuffleArray(gameState.colorOptions);
-            
-            renderColors();
-        }
-
-        // Render colors on screen
-        function renderColors() {
-            // Display target color
-            elements.targetColor.style.backgroundColor = gameState.targetColor.hex;
-            elements.colorName.textContent = gameState.targetColor.name;
-            
-            // Display color options
-            elements.colorsGrid.innerHTML = '';
-            gameState.colorOptions.forEach((color, index) => {
-                const colorElement = document.createElement('div');
-                colorElement.className = 'color-option';
-                colorElement.style.backgroundColor = color.hex;
-                colorElement.addEventListener('click', () => handleColorClick(color, colorElement));
-                elements.colorsGrid.appendChild(colorElement);
-            });
-        }
-
-        // Handle color click
-        function handleColorClick(selectedColor, element) {
-            if (!gameState.isPlaying) return;
-            
-            const isCorrect = selectedColor.hex === gameState.targetColor.hex;
-            
-            if (isCorrect) {
-                element.classList.add('correct');
-                gameState.correctAnswers++;
-                gameState.score += 15 + (gameState.level * 5);
-                elements.scoreDisplay.textContent = gameState.score;
+            bindEvents() {
+                this.elements.startButton.addEventListener('click', () => this.startGame());
+                this.elements.nextLevelButton.addEventListener('click', () => this.nextLevel());
+                this.elements.restartButton.addEventListener('click', () => this.restartGame());
                 
-                const encouragement = ENCOURAGEMENT[Math.floor(Math.random() * ENCOURAGEMENT.length)];
-                elements.gameMessage.innerHTML = `<div class="encouragement rainbow-text">${encouragement}</div>`;
+                // Prevent context menu and selection
+                document.addEventListener('contextmenu', (e) => e.preventDefault());
+                document.addEventListener('selectstart', (e) => e.preventDefault());
+            }
+            
+            startGame() {
+                console.log('Starting Color Match game...');
+                this.isPlaying = true;
+                this.elements.startButton.classList.add('hidden');
+                this.elements.nextLevelButton.classList.add('hidden');
+                this.elements.restartButton.classList.add('hidden');
                 
-                showCelebration('🪙');
+                this.generateLevel();
+                this.updateProgress(10);
+                console.log('Color Match game started successfully');
+            }
+            
+            generateLevel() {
+                console.log('Generating new level...');
                 
-                // Award coins for correct answer
+                // Clear existing color options
+                this.elements.colorsContainer.innerHTML = '';
+                this.colorOptions = [];
+                
+                // Select colors based on level (start with basic colors, add more as level increases)
+                const availableColors = this.colors.slice(0, Math.min(4 + this.level, this.colors.length));
+                
+                // Choose target color
+                this.currentTargetColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+                
+                // Set target color display
+                this.elements.targetColor.className = `target-color ${this.currentTargetColor.class}`;
+                this.elements.colorName.textContent = this.currentTargetColor.displayName.toUpperCase();
+                
+                // Number of options increases with level (but max 6 for toddlers)
+                const numOptions = Math.min(3 + Math.floor(this.level / 2), 6);
+                
+                // Create color options (always include the correct answer)
+                const optionColors = [this.currentTargetColor];
+                
+                // Add random incorrect options
+                while (optionColors.length < numOptions) {
+                    const randomColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+                    if (!optionColors.find(c => c.name === randomColor.name)) {
+                        optionColors.push(randomColor);
+                    }
+                }
+                
+                // Shuffle options
+                this.shuffleArray(optionColors);
+                
+                // Create option elements
+                optionColors.forEach((color, index) => {
+                    this.createColorOption(color, index);
+                });
+                
+                console.log(`Level generated with target: ${this.currentTargetColor.displayName}`);
+            }
+            
+            createColorOption(color, index) {
+                const option = document.createElement('div');
+                option.className = `color-option ${color.class}`;
+                option.dataset.colorName = color.name;
+                option.dataset.index = index;
+                
+                // Add click handler
+                option.addEventListener('click', (e) => this.handleColorClick(e));
+                
+                this.elements.colorsContainer.appendChild(option);
+                this.colorOptions.push(option);
+            }
+            
+            handleColorClick(e) {
+                if (!this.isPlaying) return;
+                
+                const clickedOption = e.currentTarget;
+                const selectedColor = clickedOption.dataset.colorName;
+                
+                console.log(`Color clicked: ${selectedColor}, Target: ${this.currentTargetColor.name}`);
+                
+                if (selectedColor === this.currentTargetColor.name) {
+                    this.handleCorrectAnswer(clickedOption);
+                } else {
+                    this.handleIncorrectAnswer(clickedOption);
+                }
+            }
+            
+            handleCorrectAnswer(option) {
+                console.log('Correct answer!');
+                
+                // Visual feedback
+                option.classList.add('correct');
+                this.elements.targetColor.classList.add('celebrating');
+                
+                // Create particle effect
+                const rect = option.getBoundingClientRect();
+                this.createParticleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                
+                // Update score and progress
+                this.score += 10 + (this.level * 5);
+                this.updateDisplay();
+                this.updateProgress(30 + (this.level * 10));
+                
+                // Award coins
+                this.awardCoins(3, 'correct color match');
+                
+                // Disable all options temporarily
+                this.colorOptions.forEach(opt => opt.style.pointerEvents = 'none');
+                
+                // Show success and proceed to next level
+                setTimeout(() => {
+                    this.showSuccess();
+                }, 800);
+                
+                // Haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+            }
+            
+            handleIncorrectAnswer(option) {
+                console.log('Incorrect answer');
+                
+                // Visual feedback
+                option.classList.add('incorrect');
+                
+                // Remove feedback after animation
+                setTimeout(() => {
+                    option.classList.remove('incorrect');
+                }, 600);
+                
+                // Reduce lives if enabled (optional for toddler mode)
+                if (this.lives > 1) {
+                    this.lives--;
+                    this.updateDisplay();
+                    
+                    if (this.lives <= 0) {
+                        this.gameOver();
+                        return;
+                    }
+                }
+                
+                // Gentle haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+            }
+            
+            createParticleEffect(x, y) {
+                const colors = ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B'];
+                
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    // Random direction
+                    const angle = (Math.PI * 2 * i) / 8;
+                    const velocity = 50 + Math.random() * 50;
+                    particle.style.setProperty('--dx', Math.cos(angle) * velocity + 'px');
+                    particle.style.setProperty('--dy', Math.sin(angle) * velocity + 'px');
+                    
+                    document.body.appendChild(particle);
+                    
+                    // Remove after animation
+                    setTimeout(() => particle.remove(), 1000);
+                }
+            }
+            
+            showSuccess() {
+                this.elements.successMessage.classList.add('show');
+                this.updateProgress(100);
+                
+                // Show next level button
+                setTimeout(() => {
+                    this.elements.successMessage.classList.remove('show');
+                    this.elements.nextLevelButton.classList.remove('hidden');
+                }, 2000);
+                
+                // Award bonus coins for level completion
+                this.awardCoins(5, 'level completion bonus');
+            }
+            
+            nextLevel() {
+                this.level++;
+                this.elements.nextLevelButton.classList.add('hidden');
+                
+                // Reset target color animation
+                this.elements.targetColor.classList.remove('celebrating');
+                
+                // Re-enable interactions
+                this.colorOptions.forEach(opt => opt.style.pointerEvents = 'auto');
+                
+                this.generateLevel();
+                this.updateDisplay();
+                this.updateProgress(10);
+            }
+            
+            gameOver() {
+                this.isPlaying = false;
+                this.elements.restartButton.classList.remove('hidden');
+                this.updateProgress(0);
+            }
+            
+            restartGame() {
+                this.level = 1;
+                this.score = 0;
+                this.lives = 3;
+                this.elements.restartButton.classList.add('hidden');
+                this.elements.startButton.classList.remove('hidden');
+                this.updateDisplay();
+                this.updateProgress(0);
+            }
+            
+            updateDisplay() {
+                this.elements.levelDisplay.textContent = this.level;
+                this.elements.scoreDisplay.textContent = this.score;
+                this.elements.livesDisplay.textContent = this.lives;
+            }
+            
+            updateProgress(percent) {
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    MerlinGameBridge.updateProgress(Math.floor(percent));
+                }
+            }
+            
+            awardCoins(amount, reason) {
                 if (typeof MerlinGameBridge !== 'undefined') {
                     try {
-                        const coinResult = MerlinGameBridge.earnCoins(30, 'color-match', 'correct color match');
-                        MerlinGameBridge.logDebug(`Coin earning result: ${coinResult}`);
-                    } catch (e) {
-                        MerlinGameBridge.logDebug(`Error earning coins: ${e.message}`);
+                        MerlinGameBridge.earnCoins(amount, 'color-match', reason);
+                        MerlinGameBridge.logDebug(`Awarded ${amount} coins for ${reason}`);
+                    } catch (error) {
+                        MerlinGameBridge.logDebug(`Error awarding coins: ${error.message}`);
                     }
                 }
-                
-                setTimeout(() => {
-                    nextRound();
-                }, 1200);
-                
-            } else {
-                element.classList.add('incorrect');
-                elements.gameMessage.textContent = `Try again! Look for ${gameState.targetColor.name}`;
-                
-                // Show correct color briefly
-                setTimeout(() => {
-                    const correctElement = Array.from(elements.colorsGrid.children)
-                        .find(el => el.style.backgroundColor === gameState.targetColor.rgb);
-                    if (correctElement) {
-                        correctElement.style.borderColor = '#00b894';
-                        correctElement.style.transform = 'scale(1.15)';
-                        correctElement.style.boxShadow = '0 0 20px #00b894';
-                    }
-                }, 300);
-                
-                setTimeout(() => {
-                    nextRound();
-                }, 2000);
             }
             
-            // Update progress
-            if (typeof MerlinGameBridge !== 'undefined') {
-                const progress = Math.min(90, (gameState.currentRound / gameState.totalRounds) * 80 + 10);
-                MerlinGameBridge.updateProgress(Math.floor(progress));
-            }
-        }
-
-        // Complete game
-        function completeGame() {
-            const timeElapsed = Date.now() - gameState.startTime;
-            const accuracy = (gameState.correctAnswers / gameState.totalRounds) * 100;
-            const timeBonus = Math.max(0, 120000 - timeElapsed) / 1000 * 2; // Bonus for speed
-            const finalScore = gameState.score + Math.floor(timeBonus);
-            
-            gameState.score = finalScore;
-            elements.scoreDisplay.textContent = gameState.score;
-            
-            stopTimer();
-            updateProgress(100);
-            
-            const success = accuracy >= 60; // 60% accuracy required
-            
-            if (success) {
-                elements.gameMessage.innerHTML = `
-                    <div class="encouragement rainbow-text">Fantastic! 🌈</div>
-                    <div>You matched ${gameState.correctAnswers} out of ${gameState.totalRounds} colors!</div>
-                `;
-                elements.nextLevelButton.classList.remove('hidden');
-                showCelebration('🪙');
-            } else {
-                elements.gameMessage.innerHTML = `
-                    <div>Keep practicing! 🎨</div>
-                    <div>You matched ${gameState.correctAnswers} out of ${gameState.totalRounds} colors!</div>
-                `;
-            }
-            
-            elements.restartButton.classList.remove('hidden');
-            gameState.isPlaying = false;
-            
-            // Clear color area
-            elements.colorsGrid.innerHTML = '';
-            
-            // Report to native app
-            if (typeof MerlinGameBridge !== 'undefined') {
-                MerlinGameBridge.gameCompleted(success, timeElapsed, gameState.score);
-            }
-        }
-
-        // Show celebration animation
-        function showCelebration(emoji) {
-            const celebration = document.createElement('div');
-            celebration.className = 'celebration';
-            celebration.textContent = emoji;
-            document.querySelector('.game-container').appendChild(celebration);
-            
-            setTimeout(() => {
-                celebration.remove();
-            }, 2000);
-        }
-
-        // Next level
-        function nextLevel() {
-            gameState.level++;
-            gameState.score = 0;
-            elements.levelDisplay.textContent = gameState.level;
-            elements.scoreDisplay.textContent = gameState.score;
-            startGame();
-        }
-
-        // Restart game
-        function restartGame() {
-            gameState.score = 0;
-            gameState.level = levelParam;
-            elements.scoreDisplay.textContent = gameState.score;
-            elements.levelDisplay.textContent = gameState.level;
-            elements.startButton.classList.remove('hidden');
-            elements.nextLevelButton.classList.add('hidden');
-            elements.restartButton.classList.add('hidden');
-            elements.gameMessage.textContent = '';
-            updateProgress(0);
-            elements.colorsGrid.innerHTML = '';
-            elements.targetColor.style.backgroundColor = '';
-            elements.colorName.textContent = '';
-        }
-
-        // Timer functions
-        function startTimer() {
-            gameState.timer = setInterval(updateTimer, 1000);
-        }
-
-        function stopTimer() {
-            if (gameState.timer) {
-                clearInterval(gameState.timer);
-                gameState.timer = null;
-            }
-        }
-
-        function updateTimer() {
-            if (!gameState.startTime) return;
-            
-            const elapsed = Date.now() - gameState.startTime;
-            const minutes = Math.floor(elapsed / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
-            
-            elements.timerDisplay.textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        // Update progress bar
-        function updateProgress(percent) {
-            elements.progressFill.style.width = `${Math.min(100, Math.max(0, percent))}%`;
-        }
-
-        // Utility function to shuffle array
-        function shuffleArray(array) {
-            const shuffled = [...array];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            return shuffled;
-        }
-
-        // Event listeners
-        elements.startButton.addEventListener('click', startGame);
-        elements.nextLevelButton.addEventListener('click', nextLevel);
-        elements.restartButton.addEventListener('click', restartGame);
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initGame);
-
-        // Prevent context menu and text selection
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('selectstart', e => e.preventDefault());
-        document.addEventListener('dragstart', e => e.preventDefault());
-
-        // Handle page visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && gameState.isPlaying) {
-                if (typeof MerlinGameBridge !== 'undefined') {
-                    MerlinGameBridge.logDebug('Color Match Game paused - app in background');
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
                 }
+                return array;
             }
-        });
-
-        // Error handling
-        window.addEventListener('error', (event) => {
-            if (typeof MerlinGameBridge !== 'undefined') {
-                MerlinGameBridge.reportError(`Color Match Error: ${event.message}`);
-            }
-        });
-
-        // Log game ready
-        if (typeof MerlinGameBridge !== 'undefined') {
-            MerlinGameBridge.logDebug('Color Match Game loaded successfully');
         }
+        
+        // Initialize game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ColorMatchGame();
+        });
+        
+        // Prevent scrolling and zooming
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', (e) => {
+            e.preventDefault();
+        });
     </script>
 </body>
 </html> 

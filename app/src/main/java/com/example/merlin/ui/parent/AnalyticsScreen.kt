@@ -22,8 +22,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -75,63 +78,381 @@ fun EmptyState(
     }
 }
 
+// Data classes for analytics
+data class CoinData(
+    val day: Int,
+    val dailyEarned: Int,
+    val netBalance: Int
+)
+
+data class CurriculumProgress(
+    val title: String,
+    val description: String,
+    val totalLessons: Int,
+    val completedLessons: Int,
+    val lessons: List<LessonProgress>
+)
+
+data class LessonProgress(
+    val title: String,
+    val isCompleted: Boolean,
+    val progress: Float // 0.0 to 1.0
+)
+
 /**
- * Analytics screen showing child progress analytics visualization
+ * Analytics screen showing child progress with Apple-inspired design
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnalyticsScreen(
-    modifier: Modifier = Modifier,
-    childId: String = "demo_child", // Default for now, should be passed from parent
-    onNavigateToSettings: () -> Unit = {} // Navigation callback for settings
+    modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val factory = remember(childId) {
-        AnalyticsViewModelFactory(
-            adaptiveDifficultyService = ServiceLocator.getAdaptiveDifficultyService(),
-            economyService = ServiceLocator.getEconomyService(context),
-            badgeService = ServiceLocator.getBadgeService(),
-            experienceService = ServiceLocator.getExperienceService()
-        )
-    }
+    val coinData = remember { generateFakeCoinData() }
+    val curriculumData = remember { getFakeCurriculumData() }
 
-    val viewModel: AnalyticsViewModel = viewModel(factory = factory)
-    val state by viewModel.state.collectAsState()
-
-    LaunchedEffect(key1 = childId) {
-        viewModel.loadAnalytics(childId)
-    }
-
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(AppleSystemBackground)
+            .padding(horizontal = AppleSpacing.medium),
+        verticalArrangement = Arrangement.spacedBy(AppleSpacing.large),
+        contentPadding = PaddingValues(vertical = AppleSpacing.large)
     ) {
-        // Apple-style large title header
-        AppleSectionHeader(
-            title = "Analytics",
-            subtitle = "Track your child's learning progress",
-            modifier = Modifier.padding(top = AppleSpacing.medium)
-        )
+        item {
+            Text(
+                text = "Analytics",
+                style = AppleLargeTitle,
+                color = ApplePrimaryLabel,
+                modifier = Modifier.padding(horizontal = AppleSpacing.small)
+            )
+        }
         
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = AppleSpacing.medium),
-            verticalArrangement = Arrangement.spacedBy(AppleSpacing.medium),
-            contentPadding = PaddingValues(vertical = AppleSpacing.medium)
+        item {
+            CoinAcquisitionChart(coinData = coinData)
+        }
+        
+        items(curriculumData.size) { index ->
+            CurriculumProgressCard(curriculum = curriculumData[index])
+        }
+    }
+}
+
+@Composable
+fun CoinAcquisitionChart(
+    coinData: List<CoinData>,
+    modifier: Modifier = Modifier
+) {
+    AppleCard(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(AppleSpacing.large)
         ) {
-            item {
-                SubjectMasteryCard(masteryLevels = state.subjectMastery)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.TrendingUp,
+                    contentDescription = null,
+                    tint = AppleBlue,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(AppleSpacing.small))
+                Text(
+                    text = "Coin Acquisition",
+                    style = AppleHeadline,
+                    color = ApplePrimaryLabel
+                )
             }
-            item {
-                BadgeCard(badges = state.earnedBadges)
+            
+            Spacer(modifier = Modifier.height(AppleSpacing.small))
+            
+            Text(
+                text = "Past 28 days",
+                style = AppleSubheadline,
+                color = AppleSecondaryLabel
+            )
+            
+            Spacer(modifier = Modifier.height(AppleSpacing.large))
+            
+            // Chart
+            val chartHeight = 200.dp
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(chartHeight)
+            ) {
+                drawCoinChart(coinData, size)
             }
-            item {
-                ExperiencePointsCard(experience = state.experience)
+            
+            Spacer(modifier = Modifier.height(AppleSpacing.medium))
+            
+            // Legend
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                LegendItem(
+                    color = AppleBlue,
+                    label = "Daily Earned"
+                )
+                Spacer(modifier = Modifier.width(AppleSpacing.large))
+                LegendItem(
+                    color = AppleGreen,
+                    label = "Net Balance"
+                )
             }
         }
     }
+}
+
+@Composable
+fun LegendItem(
+    color: Color,
+    label: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Canvas(
+            modifier = Modifier.size(12.dp)
+        ) {
+            drawCircle(color = color)
+        }
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = label,
+            style = AppleCaption,
+            color = AppleSecondaryLabel
+        )
+    }
+}
+
+fun DrawScope.drawCoinChart(
+    coinData: List<CoinData>,
+    canvasSize: androidx.compose.ui.geometry.Size
+) {
+    if (coinData.isEmpty()) return
+    
+    val padding = 40f
+    val chartWidth = canvasSize.width - (padding * 2)
+    val chartHeight = canvasSize.height - (padding * 2)
+    
+    // Get data ranges
+    val maxDaily = coinData.maxOf { it.dailyEarned }.toFloat()
+    val maxBalance = coinData.maxOf { it.netBalance }.toFloat()
+    val minBalance = coinData.minOf { it.netBalance }.toFloat()
+    
+    val dailyScale = chartHeight / maxDaily
+    val balanceScale = chartHeight / (maxBalance - minBalance)
+    
+    // Draw daily earned line (blue)
+    val dailyPath = Path()
+    coinData.forEachIndexed { index, data ->
+        val x = padding + (index.toFloat() / (coinData.size - 1)) * chartWidth
+        val y = padding + chartHeight - (data.dailyEarned * dailyScale)
+        
+        if (index == 0) {
+            dailyPath.moveTo(x, y)
+        } else {
+            dailyPath.lineTo(x, y)
+        }
+    }
+    
+    drawPath(
+        path = dailyPath,
+        color = Color(0xFF007AFF), // AppleBlue
+        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+    )
+    
+    // Draw net balance line (green)
+    val balancePath = Path()
+    coinData.forEachIndexed { index, data ->
+        val x = padding + (index.toFloat() / (coinData.size - 1)) * chartWidth
+        val y = padding + chartHeight - ((data.netBalance - minBalance) * balanceScale)
+        
+        if (index == 0) {
+            balancePath.moveTo(x, y)
+        } else {
+            balancePath.lineTo(x, y)
+        }
+    }
+    
+    drawPath(
+        path = balancePath,
+        color = Color(0xFF34C759), // AppleGreen
+        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+    )
+    
+    // Draw grid lines
+    for (i in 0..4) {
+        val y = padding + (i * chartHeight / 4)
+        drawLine(
+            color = Color.Gray.copy(alpha = 0.2f),
+            start = Offset(padding, y),
+            end = Offset(padding + chartWidth, y),
+            strokeWidth = 1.dp.toPx()
+        )
+    }
+}
+
+@Composable
+fun CurriculumProgressCard(
+    curriculum: CurriculumProgress,
+    modifier: Modifier = Modifier
+) {
+    AppleCard(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(AppleSpacing.large)
+        ) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.School,
+                    contentDescription = null,
+                    tint = AppleBlue,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(AppleSpacing.small))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = curriculum.title,
+                        style = AppleHeadline,
+                        color = ApplePrimaryLabel
+                    )
+                    Text(
+                        text = "${curriculum.completedLessons}/${curriculum.totalLessons} lessons",
+                        style = AppleSubheadline,
+                        color = AppleSecondaryLabel
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(AppleSpacing.small))
+            
+            // Description
+            Text(
+                text = curriculum.description,
+                style = AppleBody,
+                color = AppleSecondaryLabel,
+                modifier = Modifier.padding(vertical = AppleSpacing.small)
+            )
+            
+            Spacer(modifier = Modifier.height(AppleSpacing.medium))
+            
+            // Progress bar
+            LinearProgressIndicator(
+                progress = curriculum.completedLessons.toFloat() / curriculum.totalLessons.toFloat(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = AppleBlue,
+                trackColor = AppleBlue.copy(alpha = 0.2f)
+            )
+            
+            Spacer(modifier = Modifier.height(AppleSpacing.medium))
+            
+            // Lesson list
+            curriculum.lessons.take(3).forEach { lesson ->
+                LessonProgressItem(lesson = lesson)
+                Spacer(modifier = Modifier.height(AppleSpacing.small))
+            }
+        }
+    }
+}
+
+@Composable
+fun LessonProgressItem(
+    lesson: LessonProgress,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        // Status indicator
+        Icon(
+            imageVector = if (lesson.isCompleted) Icons.Default.CheckCircle else Icons.Default.PlayArrow,
+            contentDescription = null,
+            tint = if (lesson.isCompleted) AppleGreen else AppleBlue,
+            modifier = Modifier.size(20.dp)
+        )
+        
+        Spacer(modifier = Modifier.width(AppleSpacing.medium))
+        
+        // Lesson title
+        Text(
+            text = lesson.title,
+            style = AppleBody,
+            color = ApplePrimaryLabel,
+            modifier = Modifier.weight(1f)
+        )
+        
+        // Progress indicator
+        if (!lesson.isCompleted && lesson.progress > 0) {
+            Text(
+                text = "${(lesson.progress * 100).toInt()}%",
+                style = AppleCaption,
+                color = AppleSecondaryLabel
+            )
+        }
+    }
+}
+
+// Fake data generators
+fun generateFakeCoinData(): List<CoinData> {
+    val data = mutableListOf<CoinData>()
+    var netBalance = 1200 // Starting balance
+    
+    for (day in 1..28) {
+        val dailyEarned = (50..300).random()
+        netBalance += dailyEarned
+        
+        data.add(
+            CoinData(
+                day = day,
+                dailyEarned = dailyEarned,
+                netBalance = netBalance
+            )
+        )
+    }
+    
+    return data
+}
+
+fun getFakeCurriculumData(): List<CurriculumProgress> {
+    return listOf(
+        CurriculumProgress(
+            title = "Preschool Complete Curriculum",
+            description = "Developmentally appropriate preschool curriculum focusing on social-emotional development, early literacy, basic math concepts, and creative expression",
+            totalLessons = 12,
+            completedLessons = 8,
+            lessons = listOf(
+                LessonProgress("Hello Friends - Names and Faces", true, 1.0f),
+                LessonProgress("Our Classroom Rules", true, 1.0f),
+                LessonProgress("Primary Colors Exploration", true, 1.0f),
+                LessonProgress("Circle, Square, Triangle Fun", false, 0.6f),
+                LessonProgress("Counting 1-5 with Objects", false, 0.0f)
+            )
+        ),
+        CurriculumProgress(
+            title = "Early Introduction to Numbers",
+            description = "Basic number recognition and counting skills for young learners",
+            totalLessons = 3,
+            completedLessons = 2,
+            lessons = listOf(
+                LessonProgress("Number Recognition 1-5", true, 1.0f),
+                LessonProgress("Counting Objects", true, 1.0f),
+                LessonProgress("Number Writing Practice", false, 0.3f)
+            )
+        )
+    )
 }
 
 @Composable

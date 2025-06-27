@@ -77,14 +77,18 @@ class OpenAIClientWrapper {
 
         fun createLaunchGameFunctionTool(): FunctionTool {
             val paramsMap = mapOf(
-                "game_id" to FunctionParameterProperty(type = "string", description = "The unique identifier for the game to launch."),
-                "level" to FunctionParameterProperty(type = "integer", description = "The suggested starting difficulty level for the game, e.g., 1-5.")
+                "game_id" to FunctionParameterProperty(
+                    type = "string", 
+                    description = "The unique identifier for the game to launch. Valid games are: 'sample-game' (Merlin's Memory), 'color-match' (Color Match), 'shape-match' (Shape Match), 'number-match' (Number Match), 'shape-drop' (Shape Drop Adventure). Only use these exact IDs.",
+                    enum = listOf("sample-game", "color-match", "shape-match", "number-match", "shape-drop")
+                ),
+                "level" to FunctionParameterProperty(type = "integer", description = "The starting difficulty level for the game (1-5). Default is 1 if not specified. Only use higher levels if explicitly requested.")
             )
             val requiredParams = listOf("game_id")
             val parametersJson = buildParametersJson(paramsMap, requiredParams)
             return FunctionTool(
                 name = "launch_game",
-                description = "Launches an educational game for the child based on the provided game ID and optional level.",
+                description = "Launches an educational game for the child. Available games: Merlin's Memory (sample-game), Color Match (color-match), Shape Match (shape-match), Number Match (number-match), Shape Drop Adventure (shape-drop). Use the exact game_id in parentheses.",
                 parameters = parametersJson
             )
         }
@@ -136,7 +140,9 @@ class OpenAIClientWrapper {
         val messagesKeyPart = chatMessages.joinToString("|") { msg ->
             val role = msg.role.toString()
             val content = msg.messageContent?.toString() ?: ""
-            "${role}:${content.take(50)}"
+            // For game-related messages, use more content to avoid cache collisions
+            val contentLength = if (content.lowercase().contains("play") || content.lowercase().contains("game")) 100 else 50
+            "${role}:${content.take(contentLength)}"
         }
         val functionsKeyPart = functionTools?.joinToString("|") { it.name } ?: "NO_FUNCS"
         val memoryKeyPart = memoryContext?.take(100)?.hashCode()?.toString() ?: "NO_MEM"

@@ -128,13 +128,8 @@ fun GameScreen(
             },
             navigationIcon = {
                 IconButton(onClick = {
-                    if (showGameSelection) {
-                        onNavigateBack()
-                    } else {
-                        showGameSelection = true
-                        selectedGame = null
-                        gameResult = null
-                    }
+                    // Always navigate back to main UI instead of game selection
+                    onNavigateBack()
                 }) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                 }

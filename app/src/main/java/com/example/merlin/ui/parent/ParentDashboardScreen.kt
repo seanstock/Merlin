@@ -77,11 +77,7 @@ fun ParentDashboardScreen(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(ParentScreen.Analytics.route) {
-                AnalyticsScreen(
-                    onNavigateToSettings = {
-                        navController.navigate(ParentScreen.Settings.route)
-                    }
-                )
+                AnalyticsScreen()
             }
             composable(ParentScreen.ScreenTime.route) {
                 ScreenTimeScreen()

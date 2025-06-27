@@ -31,6 +31,10 @@ import com.example.merlin.economy.service.AppLaunchService
 import com.example.merlin.economy.service.PurchasableAppDto
 import com.example.merlin.config.ServiceLocator
 import kotlinx.coroutines.launch
+import android.app.Application
+import androidx.lifecycle.ViewModelProvider
+import androidx.activity.ComponentActivity
+import androidx.compose.foundation.BorderStroke
 
 /**
  * Simplified spending dialog for 3-year-olds
@@ -41,264 +45,379 @@ fun SpendCoinsDialog(
     currentBalance: Int,
     appLaunchService: AppLaunchService,
     childId: String,
-    onSpendCoins: (timeInSeconds: Int, category: String) -> Unit,
+    onSpendCoins: (Int, String) -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-    walletViewModel: WalletViewModel? = null
+    modifier: Modifier = Modifier
 ) {
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    
-    // App access state
-    var availableApps by remember { mutableStateOf<List<PurchasableAppDto>>(emptyList()) }
+    var availableApps by remember { mutableStateOf(emptyList<PurchasableAppDto>()) }
     var isLoadingApps by remember { mutableStateOf(true) }
     var selectedApp by remember { mutableStateOf<PurchasableAppDto?>(null) }
-    var selectedTime by remember { mutableStateOf(10) } // Default 10 minutes
-    
+    var selectedTime by remember { mutableStateOf(10) }
+    var selectedCall by remember { mutableStateOf<CallOption?>(null) }
+
+    val context = LocalContext.current
+    val walletViewModel = remember {
+        try {
+            val factory = WalletViewModelFactory(
+                application = context.applicationContext as Application,
+                childId = childId
+            )
+            ViewModelProvider(context as ComponentActivity, factory)[WalletViewModel::class.java]
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    val callOptions = listOf(
+        CallOption("Dad", "👨", "8586108633"),
+        CallOption("Mom", "👩", "8586108633"),
+        CallOption("Grandpa", "👴", "8586108633"),
+        CallOption("Grandma", "👵", "8586108633")
+    )
+
+    // Calculate costs
+    val totalCost = when {
+        selectedApp != null -> selectedApp!!.costPerMinute * selectedTime
+        selectedCall != null -> selectedCall!!.cost
+        else -> 0
+    }
+    val canAfford = currentBalance >= totalCost
+
     // Load available apps
     LaunchedEffect(Unit) {
-        scope.launch {
+        try {
             val result = appLaunchService.getAvailableApps()
             if (result.isSuccess) {
-                availableApps = result.getOrThrow()
-                if (availableApps.isNotEmpty()) {
-                    selectedApp = availableApps.first()
-                }
+                availableApps = result.getOrNull() ?: emptyList()
             }
+        } catch (e: Exception) {
+            // Handle error silently
+        } finally {
             isLoadingApps = false
         }
     }
-    
-    // Calculate cost for selected app
-    val totalCost = selectedApp?.let { app ->
-        (app.costPerMinute * selectedTime * 0.9f).toInt() // 10% discount for apps
-    } ?: 0
-    val canAfford = currentBalance >= totalCost
 
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            dismissOnBackPress = true,
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
-        )
-    ) {
+    Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = modifier
-                .fillMaxWidth(0.9f)
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(32.dp),
+                .fillMaxWidth()
+                .fillMaxHeight(0.9f),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = CloudWhite
+                containerColor = Color(0xFFFAFAFA) // Clean off-white
             ),
             elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
         ) {
-            Column(
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Header with big coin icon
+                // Left side - Store Items (65%)
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.weight(0.65f),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = "🪙",
-                        fontSize = 48.sp
-                    )
-                    Text(
-                        text = "I have $currentBalance coins!",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = AmberGlow,
-                        textAlign = TextAlign.Center
-                    )
-                }
-                
-                // Call Daddy Button - Costs coins
-                CallDaddyButton(
-                    currentBalance = currentBalance,
-                    onCallPurchase = {
-                        if (walletViewModel != null) {
-                            // Spend 20 coins to call daddy
-                            walletViewModel.spendCoins(20, "call_daddy")
-                            
-                            // Determine actual dialer package that will handle ACTION_DIAL
-                            val pm = context.packageManager
-                            val dialerResolve = pm.resolveActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:")), 0)
-                            val resolvedPkg = dialerResolve?.activityInfo?.packageName
-                            val packagesToAllow = mutableSetOf<String>()
-                            resolvedPkg?.let { packagesToAllow.add(it) }
-                            packagesToAllow.add("com.android.dialer")
-                            packagesToAllow.add("com.google.android.dialer")
-                            packagesToAllow.forEach { pkg ->
-                                com.example.merlin.config.ServiceLocator.getKioskManager(context).addAllowedPackage(pkg)
-                                android.util.Log.d("SpendCoinsDialog", "Whitelisted $pkg for lock-task")
-                            }
-
-                            val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:8586108633")).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            }
-                            android.util.Log.d("SpendCoinsDialog", "Launching dialer intent with resolvedPkg=$resolvedPkg")
-                            context.startActivity(dialIntent)
-                        }
-                        onDismiss()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
-                // Divider
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    thickness = 1.dp
-                )
-                
-                if (isLoadingApps) {
-                    CircularProgressIndicator(
-                        color = AmberGlow,
-                        modifier = Modifier.size(48.dp)
-                    )
-                } else if (availableApps.isEmpty()) {
-                    Text(
-                        text = "No apps available right now",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        textAlign = TextAlign.Center
-                    )
-                } else {
-                    // App selection section
+                    // Header
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "🛒",
+                            fontSize = 48.sp
+                        )
+                        Text(
+                            text = "Store",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2C3E50),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    
+                    // Call family section
                     Column(
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Pick an app to play with:",
+                            text = "Call Family:",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = WisdomBlue
-                        )
-                        
-                        // App options - big, colorful buttons
-                        availableApps.forEach { app ->
-                            AppOptionButton(
-                                app = app,
-                                isSelected = selectedApp == app,
-                                onClick = { selectedApp = app },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                        
-                        // Time selection - simple buttons
-                        Text(
-                            text = "How long do you want to play?",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = WisdomBlue
+                            color = Color(0xFF2C3E50)
                         )
                         
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            listOf(5, 10, 15, 20).forEach { minutes ->
-                                TimeButton(
-                                    minutes = minutes,
-                                    isSelected = selectedTime == minutes,
-                                    onClick = { selectedTime = minutes },
+                            callOptions.take(2).forEach { call ->
+                                CallStoreButton(
+                                    call = call,
+                                    isSelected = selectedCall == call,
+                                    onClick = { 
+                                        selectedCall = call
+                                        selectedApp = null // Clear app selection
+                                    },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
                         }
-                        
-                        // Cost display
-                        if (selectedApp != null) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (canAfford) SageGreen.copy(alpha = 0.1f) 
-                                                    else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.1f)
-                                ),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = if (canAfford) "This costs $totalCost coins" else "Need $totalCost coins",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (canAfford) SageGreen else MaterialTheme.colorScheme.error
-                                    )
-                                    
-                                    if (!canAfford) {
-                                        Text(
-                                            text = "🎯 Play learning games to earn more coins!",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = WisdomBlue,
-                                            textAlign = TextAlign.Center,
-                                            modifier = Modifier.padding(top = 8.dp)
-                                        )
-                                    }
-                                }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            callOptions.drop(2).forEach { call ->
+                                CallStoreButton(
+                                    call = call,
+                                    isSelected = selectedCall == call,
+                                    onClick = { 
+                                        selectedCall = call
+                                        selectedApp = null // Clear app selection
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
+                    
+                    // Divider
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                        thickness = 1.dp
+                    )
+                    
+                    // Apps section
+                    if (isLoadingApps) {
+                        CircularProgressIndicator(
+                            color = AmberGlow,
+                            modifier = Modifier.size(48.dp)
+                        )
+                    } else if (availableApps.isEmpty()) {
+                        Text(
+                            text = "No apps available right now",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Play Apps:",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF2C3E50)
+                            )
+                            
+                            availableApps.forEach { app ->
+                                AppOptionButton(
+                                    app = app,
+                                    isSelected = selectedApp == app,
+                                    onClick = { 
+                                        selectedApp = app
+                                        selectedCall = null // Clear call selection
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
                             }
                         }
                     }
                 }
                 
-                // Action buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                // Right side - Receipt (35%)
+                Card(
+                    modifier = Modifier.weight(0.35f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFF8F9FA)
+                    ),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                 ) {
-                    // Cancel button
-                    OutlinedButton(
-                        onClick = onDismiss,
+                    Column(
                         modifier = Modifier
-                            .weight(1f)
-                            .height(56.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = WisdomBlue
-                        ),
-                        shape = RoundedCornerShape(16.dp)
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        // Receipt header
                         Text(
-                            text = "Maybe later",
+                            text = "💰 Balance",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2C3E50)
                         )
-                    }
-                    
-                    // Play button
-                    if (selectedApp != null) {
-                        Button(
-                            onClick = {
-                                if (canAfford && walletViewModel != null) {
-                                    walletViewModel.purchaseAppAccess(
-                                        appPackage = selectedApp!!.packageName,
-                                        durationMinutes = selectedTime
+                        
+                        Text(
+                            text = "$currentBalance coins",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2C3E50)
+                        )
+                        
+                        HorizontalDivider(
+                            color = Color(0xFF2C3E50).copy(alpha = 0.2f),
+                            thickness = 1.dp
+                        )
+                        
+                        // Order details
+                        when {
+                            selectedCall != null -> {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Order:",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFF2C3E50).copy(alpha = 0.7f)
+                                    )
+                                    Text(
+                                        text = "Call ${selectedCall!!.name} ${selectedCall!!.emoji}",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF2C3E50)
+                                    )
+                                    Text(
+                                        text = "Cost: ${selectedCall!!.cost} coins",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (canAfford) Color(0xFF2C3E50) else Color(0xFF8B4513)
                                     )
                                 }
-                                onDismiss()
-                            },
-                            enabled = canAfford && selectedApp != null,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(56.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (canAfford) SageGreen else MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = if (canAfford) CloudWhite else MaterialTheme.colorScheme.onSurfaceVariant
-                            ),
-                            shape = RoundedCornerShape(16.dp)
-                        ) {
+                            }
+                            selectedApp != null -> {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = "Order:",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFF2C3E50).copy(alpha = 0.7f)
+                                    )
+                                    Text(
+                                        text = selectedApp!!.displayName,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF2C3E50)
+                                    )
+                                    Text(
+                                        text = "Duration: 10 minutes",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFF2C3E50).copy(alpha = 0.7f)
+                                    )
+                                    Text(
+                                        text = "Cost: $totalCost coins",
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (canAfford) Color(0xFF2C3E50) else Color(0xFF8B4513)
+                                    )
+                                }
+                            }
+                            else -> {
+                                Text(
+                                    text = "Select an item to see cost",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFF2C3E50).copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                        
+                        if (!canAfford && (selectedCall != null || selectedApp != null)) {
                             Text(
-                                text = if (canAfford) "Let's play! 🎮" else "Need more coins",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                text = "🎯 Play learning games to earn more coins!",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF2C3E50).copy(alpha = 0.8f)
                             )
+                        }
+                        
+                        Spacer(modifier = Modifier.weight(1f))
+                        
+                        // Action buttons
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            // Purchase button
+                            if (selectedCall != null || selectedApp != null) {
+                                Button(
+                                    onClick = {
+                                        if (canAfford && walletViewModel != null) {
+                                            when {
+                                                selectedCall != null -> {
+                                                    // Handle call purchase
+                                                    walletViewModel.spendCoins(selectedCall!!.cost, "call_${selectedCall!!.name}")
+                                                    
+                                                                                                         // Setup dialer for kiosk mode
+                                                     val pm = context.packageManager
+                                                    val dialerResolve = pm.resolveActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:")), 0)
+                                                    val resolvedPkg = dialerResolve?.activityInfo?.packageName
+                                                    val packagesToAllow = mutableSetOf<String>()
+                                                    resolvedPkg?.let { packagesToAllow.add(it) }
+                                                    packagesToAllow.add("com.android.dialer")
+                                                    packagesToAllow.add("com.google.android.dialer")
+                                                    packagesToAllow.forEach { pkg ->
+                                                        ServiceLocator.getKioskManager(context).addAllowedPackage(pkg)
+                                                    }
+
+                                                    val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${selectedCall!!.phoneNumber}")).apply {
+                                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                    }
+                                                    context.startActivity(dialIntent)
+                                                }
+                                                selectedApp != null -> {
+                                                    walletViewModel.purchaseAppAccess(
+                                                        appPackage = selectedApp!!.packageName,
+                                                        durationMinutes = selectedTime
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        onDismiss()
+                                    },
+                                    enabled = canAfford && (selectedCall != null || selectedApp != null),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (canAfford) Color(0xFFE8F4F8) else Color(0xFFF5F5F5),
+                                        contentColor = if (canAfford) Color(0xFF2C3E50) else Color(0xFF9E9E9E)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Text(
+                                        text = when {
+                                            selectedCall != null -> if (canAfford) "Call! 📞" else "Need coins"
+                                            selectedApp != null -> if (canAfford) "Play! 🎮" else "Need coins"
+                                            else -> "Select item"
+                                        },
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                            
+                            // Exit button
+                            OutlinedButton(
+                                onClick = onDismiss,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(
+                                    contentColor = Color(0xFF2C3E50)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = "Exit",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
                 }
@@ -307,45 +426,46 @@ fun SpendCoinsDialog(
     }
 }
 
+data class CallOption(
+    val name: String,
+    val emoji: String,
+    val phoneNumber: String,
+    val cost: Int = 20
+)
+
 @Composable
-private fun CallDaddyButton(
-    currentBalance: Int,
-    onCallPurchase: () -> Unit,
+private fun CallStoreButton(
+    call: CallOption,
+    isSelected: Boolean,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val callCost = 20
-    val canAfford = currentBalance >= callCost
+    val canAfford = true // Will be handled by parent component
     
     Button(
-        onClick = onCallPurchase,
-        enabled = canAfford,
-        modifier = modifier.height(72.dp),
+        onClick = onClick,
+        modifier = modifier.height(80.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (canAfford) Color(0xFF4CAF50) else MaterialTheme.colorScheme.surfaceVariant, // Green when affordable
-            contentColor = if (canAfford) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+            containerColor = if (isSelected) Color(0xFFE8F4F8) else Color(0xFFF5F5F5),
+            contentColor = Color(0xFF2C3E50)
         ),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(16.dp),
+        border = if (isSelected) BorderStroke(2.dp, Color(0xFF2C3E50)) else null
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "📞",
-                fontSize = 32.sp
+                text = call.emoji,
+                fontSize = 24.sp
             )
-            Column {
-                Text(
-                    text = if (canAfford) "Call Daddy" else "Call Daddy",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = if (canAfford) "Costs $callCost coins" else "Need $callCost coins",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (canAfford) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
-            }
+            Text(
+                text = call.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -60,6 +61,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.graphics.SolidColor
+import com.example.merlin.ui.theme.AppThemes.getBackgroundForOrientation
 
 /**
  * Simple icon-based main menu for ages 3-4, using the app's design system.
@@ -148,7 +150,7 @@ fun SimpleMainMenuScreen(
     Box(modifier = modifier.fillMaxSize()) {
         // Background with subtle overlay for better readability
         Image(
-            painter = painterResource(id = currentTheme!!.backgroundImage),
+            painter = painterResource(id = currentTheme!!.getBackgroundForOrientation()),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
@@ -188,38 +190,75 @@ fun SimpleMainMenuScreen(
                     .padding(AppleSpacing.large)
             ) {
                 if (childName != null) {
+                    // Chat bubble tail
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .size(80.dp)
+                            .offset(x = 25.dp, y = 200.dp)
+                            .size(30.dp, 20.dp)
+                            .background(
+                                Color.Black,
+                                RoundedCornerShape(
+                                    topStart = 15.dp,
+                                    topEnd = 0.dp,
+                                    bottomStart = 15.dp,
+                                    bottomEnd = 15.dp
+                                )
+                            )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .offset(x = 26.dp, y = 201.dp)
+                            .size(28.dp, 18.dp)
+                            .background(
+                                Color.White,
+                                RoundedCornerShape(
+                                    topStart = 14.dp,
+                                    topEnd = 0.dp,
+                                    bottomStart = 14.dp,
+                                    bottomEnd = 14.dp
+                                )
+                            )
+                    )
+                    
+                    // Drop shadow
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .size(240.dp)
                             .offset(x = 5.dp, y = 5.dp)
                             .background(
                                 Color.Black.copy(alpha = 0.15f),
                                 CircleShape
                             )
                     )
+                    
+                    // Main chat bubble circle
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .size(80.dp)
+                            .size(240.dp)
                             .clickable(onClick = onNavigateToChat)
                             .background(
-                                brush = createSmoothLiquidGlassBrush(
-                                    baseColor = AppleBlue.copy(alpha = 0.8f),
-                                    shimmerAngle = 0f
-                                ),
-                                shape = CircleShape
+                                Color.Black,
+                                CircleShape
+                            )
+                            .padding(1.dp)
+                            .background(
+                                Color.White,
+                                CircleShape
                             ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Hi\n${childName.take(8)}! 👋",
+                            text = "Hi\n${childName?.take(8)}! 👋",
                             style = AppleCallout.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp,
-                                lineHeight = 14.sp
+                                fontSize = 36.sp,
+                                lineHeight = 52.sp
                             ),
-                            color = Color.White,
+                            color = Color.Black,
                             textAlign = TextAlign.Center,
                             maxLines = 2
                         )
@@ -273,8 +312,7 @@ fun SimpleMainMenuScreen(
             onSpendCoins = { timeInSeconds, category ->
                 walletViewModel.spendCoins(timeInSeconds, category)
                 showSpendDialog = false
-            },
-            walletViewModel = walletViewModel
+            }
         )
     }
 }
@@ -808,7 +846,7 @@ private fun getDistinctEmojiForGame(gameId: String): String {
         "shape-match" -> "🔷"        // Blue diamond for Shape Match
         "number-match" -> "🔢"       // Numbers symbol for Number Match
         "shape-drop" -> "🎯"         // Target for Shape Drop Adventure
-        "spend-coins" -> "🪙"        // Coin for Spend Coins
+        "spend_coins" -> "💰"        // Money bag for Spend Coins
         else -> "🎮"                 // Game controller for unknown games
     }
 }

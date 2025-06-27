@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -701,9 +702,9 @@ fun MerlinApp(modifier: Modifier = Modifier, showReEnableProtection: Boolean = f
 @Composable
 fun MerlinMainScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    var currentScreen by remember { mutableStateOf("main") }
-    var selectedGameId by remember { mutableStateOf<String?>(null) }
-    var selectedGameLevel by remember { mutableIntStateOf(1) }
+    var currentScreen by rememberSaveable { mutableStateOf("main") }
+    var selectedGameId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedGameLevel by rememberSaveable { mutableIntStateOf(1) }
 
     // UI variant via MainViewModel
     val mainViewModel: MainViewModel = viewModel()
@@ -711,7 +712,7 @@ fun MerlinMainScreen(modifier: Modifier = Modifier) {
     val uiVariantState by mainViewModel.uiVariantState.collectAsState()
     
     // PIN authentication state for settings access
-    var showSettingsPinDialog by remember { mutableStateOf(false) }
+    var showSettingsPinDialog by rememberSaveable { mutableStateOf(false) }
     val pinAuthService = remember { PinAuthenticationService(context) }
     
     // Handle settings access request - show PIN dialog

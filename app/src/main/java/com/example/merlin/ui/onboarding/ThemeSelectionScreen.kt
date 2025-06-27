@@ -134,7 +134,7 @@ fun ThemeCard(
         Box {
             // Background preview
             Image(
-                painter = painterResource(id = theme.backgroundImage),
+                painter = painterResource(id = theme.backgroundImage), // Use portrait for theme selection
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()

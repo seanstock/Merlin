@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.annotation.DrawableRes
+import androidx.compose.ui.platform.LocalConfiguration
+import android.content.res.Configuration
 import com.example.merlin.R
 
 // 🍎 APPLE-INSPIRED DARK THEME 🍎
@@ -121,7 +123,8 @@ data class AppTheme(
     val name: String,
     val tutorName: String,
     val tutorDescription: String,
-    @DrawableRes val backgroundImage: Int,
+    @DrawableRes val backgroundImage: Int, // Portrait background
+    @DrawableRes val backgroundImageLandscape: Int, // Landscape background
     @DrawableRes val tutorAvatar: Int
 )
 
@@ -129,7 +132,8 @@ object AppThemes {
     private val UNDER_THE_SEA = AppTheme(
         id = "under_the_sea",
         name = "Under the Sea",
-        backgroundImage = R.drawable.underthesea_bg,
+        backgroundImage = R.drawable.underthesea_portrait_bg, // Portrait background
+        backgroundImageLandscape = R.drawable.underthesea_bg, // Landscape background  
         tutorAvatar = R.drawable.ic_launcher_foreground,
         tutorName = "Oliva",
         tutorDescription = "A friendly octopus who loves exploring the ocean depths"
@@ -139,6 +143,7 @@ object AppThemes {
         id = "outer_space",
         name = "Outer Space",
         backgroundImage = R.drawable.outerspace_bg,
+        backgroundImageLandscape = R.drawable.outerspace_bg, // Same for now
         tutorAvatar = R.drawable.ic_launcher_foreground,
         tutorName = "Spoko",
         tutorDescription = "A curious alien who knows all about the stars and planets"
@@ -148,6 +153,7 @@ object AppThemes {
         id = "lost_world",
         name = "Lost World",
         backgroundImage = R.drawable.lostworld_bg,
+        backgroundImageLandscape = R.drawable.lostworld_bg, // Same for now
         tutorAvatar = R.drawable.ic_launcher_foreground,
         tutorName = "Wizbit",
         tutorDescription = "A wise owl who guides adventures through ancient lands"
@@ -157,6 +163,7 @@ object AppThemes {
         id = "fantasy",
         name = "Fantasy",
         backgroundImage = R.drawable.fantasy_bg,
+        backgroundImageLandscape = R.drawable.fantasy_bg, // Same for now
         tutorAvatar = R.drawable.ic_launcher_foreground,
         tutorName = "Prince",
         tutorDescription = "A brave mouse prince from a magical kingdom"
@@ -169,4 +176,17 @@ object AppThemes {
     }
     
     fun getDefaultTheme(): AppTheme = UNDER_THE_SEA
+    
+    /**
+     * Get the appropriate background image based on current orientation
+     */
+    @Composable
+    fun AppTheme.getBackgroundForOrientation(): Int {
+        val configuration = LocalConfiguration.current
+        return if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            backgroundImageLandscape
+        } else {
+            backgroundImage
+        }
+    }
 }

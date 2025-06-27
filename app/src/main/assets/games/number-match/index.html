@@ -2,9 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Match Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title></title>
     <style>
+        /* CSS Custom Properties for easy theming */
+        :root {
+            --primary-bg: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            --surface-bg: rgba(255, 255, 255, 0.95);
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --text-primary: #2D3748;
+            --text-secondary: #718096;
+            --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-lifted: 0 12px 40px rgba(0, 0, 0, 0.15);
+            --border-radius: 24px;
+            --border-radius-small: 16px;
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 32px;
+            --spacing-xl: 48px;
+        }
+
+        /* Reset and base styles */
         * {
             margin: 0;
             padding: 0;
@@ -12,82 +32,147 @@
         }
 
         body {
-            font-family: 'Comic Sans MS', cursive, sans-serif;
-            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary-bg);
             min-height: 100vh;
-            color: #333;
-            user-select: none;
             overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
         }
 
+        /* Game container - optimized for landscape tablets */
         .game-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 25px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            max-width: 400px;
-            width: 95%;
+            width: 100vw;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
             position: relative;
         }
 
-        .game-title {
-            font-size: 2.2em;
-            margin-bottom: 15px;
-            color: #0984e3;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .game-info {
+        /* Header with game info */
+        .game-header {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-sm) var(--spacing-md);
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-            font-weight: bold;
+            align-items: center;
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
         }
 
-        .level-display {
-            color: #00b894;
-        }
-
-        .score-display {
-            color: #e17055;
-        }
-
-        .timer-display {
-            color: #fdcb6e;
-        }
-
-        .question-area {
-            background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 20px;
-            color: white;
-        }
-
-        .question-text {
-            font-size: 1.3em;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-
-        .number-display {
-            font-size: 4em;
-            font-weight: bold;
-            margin: 10px 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .dots-container {
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
             display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .game-stats {
+            display: flex;
+            gap: var(--spacing-md);
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        /* Main game area */
+        .game-area {
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-lg);
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: visible !important;
+            min-height: 400px !important;
+            height: auto !important;
+            width: 100% !important;
+        }
+
+        /* Question section */
+        .question-section {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            min-height: 350px !important;
+            width: 100% !important;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .question-container {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            min-height: 300px !important;
+            width: 100% !important;
+            padding: 16px;
+        }
+
+        /* Number display styling */
+        .number-display {
+            width: 150px !important;
+            height: 150px !important;
+            min-width: 150px;
+            min-height: 150px;
+            border-radius: var(--border-radius);
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            flex-shrink: 0;
+            margin: 4px;
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+        }
+
+        .number-display.celebrating {
+            animation: celebrate 0.8s ease-out;
+        }
+
+        /* Dots container */
+        .dots-container {
+            display: flex !important;
             flex-wrap: wrap;
             justify-content: center;
+            align-items: center;
             gap: 8px;
-            margin: 15px 0;
+            margin: 16px 0;
+            min-height: 80px;
+            width: 100%;
         }
 
         .dot {
@@ -96,7 +181,9 @@
             background: white;
             border-radius: 50%;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            animation: dotPop 0.3s ease;
+            animation: dotPop 0.3s ease-out;
+            opacity: 1 !important;
+            visibility: visible !important;
         }
 
         @keyframes dotPop {
@@ -105,542 +192,622 @@
             100% { transform: scale(1); }
         }
 
-        .answers-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-            padding: 10px;
+        /* Answer options section */
+        .answers-section {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            min-height: 350px !important;
+            width: 100% !important;
         }
 
+        .answers-container {
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 300px !important;
+            width: 100% !important;
+            padding: 16px;
+        }
+
+        /* Individual answer option styling */
         .answer-option {
-            width: 70px;
-            height: 70px;
-            border-radius: 15px;
-            display: flex;
+            width: 100px !important;
+            height: 100px !important;
+            min-width: 100px;
+            min-height: 100px;
+            border-radius: var(--border-radius-small);
+            display: flex !important;
             align-items: center;
             justify-content: center;
-            font-size: 2.5em;
-            font-weight: bold;
+            font-size: 2.5rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 3px solid transparent;
-            margin: 0 auto;
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-soft);
+            position: relative;
+            touch-action: manipulation;
+            user-select: none;
+            flex-shrink: 0;
+            margin: 4px;
+            opacity: 1 !important;
+            visibility: visible !important;
+            z-index: 1;
+            border: 4px solid rgba(255, 255, 255, 0.8);
             color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
         }
 
         .answer-option:hover {
             transform: scale(1.1);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lifted);
+        }
+
+        .answer-option:active {
+            transform: scale(0.95);
         }
 
         .answer-option.correct {
-            background: linear-gradient(135deg, #00b894, #00cec9);
-            border-color: #00a085;
-            animation: correctBounce 0.6s ease;
+            border-color: var(--success-color);
+            animation: correctGlow 0.8s ease-out;
         }
 
         .answer-option.incorrect {
-            background: linear-gradient(135deg, #e17055, #d63031);
-            border-color: #c0392b;
-            animation: incorrectWiggle 0.6s ease;
+            border-color: #e74c3c;
+            animation: incorrectShake 0.6s ease-out;
         }
 
-        @keyframes correctBounce {
-            0%, 100% { transform: scale(1); }
-            25% { transform: scale(1.2) rotate(5deg); }
-            75% { transform: scale(1.1) rotate(-5deg); }
-        }
-
-        @keyframes incorrectWiggle {
-            0%, 100% { transform: translateX(0) rotate(0deg); }
-            25% { transform: translateX(-8px) rotate(-3deg); }
-            75% { transform: translateX(8px) rotate(3deg); }
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 15px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 15px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00b894, #00cec9);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: 10px;
-        }
-
+        /* Game controls */
         .game-controls {
-            margin-top: 20px;
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-sm) var(--spacing-md);
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-md);
+            box-shadow: var(--shadow-soft);
+            backdrop-filter: blur(10px);
         }
 
         .game-button {
-            background: linear-gradient(45deg, #74b9ff, #0984e3);
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
             border: none;
-            padding: 12px 25px;
-            border-radius: 20px;
+            border-radius: var(--border-radius-small);
             color: white;
-            font-size: 1em;
-            font-weight: bold;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: var(--spacing-sm) var(--spacing-md);
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 5px;
-            font-family: inherit;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--shadow-soft);
+            min-width: 120px;
+            touch-action: manipulation;
         }
 
         .game-button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-lifted);
         }
 
-        .game-button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .game-button:active {
+            transform: translateY(0);
         }
 
-        .game-message {
-            margin: 15px 0;
-            font-size: 1.2em;
-            font-weight: bold;
-            min-height: 30px;
-            color: #666;
-        }
-
-        .hidden {
+        .game-button.hidden {
             display: none;
         }
 
-        .celebration {
+        /* Success message */
+        .success-message {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 4em;
-            animation: celebrate 1.2s ease-in-out;
+            background: var(--surface-bg);
+            border-radius: var(--border-radius);
+            padding: var(--spacing-xl);
+            text-align: center;
+            box-shadow: var(--shadow-lifted);
+            z-index: 200;
+            opacity: 0;
             pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .success-message.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .success-message h2 {
+            font-size: 2rem;
+            color: var(--success-color);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .success-message p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        /* Animations */
         @keyframes celebrate {
-            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.3) rotate(180deg); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(360deg); opacity: 0; }
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(-10deg); }
+            50% { transform: scale(1.3) rotate(10deg); }
+            75% { transform: scale(1.1) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
 
-        .encouragement {
-            color: #00b894;
-            font-size: 1.1em;
-            margin: 10px 0;
-            font-weight: bold;
+        @keyframes correctGlow {
+            0%, 100% { 
+                box-shadow: var(--shadow-soft);
+                border-color: var(--success-color);
+            }
+            50% { 
+                box-shadow: 0 0 25px var(--success-color), 0 0 35px var(--success-color);
+                border-color: #27AE60;
+                transform: scale(1.15);
+            }
+        }
+
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* Particle effects */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--success-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            animation: particleFloat 1s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--dx), var(--dy)) scale(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto;
+            }
+            
+            .number-display {
+                width: 120px !important;
+                height: 120px !important;
+            }
+            
+            .answer-option {
+                width: 80px !important;
+                height: 80px !important;
+            }
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <h1 class="game-title">🔢 Number Match</h1>
-        
-        <div class="game-info">
-            <div class="level-display">Level: <span id="levelDisplay">1</span></div>
-            <div class="score-display">Score: <span id="scoreDisplay">0</span></div>
-            <div class="timer-display">Time: <span id="timerDisplay">00:00</span></div>
-        </div>
+        <!-- Game Header -->
+        <header class="game-header">
+            <div class="game-title">
+                🔢 Number Match Adventure
+            </div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span>Level:</span>
+                    <span id="level-display">1</span>
+                </div>
+                <div class="stat-item">
+                    <span>⭐</span>
+                    <span id="score-display">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>❤️</span>
+                    <span id="lives-display">3</span>
+                </div>
+            </div>
+        </header>
 
-        <div class="progress-bar">
-            <div id="progressFill" class="progress-fill"></div>
-        </div>
+        <!-- Main Game Area -->
+        <main class="game-area">
+            <!-- Question Section -->
+            <section class="question-section">
+                <h2 class="section-title">Count the Dots</h2>
+                <div class="question-container">
+                    <div class="number-display" id="number-display">3</div>
+                    <div class="dots-container" id="dots-container">
+                        <!-- Dots will be dynamically generated -->
+                    </div>
+                </div>
+            </section>
 
-        <div id="questionArea" class="question-area">
-            <div class="question-text">Count the dots and pick the number!</div>
-            <div id="numberDisplay" class="number-display"></div>
-            <div id="dotsContainer" class="dots-container"></div>
-        </div>
+            <!-- Answer Options Section -->
+            <section class="answers-section">
+                <h2 class="section-title">Choose the Number</h2>
+                <div class="answers-container" id="answers-container">
+                    <!-- Answer options will be dynamically generated -->
+                </div>
+            </section>
 
-        <div id="answersGrid" class="answers-grid"></div>
+            <!-- Success Message -->
+            <div class="success-message" id="success-message">
+                <h2>🎉 Perfect Count!</h2>
+                <p>You found the right number!</p>
+            </div>
+        </main>
 
-        <div id="gameMessage" class="game-message"></div>
-
-        <div class="game-controls">
-            <button id="startButton" class="game-button">Start Counting!</button>
-            <button id="nextLevelButton" class="game-button hidden">Next Level</button>
-            <button id="restartButton" class="game-button hidden">Play Again</button>
-        </div>
+        <!-- Game Controls -->
+        <footer class="game-controls">
+            <button class="game-button hidden" id="start-button">Start Playing! 🚀</button>
+            <button class="game-button hidden" id="next-level-button">Next Level! ➡️</button>
+            <button class="game-button hidden" id="restart-button">Play Again! 🔄</button>
+        </footer>
     </div>
 
     <script>
         // Game state management
-        const gameState = {
-            level: 1,
-            score: 0,
-            currentQuestion: 0,
-            totalQuestions: 5,
-            correctNumber: 0,
-            answerOptions: [],
-            startTime: null,
-            timer: null,
-            isPlaying: false,
-            correctAnswers: 0,
-            questionType: 'dots' // 'dots' or 'number'
-        };
-
-        // Encouraging messages
-        const ENCOURAGEMENT = [
-            "Great job! 🌟",
-            "Awesome counting! 🎉",
-            "You're doing amazing! ⭐",
-            "Perfect! Keep going! 🚀",
-            "Fantastic work! 🏆",
-            "You're a counting star! ✨",
-            "Excellent! 👏",
-            "Super counting! 🎯"
-        ];
-
-        // DOM elements
-        const elements = {
-            levelDisplay: document.getElementById('levelDisplay'),
-            scoreDisplay: document.getElementById('scoreDisplay'),
-            timerDisplay: document.getElementById('timerDisplay'),
-            progressFill: document.getElementById('progressFill'),
-            numberDisplay: document.getElementById('numberDisplay'),
-            dotsContainer: document.getElementById('dotsContainer'),
-            answersGrid: document.getElementById('answersGrid'),
-            gameMessage: document.getElementById('gameMessage'),
-            startButton: document.getElementById('startButton'),
-            nextLevelButton: document.getElementById('nextLevelButton'),
-            restartButton: document.getElementById('restartButton')
-        };
-
-        // Get level from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const levelParam = parseInt(urlParams.get('level')) || 1;
-        gameState.level = levelParam;
-
-        // Initialize game
-        function initGame() {
-            elements.levelDisplay.textContent = gameState.level;
-            elements.scoreDisplay.textContent = gameState.score;
-            updateProgress(0);
-            
-            // Adjust difficulty based on level
-            gameState.totalQuestions = Math.min(5 + gameState.level, 8);
-            
-            if (typeof MerlinGameBridge !== 'undefined') {
-                MerlinGameBridge.logDebug(`Number Match Game initialized at level ${gameState.level}`);
-            }
-        }
-
-        // Start game
-        function startGame() {
-            gameState.isPlaying = true;
-            gameState.startTime = Date.now();
-            gameState.currentQuestion = 0;
-            gameState.correctAnswers = 0;
-            
-            elements.startButton.classList.add('hidden');
-            elements.nextLevelButton.classList.add('hidden');
-            elements.restartButton.classList.add('hidden');
-            
-            startTimer();
-            nextQuestion();
-            
-            if (typeof MerlinGameBridge !== 'undefined') {
-                MerlinGameBridge.updateProgress(10);
-            }
-        }
-
-        // Start next question
-        function nextQuestion() {
-            if (gameState.currentQuestion >= gameState.totalQuestions) {
-                completeGame();
-                return;
+        class NumberMatchGame {
+            constructor() {
+                this.level = 1;
+                this.score = 0;
+                this.lives = 3;
+                this.isPlaying = false;
+                this.currentTargetNumber = 0;
+                this.answerOptions = [];
+                
+                // DOM elements
+                this.elements = {
+                    levelDisplay: document.getElementById('level-display'),
+                    scoreDisplay: document.getElementById('score-display'),
+                    livesDisplay: document.getElementById('lives-display'),
+                    numberDisplay: document.getElementById('number-display'),
+                    dotsContainer: document.getElementById('dots-container'),
+                    answersContainer: document.getElementById('answers-container'),
+                    successMessage: document.getElementById('success-message'),
+                    startButton: document.getElementById('start-button'),
+                    nextLevelButton: document.getElementById('next-level-button'),
+                    restartButton: document.getElementById('restart-button')
+                };
+                
+                this.init();
             }
             
-            gameState.currentQuestion++;
-            elements.gameMessage.textContent = `Question ${gameState.currentQuestion} of ${gameState.totalQuestions}`;
-            
-            generateQuestion();
-            updateProgress((gameState.currentQuestion / gameState.totalQuestions) * 80);
-        }
-
-        // Generate question based on level
-        function generateQuestion() {
-            const maxNumber = Math.min(3 + gameState.level, 10);
-            gameState.correctNumber = Math.floor(Math.random() * maxNumber) + 1;
-            
-            // Alternate between showing dots and showing numbers
-            gameState.questionType = (gameState.currentQuestion % 2 === 1) ? 'dots' : 'number';
-            
-            if (gameState.questionType === 'dots') {
-                showDotsQuestion();
-            } else {
-                showNumberQuestion();
-            }
-            
-            generateAnswerOptions();
-        }
-
-        // Show dots counting question
-        function showDotsQuestion() {
-            elements.numberDisplay.textContent = '';
-            elements.dotsContainer.innerHTML = '';
-            
-            // Create dots with animation delay
-            for (let i = 0; i < gameState.correctNumber; i++) {
+            init() {
+                console.log('Initializing Number Match game...');
+                this.updateDisplay();
+                this.bindEvents();
+                this.logGameStart();
+                
+                // Auto-start the game immediately
                 setTimeout(() => {
+                    this.startGame();
+                }, 100);
+                
+                console.log('Number Match game initialization complete');
+            }
+            
+            logGameStart() {
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    MerlinGameBridge.logDebug('Number Match Adventure initialized');
+                    MerlinGameBridge.updateProgress(0);
+                } else {
+                    console.log('MerlinGameBridge not available - running in standalone mode');
+                }
+            }
+            
+            bindEvents() {
+                this.elements.startButton.addEventListener('click', () => this.startGame());
+                this.elements.nextLevelButton.addEventListener('click', () => this.nextLevel());
+                this.elements.restartButton.addEventListener('click', () => this.restartGame());
+                
+                // Prevent context menu and selection
+                document.addEventListener('contextmenu', (e) => e.preventDefault());
+                document.addEventListener('selectstart', (e) => e.preventDefault());
+            }
+            
+            startGame() {
+                console.log('Starting Number Match game...');
+                this.isPlaying = true;
+                this.elements.startButton.classList.add('hidden');
+                this.elements.nextLevelButton.classList.add('hidden');
+                this.elements.restartButton.classList.add('hidden');
+                
+                this.generateLevel();
+                this.updateProgress(10);
+                console.log('Number Match game started successfully');
+            }
+            
+            generateLevel() {
+                console.log('Generating new level...');
+                
+                // Clear existing answer options
+                this.elements.answersContainer.innerHTML = '';
+                this.answerOptions = [];
+                
+                // Generate target number based on level (start with 1-5, gradually increase)
+                const maxNumber = Math.min(3 + this.level, 10);
+                this.currentTargetNumber = Math.floor(Math.random() * maxNumber) + 1;
+                
+                // Set number display
+                this.elements.numberDisplay.textContent = this.currentTargetNumber;
+                
+                // Generate dots
+                this.generateDots(this.currentTargetNumber);
+                
+                // Number of options increases with level (but max 6 for toddlers)
+                const numOptions = Math.min(3 + Math.floor(this.level / 2), 6);
+                
+                // Create answer options (always include the correct answer)
+                const optionNumbers = [this.currentTargetNumber];
+                
+                // Add random incorrect options
+                while (optionNumbers.length < numOptions) {
+                    const randomNumber = Math.floor(Math.random() * maxNumber) + 1;
+                    if (!optionNumbers.includes(randomNumber)) {
+                        optionNumbers.push(randomNumber);
+                    }
+                }
+                
+                // Shuffle options
+                this.shuffleArray(optionNumbers);
+                
+                // Create option elements
+                optionNumbers.forEach((number, index) => {
+                    this.createAnswerOption(number, index);
+                });
+                
+                console.log(`Level generated with target: ${this.currentTargetNumber}`);
+            }
+            
+            generateDots(count) {
+                this.elements.dotsContainer.innerHTML = '';
+                
+                for (let i = 0; i < count; i++) {
                     const dot = document.createElement('div');
                     dot.className = 'dot';
-                    dot.style.animationDelay = `${i * 0.1}s`;
-                    elements.dotsContainer.appendChild(dot);
-                }, i * 150);
-            }
-            
-            document.querySelector('.question-text').textContent = 'Count the dots and pick the number!';
-        }
-
-        // Show number recognition question
-        function showNumberQuestion() {
-            elements.dotsContainer.innerHTML = '';
-            elements.numberDisplay.textContent = gameState.correctNumber;
-            
-            document.querySelector('.question-text').textContent = 'How many dots match this number?';
-        }
-
-        // Generate answer options
-        function generateAnswerOptions() {
-            const options = [gameState.correctNumber];
-            const maxNumber = Math.min(3 + gameState.level, 10);
-            
-            // Add incorrect options
-            while (options.length < 6) {
-                const randomNum = Math.floor(Math.random() * maxNumber) + 1;
-                if (!options.includes(randomNum)) {
-                    options.push(randomNum);
+                    
+                    // Add a slight delay for each dot to create a nice animation
+                    setTimeout(() => {
+                        this.elements.dotsContainer.appendChild(dot);
+                    }, i * 100);
                 }
             }
             
-            // Shuffle options
-            gameState.answerOptions = shuffleArray(options);
-            renderAnswerOptions();
-        }
-
-        // Render answer options
-        function renderAnswerOptions() {
-            elements.answersGrid.innerHTML = '';
-            
-            gameState.answerOptions.forEach((number, index) => {
-                const optionElement = document.createElement('div');
-                optionElement.className = 'answer-option';
-                optionElement.textContent = number;
-                optionElement.addEventListener('click', () => handleAnswerClick(number, optionElement));
-                elements.answersGrid.appendChild(optionElement);
-            });
-        }
-
-        // Handle answer click
-        function handleAnswerClick(selectedNumber, element) {
-            if (!gameState.isPlaying) return;
-            
-            const isCorrect = selectedNumber === gameState.correctNumber;
-            
-            if (isCorrect) {
-                element.classList.add('correct');
-                gameState.correctAnswers++;
-                gameState.score += 10 + (gameState.level * 5);
-                elements.scoreDisplay.textContent = gameState.score;
+            createAnswerOption(number, index) {
+                const option = document.createElement('div');
+                option.className = 'answer-option';
+                option.dataset.number = number;
+                option.dataset.index = index;
+                option.textContent = number;
                 
-                const encouragement = ENCOURAGEMENT[Math.floor(Math.random() * ENCOURAGEMENT.length)];
-                elements.gameMessage.innerHTML = `<div class="encouragement">${encouragement}</div>`;
+                // Add click handler
+                option.addEventListener('click', (e) => this.handleAnswerClick(e));
                 
-                showCelebration('🎉');
+                this.elements.answersContainer.appendChild(option);
+                this.answerOptions.push(option);
+            }
+            
+            handleAnswerClick(e) {
+                if (!this.isPlaying) return;
                 
+                const clickedOption = e.currentTarget;
+                const selectedNumber = parseInt(clickedOption.dataset.number);
+                
+                console.log(`Number clicked: ${selectedNumber}, Target: ${this.currentTargetNumber}`);
+                
+                if (selectedNumber === this.currentTargetNumber) {
+                    this.handleCorrectAnswer(clickedOption);
+                } else {
+                    this.handleIncorrectAnswer(clickedOption);
+                }
+            }
+            
+            handleCorrectAnswer(option) {
+                console.log('Correct answer!');
+                
+                // Visual feedback
+                option.classList.add('correct');
+                this.elements.numberDisplay.classList.add('celebrating');
+                
+                // Create particle effect
+                const rect = option.getBoundingClientRect();
+                this.createParticleEffect(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                
+                // Update score and progress
+                this.score += 10 + (this.level * 5);
+                this.updateDisplay();
+                this.updateProgress(30 + (this.level * 10));
+                
+                // Award coins
+                this.awardCoins(3, 'correct number match');
+                
+                // Disable all options temporarily
+                this.answerOptions.forEach(opt => opt.style.pointerEvents = 'none');
+                
+                // Show success and proceed to next level
                 setTimeout(() => {
-                    nextQuestion();
-                }, 1200);
+                    this.showSuccess();
+                }, 800);
                 
-            } else {
-                element.classList.add('incorrect');
-                elements.gameMessage.textContent = `Try again! The answer is ${gameState.correctNumber}`;
+                // Haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+            }
+            
+            handleIncorrectAnswer(option) {
+                console.log('Incorrect answer');
                 
-                // Show correct answer briefly
+                // Visual feedback
+                option.classList.add('incorrect');
+                
+                // Remove feedback after animation
                 setTimeout(() => {
-                    const correctElement = Array.from(elements.answersGrid.children)
-                        .find(el => parseInt(el.textContent) === gameState.correctNumber);
-                    if (correctElement) {
-                        correctElement.style.background = 'linear-gradient(135deg, #00b894, #00cec9)';
-                        correctElement.style.transform = 'scale(1.1)';
+                    option.classList.remove('incorrect');
+                }, 600);
+                
+                // Reduce lives if enabled (optional for toddler mode)
+                if (this.lives > 1) {
+                    this.lives--;
+                    this.updateDisplay();
+                    
+                    if (this.lives <= 0) {
+                        this.gameOver();
+                        return;
                     }
-                }, 300);
+                }
                 
-                setTimeout(() => {
-                    nextQuestion();
-                }, 2000);
-            }
-            
-            // Update progress
-            if (typeof MerlinGameBridge !== 'undefined') {
-                const progress = Math.min(90, (gameState.currentQuestion / gameState.totalQuestions) * 80 + 10);
-                MerlinGameBridge.updateProgress(Math.floor(progress));
-            }
-        }
-
-        // Complete game
-        function completeGame() {
-            const timeElapsed = Date.now() - gameState.startTime;
-            const accuracy = (gameState.correctAnswers / gameState.totalQuestions) * 100;
-            const timeBonus = Math.max(0, 90000 - timeElapsed) / 1000 * 3; // Bonus for speed
-            const finalScore = gameState.score + Math.floor(timeBonus);
-            
-            gameState.score = finalScore;
-            elements.scoreDisplay.textContent = gameState.score;
-            
-            stopTimer();
-            updateProgress(100);
-            
-            const success = accuracy >= 50; // 50% accuracy required for younger children
-            
-            if (success) {
-                elements.gameMessage.innerHTML = `
-                    <div class="encouragement">Amazing work! 🏆</div>
-                    <div>You got ${gameState.correctAnswers} out of ${gameState.totalQuestions} correct!</div>
-                `;
-                elements.nextLevelButton.classList.remove('hidden');
-                showCelebration('🌟');
-            } else {
-                elements.gameMessage.innerHTML = `
-                    <div>Keep practicing! 💪</div>
-                    <div>You got ${gameState.correctAnswers} out of ${gameState.totalQuestions} correct!</div>
-                `;
-            }
-            
-            elements.restartButton.classList.remove('hidden');
-            gameState.isPlaying = false;
-            
-            // Clear question area
-            elements.dotsContainer.innerHTML = '';
-            elements.numberDisplay.textContent = '';
-            elements.answersGrid.innerHTML = '';
-            
-            // Report to native app
-            if (typeof MerlinGameBridge !== 'undefined') {
-                MerlinGameBridge.gameCompleted(success, timeElapsed, gameState.score);
-            }
-        }
-
-        // Show celebration animation
-        function showCelebration(emoji) {
-            const celebration = document.createElement('div');
-            celebration.className = 'celebration';
-            celebration.textContent = emoji;
-            document.querySelector('.game-container').appendChild(celebration);
-            
-            setTimeout(() => {
-                celebration.remove();
-            }, 1200);
-        }
-
-        // Next level
-        function nextLevel() {
-            gameState.level++;
-            gameState.score = 0;
-            elements.levelDisplay.textContent = gameState.level;
-            elements.scoreDisplay.textContent = gameState.score;
-            startGame();
-        }
-
-        // Restart game
-        function restartGame() {
-            gameState.score = 0;
-            gameState.level = levelParam;
-            elements.scoreDisplay.textContent = gameState.score;
-            elements.levelDisplay.textContent = gameState.level;
-            elements.startButton.classList.remove('hidden');
-            elements.nextLevelButton.classList.add('hidden');
-            elements.restartButton.classList.add('hidden');
-            elements.gameMessage.textContent = '';
-            updateProgress(0);
-            elements.dotsContainer.innerHTML = '';
-            elements.numberDisplay.textContent = '';
-            elements.answersGrid.innerHTML = '';
-        }
-
-        // Timer functions
-        function startTimer() {
-            gameState.timer = setInterval(updateTimer, 1000);
-        }
-
-        function stopTimer() {
-            if (gameState.timer) {
-                clearInterval(gameState.timer);
-                gameState.timer = null;
-            }
-        }
-
-        function updateTimer() {
-            if (!gameState.startTime) return;
-            
-            const elapsed = Date.now() - gameState.startTime;
-            const minutes = Math.floor(elapsed / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
-            
-            elements.timerDisplay.textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        // Update progress bar
-        function updateProgress(percent) {
-            elements.progressFill.style.width = `${Math.min(100, Math.max(0, percent))}%`;
-        }
-
-        // Utility function to shuffle array
-        function shuffleArray(array) {
-            const shuffled = [...array];
-            for (let i = shuffled.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-            }
-            return shuffled;
-        }
-
-        // Event listeners
-        elements.startButton.addEventListener('click', startGame);
-        elements.nextLevelButton.addEventListener('click', nextLevel);
-        elements.restartButton.addEventListener('click', restartGame);
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', initGame);
-
-        // Prevent context menu and text selection
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.addEventListener('selectstart', e => e.preventDefault());
-        document.addEventListener('dragstart', e => e.preventDefault());
-
-        // Handle page visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && gameState.isPlaying) {
-                if (typeof MerlinGameBridge !== 'undefined') {
-                    MerlinGameBridge.logDebug('Number Match Game paused - app in background');
+                // Gentle haptic feedback
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
                 }
             }
-        });
-
-        // Error handling
-        window.addEventListener('error', (event) => {
-            if (typeof MerlinGameBridge !== 'undefined') {
-                MerlinGameBridge.reportError(`Number Match Error: ${event.message}`);
+            
+            createParticleEffect(x, y) {
+                const colors = ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B'];
+                
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = x + 'px';
+                    particle.style.top = y + 'px';
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    // Random direction
+                    const angle = (Math.PI * 2 * i) / 8;
+                    const velocity = 50 + Math.random() * 50;
+                    particle.style.setProperty('--dx', Math.cos(angle) * velocity + 'px');
+                    particle.style.setProperty('--dy', Math.sin(angle) * velocity + 'px');
+                    
+                    document.body.appendChild(particle);
+                    
+                    // Remove after animation
+                    setTimeout(() => particle.remove(), 1000);
+                }
             }
-        });
-
-        // Log game ready
-        if (typeof MerlinGameBridge !== 'undefined') {
-            MerlinGameBridge.logDebug('Number Match Game loaded successfully');
+            
+            showSuccess() {
+                this.elements.successMessage.classList.add('show');
+                this.updateProgress(100);
+                
+                // Show next level button
+                setTimeout(() => {
+                    this.elements.successMessage.classList.remove('show');
+                    this.elements.nextLevelButton.classList.remove('hidden');
+                }, 2000);
+                
+                // Award bonus coins for level completion
+                this.awardCoins(5, 'level completion bonus');
+            }
+            
+            nextLevel() {
+                this.level++;
+                this.elements.nextLevelButton.classList.add('hidden');
+                
+                // Reset number display animation
+                this.elements.numberDisplay.classList.remove('celebrating');
+                
+                // Re-enable interactions
+                this.answerOptions.forEach(opt => opt.style.pointerEvents = 'auto');
+                
+                this.generateLevel();
+                this.updateDisplay();
+                this.updateProgress(10);
+            }
+            
+            gameOver() {
+                this.isPlaying = false;
+                this.elements.restartButton.classList.remove('hidden');
+                this.updateProgress(0);
+            }
+            
+            restartGame() {
+                this.level = 1;
+                this.score = 0;
+                this.lives = 3;
+                this.elements.restartButton.classList.add('hidden');
+                this.elements.startButton.classList.remove('hidden');
+                this.updateDisplay();
+                this.updateProgress(0);
+            }
+            
+            updateDisplay() {
+                this.elements.levelDisplay.textContent = this.level;
+                this.elements.scoreDisplay.textContent = this.score;
+                this.elements.livesDisplay.textContent = this.lives;
+            }
+            
+            updateProgress(percent) {
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    MerlinGameBridge.updateProgress(Math.floor(percent));
+                }
+            }
+            
+            awardCoins(amount, reason) {
+                if (typeof MerlinGameBridge !== 'undefined') {
+                    try {
+                        MerlinGameBridge.earnCoins(amount, 'number-match', reason);
+                        MerlinGameBridge.logDebug(`Awarded ${amount} coins for ${reason}`);
+                    } catch (error) {
+                        MerlinGameBridge.logDebug(`Error awarding coins: ${error.message}`);
+                    }
+                }
+            }
+            
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
         }
+        
+        // Initialize game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new NumberMatchGame();
+        });
+        
+        // Prevent scrolling and zooming
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+        
+        document.addEventListener('gesturestart', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', (e) => {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', (e) => {
+            e.preventDefault();
+        });
     </script>
 </body>
 </html> 
