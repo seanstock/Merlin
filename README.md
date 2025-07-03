@@ -11,7 +11,7 @@ Merlin is a comprehensive, AI-powered educational application designed to run in
 
 
 
-## ✨ Core Features
+## Core Features
 
 *   **Conversational AI Tutor**: A friendly AI (powered by OpenAI) that can answer questions, provide explanations, and even launch in-app activities using function calling.
 *   **Gamified Learning & Economy**: Children earn "Merlin Coins" for completing lessons and games, which they can spend on app access or other rewards.
@@ -20,7 +20,7 @@ Merlin is a comprehensive, AI-powered educational application designed to run in
 *   **Modular Curriculum System**: A robust system for defining educational curricula. Includes an AI-powered syllabus generator to automatically create structured lesson plans from text.
 *   **Parental Controls & Analytics**: PIN-gated settings and a comprehensive dashboard for parents to monitor progress, manage screen time, and view analytics.
 
-## 🏛️ Architecture
+## Architecture
 
 This project follows a modern, multi-module Clean Architecture approach designed for scalability and maintainability.
 
@@ -29,7 +29,7 @@ This project follows a modern, multi-module Clean Architecture approach designed
 *   **Repository Pattern**: Data sources (local Room database, remote services) are abstracted away from the rest of the app by repositories.
 *   **Learning-as-a-Service (LaaS) Ready**: The architecture is built around service interfaces (e.g., `EconomyService`, `CurriculumService`) with a `ServiceLocator` that can provide either local or remote implementations. **Note:** Currently, only local implementations are provided, but the groundwork is laid for future cloud-based services.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 *   **Language**: 100% [Kotlin](https://kotlinlang.org/)
 *   **UI**: [Jetpack Compose](https://developer.android.com/jetpack/compose) for the entire UI.
@@ -41,7 +41,7 @@ This project follows a modern, multi-module Clean Architecture approach designed
 *   **Security**: [Jetpack Security (EncryptedSharedPreferences)](https://developer.android.com/topic/security/data), Android `DevicePolicyManager` for Kiosk Mode.
 *   **Background Processing**: [WorkManager](https://developer.android.com/topic/libraries/architecture/workmanager) for reliable background security checks.
 
-## 🚀 Getting Started
+## Getting Started
 
 To build and run this project, you will need Android Studio Hedgehog or newer.
 
@@ -60,7 +60,7 @@ The project uses the OpenAI API for its AI tutor functionality. You will need to
 
 Merlin is designed to be a **Device Owner** app to enable its secure kiosk mode. This gives it special privileges to lock the device. Setting this up requires `adb`.
 
-**⚠️ WARNING:** Setting a device owner can only be done on a device that has **no accounts** (e.g., a factory-reset device). If a Google account is present, this command will fail.
+**WARNING:** Setting a device owner can only be done on a device that has **no accounts** (e.g., a factory-reset device). If a Google account is present, this command will fail.
 
 1.  **Enable USB Debugging** on your target Android device.
 2.  **Connect the device** to your computer.
@@ -81,7 +81,7 @@ Merlin is designed to be a **Device Owner** app to enable its secure kiosk mode.
 
 Once the API key is in place and the device owner is set, you can build and run the app from Android Studio as usual. The app will launch into an onboarding flow, after which it will enter Kiosk (Lock Task) mode.
 
-## 📁 Project Modules
+## Project Modules
 
 *   `:app` - The main application module, containing the UI, Activities, ViewModels, and DI setup.
 *   `:core` - Common utilities, constants, and extensions shared across modules. (Currently minimal).
@@ -89,22 +89,10 @@ Once the API key is in place and the device owner is set, you can build and run 
 *   `:domain` - Intended for business logic and use cases, but currently light as most logic resides in ViewModels or services.
 *   `:ui` - Common Jetpack Compose UI components, themes, and design system elements. (Currently part of `:app`, a candidate for refactoring).
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! If you'd like to help improve Merlin, please feel free to:
 *   Open an issue to report bugs or suggest new features.
 *   Submit a pull request with your improvements.
 *   Help improve the documentation.
-
-Please follow the existing code style and architectural patterns.
-
-## 🗺️ Roadmap & Future Work
-
-This project, while functional, has several areas planned for improvement. This is a great place for new contributors to jump in!
-
-*   **DI Migration**: The current `ServiceLocator` is manual. The highest priority is to **migrate to Hilt/Dagger** for proper dependency injection.
-*   **Implement Remote Services**: Complete the "Learning-as-a-Service" vision by implementing remote service clients (e.g., using Ktor or Retrofit) that conform to the existing service interfaces.
-*   **Refactor Navigation**: Unify all screen navigation under a single Jetpack Navigation Compose `NavHost` to eliminate the manual state-based navigation in `MerlinMainScreen`.
-*   **Enhance Security**: Implement the Play Integrity API for server-side attestation to create a more robust security model.
-*   **Convert SecurityLockoutActivity**: Refactor the last remaining XML-based Activity (`SecurityLockoutActivity`) to a full-screen Compose dialog to make the UI layer 100% Compose.
-*   **Expand Curriculum & Games**: Add more educational content and interactive games.
+*   Chat with me on LinkedIN
